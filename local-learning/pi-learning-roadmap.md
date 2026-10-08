@@ -16,6 +16,7 @@
 | 已完成学习步骤 | 0 / 30 |
 | 当前步骤 | D01 理解一次任务怎样运行 |
 | 当前状态 | 待开始 |
+| 远程仓库 | [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi) |
 | 下一步 | 阅读 How Pi Works，并手动画出一次修复任务的执行过程 |
 | 当前阻塞 | 暂无已记录的阻塞 |
 | Pi 源码版本 | 待 D01 固定实际阅读的标签或提交 SHA |
@@ -527,7 +528,8 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 | 2026-10-08 | 学习范围 | 单 agent 优先，最后加入串行 reviewer；使用 Python 理解并实现 Pi 的相关思想 | D14 和 D26 阶段验收 |
 | 2026-10-08 | 初始本地资料方案 | 最初使用 `.git/info/exclude` 排除整个学习目录，已由下面的跨设备方案替代 | 准备记录 |
 | 2026-10-08 | 跨设备同步 | 根据共享学习进度的要求，将阅读文件纳入版本控制；仅排除原始证据与凭证文件 | `git ls-files` 与 `git check-ignore` |
-| 2026-10-08 | 远程仓库 | [Bakey77/pi-learning](https://github.com/Bakey77/pi-learning)，公开仓库 | GitHub 仓库页面 |
+| 2026-10-08 | 初始远程仓库 | [Bakey77/pi-learning](https://github.com/Bakey77/pi-learning)，已改用下列仓库 | GitHub 仓库页面 |
+| 2026-10-08 | 当前远程仓库 | [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi)，按指定地址同步 | `git remote -v` 与远程提交 |
 | 待填写 | Pi 源码基线 | 标签或完整提交 SHA，以及永久链接 | 对照实际阅读文件 |
 | 待填写 | 模型配置 | provider、模型 ID、参数与预算，不填写密钥 | D07 运行记录 |
 | 待填写 | 实际启动方式 | CLI 命令与工作目录 | D13 启动验收 |
@@ -560,6 +562,8 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 2026-10-08：已建立本地阅读与实现路线，并设置学习目录的本地 Git 排除规则。学习步骤仍为 0 / 30；下一步是 D01 的文档阅读与流程自查。
 
 2026-10-08：为跨设备共享学习进度，移除整目录本地忽略规则，增加项目 README 与随仓库同步的 `.gitignore`。阅读文件进入版本控制，原始执行证据仍保留在本地。学习进度保持 0 / 30。
+
+2026-10-08：同步仓库改为 `bakeyliao-boop/Mini-Pi`，更新 README 的克隆命令与阅读文件中的仓库记录。学习进度保持 0 / 30。
 
 ### 第一次阅读笔记
 

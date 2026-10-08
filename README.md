@@ -8,11 +8,11 @@
 
 ## 跨设备继续学习
 
-远程仓库为 [Bakey77/pi-learning](https://github.com/Bakey77/pi-learning)。首次在其他设备使用时：
+远程仓库为 [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi)。首次在其他设备使用时：
 
 ```sh
-git clone https://github.com/Bakey77/pi-learning.git
-cd pi-learning
+git clone https://github.com/bakeyliao-boop/Mini-Pi.git
+cd Mini-Pi
 ```
 
 在其他设备克隆本仓库后，打开阅读文件的“当前进度与下一步”。每次开始学习前执行 `git pull --ff-only`，结束后提交阅读文件与本次代码改动，再执行 `git push`。
