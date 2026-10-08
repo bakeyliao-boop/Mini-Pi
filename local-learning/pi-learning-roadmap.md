@@ -12,22 +12,22 @@
 | --- | --- |
 | 最后维护日期 | 2026-10-08 |
 | 路线版本 | 初版 跨设备同步 |
-| 学习开始日期 | 待实际开始时填写 |
-| 已完成学习步骤 | 0 / 30 |
-| 当前步骤 | D01 理解一次任务怎样运行 |
+| 学习开始日期 | 2026-10-08 |
+| 已完成学习步骤 | 1 / 30 |
+| 当前步骤 | D02 看懂消息和工具调用结构 |
 | 当前状态 | 待开始 |
 | 远程仓库 | [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi) |
-| 下一步 | 阅读 How Pi Works，并手动画出一次修复任务的执行过程 |
+| 下一步 | 阅读固定版本的 `packages/agent/src/types.ts`，结合 Agent Core README 手写用户请求、assistant 工具调用和对应工具结果三条 Python 字典 |
 | 当前阻塞 | 暂无已记录的阻塞 |
-| Pi 源码版本 | 待 D01 固定实际阅读的标签或提交 SHA |
+| Pi 源码版本 | `7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333`；已固定后续阅读基线，源码阅读尚未开始 |
 | 模型接入 | 待 D07 选择已有可用额度的一个模型服务 |
 | 第一版完成情况 | 尚未开始实现 |
 
-**今天做阅读和画流程。**打开 [How Pi Works][R01]，先读 Agent loop、Context 和 Sessions。随后在本文末尾的“学习记录”中写一个折扣计算 bug 的执行过程：用户提出问题，模型请求读取文件，程序执行工具，结果进入记录，模型请求测试或修改，最后结束运行。
+**D01 已完成，下一步从 D02 开始。**已阅读 [How Pi Works][R01] 的 Agent loop、Context 和 Sessions，在模板协助下完成折扣计算 bug 的五轮手动推演，并登记后续源码阅读基线。完整说明见本文末尾的“第一次阅读笔记”；未实际运行模型、工具或测试。
 
-今天结束前，需要能回答三个问题：谁提出工具调用，谁实际执行工具，为什么 agent 停止输出不等于代码修复成功。阅读用约 20 分钟，写流程和自查用约 20 分钟；具体要求见 [D01](#d01-理解一次任务怎样运行)。
+下一次先打开固定版本的 [types.ts][S01]，对照 [Agent Core README][R04]，找出用户消息、assistant 工具调用和工具结果的结构。随后手写三条 Python 字典，给调用一个唯一 ID，并让结果关联这个 ID；具体要求见 [D02](#d02-看懂消息和工具调用结构)。
 
-目前完成的是路线准备。上一次对话中的调研不计为你已完成阅读；源码阅读和代码实现都从 D01 开始记录。
+路线准备和此前调研不计入学习完成数。本次 D01 的文档阅读与手动推演计为 1 / 30；源码版本已固定，但源码阅读、代码实现与真实运行尚未开始。
 
 ## 怎样使用和维护这份路线
 
@@ -112,7 +112,7 @@ Pi 的核心循环还处理一种特殊情况：模型输出达到长度上限�
 
 资料以 2026-10-08 的调研为起点。Pi 于 2026-10-01 发布 1.0，加入原生 MCP、延迟工具加载等能力；Pi Durable 同时作为实验性包发布。[Pi 1.0 发布说明][R09] 早期文章适合理解设计动机，安装方式、API 和功能状态以你固定的源码版本与对应文档为准。
 
-以下源码链接指向 `main`，用于定位文件。D01 固定版本后，阅读和做笔记使用对应提交的永久链接；遇到文件或函数变动，把新位置记在“版本与决策记录”中。
+以下 GitHub 源码和仓库内文档链接已固定到提交 `7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333`，作为 D02 起的阅读基线。D01 阅读的是 2026-10-08 的在线 `docs/latest` 文档，未据此声称已阅读该提交的源码；遇到文档与基线差异，把实际文件位置和差异记在“版本与决策记录”中。
 
 ### 文档和作者文章
 
@@ -154,7 +154,7 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 
 | 步骤 | 类型 | 本步目标 | 状态 | 完成日期 |
 | --- | --- | --- | --- | --- |
-| D01 | 阅读 | 画出一次任务的执行流程 | 待开始 | — |
+| D01 | 阅读 | 画出一次任务的执行流程 | 已完成 | 2026-10-08 |
 | D02 | 阅读与小练习 | 看懂消息和工具调用结构 | 待开始 | — |
 | D03 | 阅读与小练习 | 找到循环继续与退出的条件 | 待开始 | — |
 | D04 | 阅读 | 理解 Agent 生命周期和队列 | 待开始 | — |
@@ -530,7 +530,8 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 | 2026-10-08 | 跨设备同步 | 根据共享学习进度的要求，将阅读文件纳入版本控制；仅排除原始证据与凭证文件 | `git ls-files` 与 `git check-ignore` |
 | 2026-10-08 | 初始远程仓库 | [Bakey77/pi-learning](https://github.com/Bakey77/pi-learning)，已改用下列仓库 | GitHub 仓库页面 |
 | 2026-10-08 | 当前远程仓库 | [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi)，按指定地址同步 | `git remote -v` 与远程提交 |
-| 待填写 | Pi 源码基线 | 标签或完整提交 SHA，以及永久链接 | 对照实际阅读文件 |
+| 2026-10-08 | Pi 源码基线 | 用户同意固定上游 `main` 当次查询的提交 [`7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333`](https://github.com/earendil-works/pi/tree/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333)，供后续阅读；源码阅读尚未开始 | `git ls-remote` 查询及 GitHub tree API 核对该提交与路线引用的文件路径 |
+| 2026-10-08 | 本地项目分支 | 从 `origin/main` 建立本地 `main` 并设置跟踪关系；D05 开始编码时再从项目 `main` 创建 `codex/mini-pi-v0.1` | `git status --short --branch` 与分支跟踪信息；本次仅拉取远程历史并修改本地学习记录 |
 | 待填写 | 模型配置 | provider、模型 ID、参数与预算，不填写密钥 | D07 运行记录 |
 | 待填写 | 实际启动方式 | CLI 命令与工作目录 | D13 启动验收 |
 | 待填写 | 会话格式 | 字段、完成状态与中断处理 | D10 和 D11 测试 |
@@ -567,29 +568,58 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 
 ### 第一次阅读笔记
 
-对应步骤 D01。完成阅读后填写实际日期、流程和自查回答，再更新步骤总表。
+实际日期：2026-10-08。对应步骤：D01。状态：已完成。
 
-源码基线：
+本次动作：逐段阅读并讨论 [Agent loop](https://pi.dev/docs/latest/how-pi-works#agent-loop)、[Context](https://pi.dev/docs/latest/how-pi-works#context)、[Sessions](https://pi.dev/docs/latest/how-pi-works#sessions)；回答自查问题，并在模板协助下填写、修正折扣 bug 的五轮流程；用户同意固定后续源码阅读基线。
 
-折扣 bug 修复流程：
+证据性质：以下为手动模拟，未实际执行。没有模型调用、工具执行或测试日志，不作为真实修复或独立无提示复述的证据。
 
-1. 用户输入：
-2. 第一次模型请求携带的内容：
-3. 模型提出的工具调用：
-4. 程序执行与保存的结果：
-5. 第二次模型请求多了什么：
-6. 运行结束的条件：
-7. 判断修复成功的外部证据：
+源码基线：上游 [earendil-works/pi](https://github.com/earendil-works/pi)，固定提交 [`7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333`](https://github.com/earendil-works/pi/tree/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333)。本次完成版本登记，源码阅读尚未开始。Mini-Pi 项目的分支与这个上游阅读版本分别管理。
 
-三个自查回答：
+#### 折扣 bug 修复流程（手动模拟）
 
-- 谁提出工具调用：
-- 谁实际执行工具：
-- 为什么停止输出不等于修复成功：
+用户任务：请修复折扣计算函数，并验证结果符合需求。`discount_rate=0.2` 表示减价 20%，所以 `final_price(100, 0.2)` 应返回 `80`。
 
-完成指标核对：
+原始代码：
 
-下一次动作：
+```python
+def final_price(price, discount_rate):
+    return price * discount_rate
+```
+
+1. **第一轮：读取代码。**Pi 组装包含用户任务、相关历史和可用工具定义的请求。模型提出 `read_file` 调用，Pi 的工具实际读取文件并返回原始代码。Pi 保存 assistant 的工具调用和工具结果；下一轮请求加入读取结果，让模型看到代码内容。
+2. **第二轮：确认问题。**模型看到代码后提出 `run_tests` 调用，Pi 的工具执行测试。输入为 `final_price(100, 0.2)`，期望 `80`，原代码计算得到 `20`，该用例失败。Pi 记录结果并加入下一轮请求；模型据此结合代码分析失败原因，再决定如何修改。测试失败是任务反馈，不等同于测试工具未能执行。
+3. **第三轮：修改代码。**模型结合代码、需求和测试反馈，判断当前函数计算的是优惠金额，而需求要求返回减价后的价格。模型提出 `edit_file` 调用，将 `return price * discount_rate` 改为 `return price * (1 - discount_rate)`。Pi 的工具执行修改并返回编辑成功的结果，Pi 将调用和结果保存下来。编辑成功表示操作完成，计算逻辑仍需测试验证。
+4. **第四轮：验证修改。**模型看到编辑结果后提出 `run_tests` 调用。Pi 的工具再次运行同一用例，期望 `80`，修改后的代码计算得到 `80`，该用例通过。Pi 记录结果并将其加入下一轮模型请求。
+5. **第五轮：给出结论。**模型根据编辑结果和修改后的测试结果回答：“已将计算公式修改为 `price * (1 - discount_rate)`；该用例返回 `80`，符合预期。”假设没有新的工具调用或排队消息，Pi 结束本次 run。
+
+上述流程包含五次模型请求。按文档的定义，每次模型响应及其触发的工具执行和结果记录组成一个 turn，五个 turn 构成本次 run。每一轮产生的新信息通过后续请求交回模型。
+
+最终验收：依据修改后的代码和实际执行的测试结果是否符合事先确定的验收标准，不能只依据模型说“修复完成”。本例仅推演一个用例；模拟得到 `80` 不代表已运行真实测试，也不能证明全部业务边界都正确。
+
+#### 三个自查回答（讨论后修正）
+
+1. **谁提出调用，谁读取文件？**模型提出 `read_file` 调用并指定路径；Pi 的工具实际访问文件系统、读取内容。Pi 记录工具结果并交给模型；模型理解提供的内容并决定下一步。
+2. **工具结果怎样进入下一轮，为什么需要再次请求？**Pi 保存工具结果消息，并将其与相关历史一起组装进下一轮上下文。模型提出读取调用时还没有文件内容，工具完成后需要让模型根据新增信息继续判断，而不仅是笼统地说“一次请求可能做不完”。
+3. **为什么停止输出不等于修复成功？**停止表示本次运行结束；成功要依据预先确定的验收标准、代码修改和实际测试结果。本例需要核对 `final_price(100, 0.2)` 是否返回 `80`，不能以最终文字声明替代验证。
+
+修正记录：首次回答将“工具获取文件”和“模型理解内容”混淆，讨论后已在流程中区分；初次推演把修改前结果写成 `80`，修正为 `20`；第二轮反馈的用途由讨论补充为“分析失败原因并决定修改”。本记录保留有指导的学习过程，不声称完成无提示闭卷检查。
+
+#### 完成指标核对与心智蓝图
+
+| D01 指标 | 结果与证据 |
+| --- | --- |
+| 阅读指定的三个章节 | 已完成；本次聊天逐段讨论，阅读链接见上 |
+| 说明模型提出调用、程序执行工具 | 已完成；修正后的自查第 1 题和五轮流程 |
+| 画出至少两轮请求与结果传递 | 已完成；五轮手动模拟 |
+| 解释最终回答需测试核对 | 已完成；自查第 3 题和最终验收说明 |
+| 登记源码版本或具体阻塞 | 已完成；已登记用户同意的完整 SHA，路径已核对 |
+
+当前心智蓝图：用户目标 → Pi 组装上下文 → 模型提出下一步 → Pi 执行工具并保存结果 → 相关结果进入下一轮请求 → 模型继续判断或结束。Session 保存发生过什么，Context 决定模型本轮看到什么；一次请求不等于完整运行，运行结束也不等于任务验收成功。
+
+未解决问题：暂无 D01 阻塞。源码阅读、代码实现及真实执行未开始，属于后续步骤。
+
+下一次第一个动作：打开固定提交的 [types.ts][S01]，对照 [Agent Core README][R04]，完成 D02 的三条 Python 字典示例，并用唯一调用 ID 将工具结果关联到调用。
 
 ## 待解决问题
 
@@ -602,20 +632,20 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 [R01]: https://pi.dev/docs/latest/how-pi-works
 [R02]: https://mariozechner.at/posts/2025-11-30-pi-coding-agent/
 [R03]: https://lucumr.pocoo.org/2026/1/31/pi/
-[R04]: https://github.com/earendil-works/pi/blob/main/packages/agent/README.md
+[R04]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/agent/README.md
 [R05]: https://pi.dev/docs/latest/session-format
 [R06]: https://pi.dev/docs/latest/compaction
 [R07]: https://pi.dev/docs/latest/extensions
-[R08]: https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/README.md
+[R08]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/coding-agent/examples/extensions/subagent/README.md
 [R09]: https://earendil.com/posts/pi-1-0/
 [R10]: https://earendil.com/posts/pi-durable/
-[S01]: https://github.com/earendil-works/pi/blob/main/packages/agent/src/types.ts
-[S02]: https://github.com/earendil-works/pi/blob/main/packages/agent/src/agent-loop.ts
-[S03]: https://github.com/earendil-works/pi/blob/main/packages/agent/src/agent.ts
-[S04]: https://github.com/earendil-works/pi/blob/main/packages/coding-agent/src/core/sdk.ts
-[S05]: https://github.com/earendil-works/pi/blob/main/packages/coding-agent/src/core/agent-session.ts
-[S06]: https://github.com/earendil-works/pi/blob/main/packages/coding-agent/src/core/session-manager.ts
-[S07]: https://github.com/earendil-works/pi/blob/main/packages/coding-agent/src/core/tools/edit.ts
-[S08]: https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/index.ts
-[S09]: https://github.com/earendil-works/pi/blob/main/packages/agent/test/agent-loop.test.ts
-[S10]: https://github.com/earendil-works/pi/blob/main/packages/ai/src/types.ts
+[S01]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/agent/src/types.ts
+[S02]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/agent/src/agent-loop.ts
+[S03]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/agent/src/agent.ts
+[S04]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/coding-agent/src/core/sdk.ts
+[S05]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/coding-agent/src/core/agent-session.ts
+[S06]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/coding-agent/src/core/session-manager.ts
+[S07]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/coding-agent/src/core/tools/edit.ts
+[S08]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/coding-agent/examples/extensions/subagent/index.ts
+[S09]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/agent/test/agent-loop.test.ts
+[S10]: https://github.com/earendil-works/pi/blob/7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333/packages/ai/src/types.ts
