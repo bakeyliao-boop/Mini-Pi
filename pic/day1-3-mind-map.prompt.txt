@@ -1,0 +1,89 @@
+Generation mode: built-in image_gen; tool provides no model selector, so image-2.5 could not be selected or confirmed.
+
+Generation prompt:
+Use case: infographic-diagram.
+Generate ONE polished, high-resolution Chinese educational mind map summarizing a beginner's Day 1–3 study of Pi agent orchestration and harness. Wide landscape poster, around 16:9, large extremely legible Simplified Chinese sans-serif text and accurate English code identifiers, generous whitespace, crisp flat infographic style. This is a study aid, not a screenshot or a UI mockup. No watermark, no decorative characters, no fabricated implementation or claims of test execution.
+
+VISUAL ORGANIZATION:
+A true mind map: one prominent central hub, three clearly connected main branches labeled Day 1 / Day 2 / Day 3, each with short secondary nodes. Use a restrained neutral background and three distinct, subtle branch colors. Route connectors cleanly without crossing text. Keep the map balanced, clear at full-screen size, with a separate compact bottom strip for the key distinctions. Do not draw arbitrary cross-branch arrows. Within Day 1 show a small directed feedback loop; within Day 2 show request/result ID pairing. Prioritize readability over ornamental detail.
+
+CENTRAL HUB exact text:
+"Pi 智能体：Day 1–3 心智模型"
+"模型提出行动 · 程序执行与反馈 · 验收判断结果"
+
+BRANCH 1 exact title:
+"Day 1｜流程怎样走"
+Question node: "一个任务怎样持续推进？"
+Use these short nodes, showing a loop from feedback to context:
+"用户目标 → 组装上下文 → 请求模型"
+"模型提出工具调用 → 程序执行"
+"工具结果 → 更新上下文 → 下一轮决策"
+Secondary notes:
+"一次 run 可以包含多个 turn"
+"Session 保存历史；Context 组织本轮输入"
+"当前分支提供对话历史"
+
+BRANCH 2 exact title:
+"Day 2｜信息怎样表示与关联"
+Question node: "各环节传递什么数据？"
+Four nodes:
+"UserMessage：用户要求"
+"AssistantMessage：模型响应"
+"ToolCall：行动请求"
+"ToolResultMessage：执行结果"
+Under ToolCall, group three compact labels:
+"name：选择工具"
+"arguments：具体参数"
+"id：标识本次调用"
+Draw ONE explicit pairing connector:
+"id = call_001 ↔ toolCallId = call_001"
+Supporting notes:
+"role 区分消息角色；type 区分内容块"
+"AgentEvent 通知界面与日志"
+"模型输入保留任务相关信息"
+
+BRANCH 3 exact title:
+"Day 3｜程序怎样控制运行"
+Question node: "什么时候继续，什么时候退出？"
+Three function nodes:
+"runLoop：调度与判断"
+"streamAssistantResponse：准备请求、接收响应"
+"executeToolCalls：检查并执行工具"
+Four compact rule nodes:
+"工具结果加入上下文，供模型继续决策"
+"无调用、无待处理消息、无继续要求 → 结束"
+"stopReason = error / aborted → 退出"
+"stopReason = length 且有调用 → 不执行，返回错误反馈"
+Small callback/queue note:
+"steering / follow-up / 回调可影响继续"
+"finishTurn 返回 end 可提前结束"
+A short highlighted precision note:
+"参数格式合法 ≠ 内容完整"
+
+BOTTOM STRIP exact heading:
+"必须分清的四组关系"
+Four short blocks:
+"模型提出请求 ≠ 工具实际执行"
+"会话记录 ≠ 本轮模型上下文"
+"测试失败 ≠ 模型响应出错"
+"运行结束 ≠ 任务验收成功"
+Bottom takeaway exact text:
+"读源码时问：它在表示信息、执行操作、控制运行，还是判断任务达标？"
+
+SEMANTIC ACCURACY:
+The model proposes tool calls; executable program tools perform operations. A call ID identifies one specific call, NEVER a turn number. Events for UI are not automatically all supplied to the model; results can also be shown in UI. runLoop appends in-memory context; persistence belongs to Pi's upper session layer. A failed test does not automatically force retries forever. A length-truncated assistant response containing tool calls must not execute any such calls even if arguments validate; error feedback permits later model handling. No promise that every tool outcome unconditionally causes another request. Day 1–3 study is guided source reading and teaching examples; this poster must not imply real code repair or executed/passing tests. English identifiers must be spelled exactly as provided. Render ALL Chinese text accurately, no tiny text, no extra paragraphs.
+
+Initial localized text correction prompt:
+Edit only the provided Chinese educational mind-map image. Make exactly one localized text correction: in the small pale-orange question box to the left of the Day 3 title, change the entire text to exactly “什么时候继续，什么时候退出？” Remove the erroneous extra “模” character before “退出”. Keep that box's position, size, font style, color and border. Preserve ALL other Chinese and English text, spelling, central hub, branch connectors, arrows, layout, colors, resolution and diagram content. Do not regenerate or redesign anything else. No added labels or watermark.
+
+Reviewed correction, 2026-10-09:
+The previous correction did not fully repair the malformed Chinese glyph in the Day 3 question box. The final question is now “何时继续，何时退出？”. The source and corrected question were inspected at enlarged scale. Final asset: pic/day1-3-mind-map.png. Original generated version remains preserved outside the repository in the original generated-images directory.
+
+Final correction mode: built-in image_gen edit; preserve the opaque background.
+Final correction prompt:
+Use case: text-localization. Edit target: the provided Day 1–3 Pi educational mind-map PNG.
+Perform one local typography repair only. In the small pale-orange rounded question box immediately to the LEFT of the large orange "Day 3｜程序怎样控制运行" heading (approximately x=210..595, y=550..608), REMOVE its existing corrupted question text completely. Re-typeset that question as exactly:
+“何时继续，何时退出？”
+The characters are: 何 时 继 续 ， 何 时 退 出 ？
+Do not retain any old characters in this box. Use clean standard Simplified Chinese glyphs, same dark orange text style and bold weight, centered horizontally and vertically in the same box. This shorter sentence must be perfectly legible and free of invented or malformed Chinese glyphs.
+Preserve everything else EXACTLY: all other Chinese text, all English code identifiers (runLoop, streamAssistantResponse, executeToolCalls, stopReason, finishTurn, ToolCall, toolCallId, etc.), diagrams, arrows, central hub, branch connections, background, colors, borders, and original 1672×941 landscape framing. Do not redesign, translate, add text or watermark, or change any technical meanings. Keep the opaque background.
