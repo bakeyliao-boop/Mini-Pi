@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前学习进度为 D01–D06 已完成。已建立 Python 数据结构与接口、实现本地读取工具，并用模拟模型验证基础 Agent 循环的消息保存、工具反馈、多轮调用和结束行为；下一步为 D07 接入一个真实模型。尚未接入真实模型或验证折扣修复，后续进度以阅读文件中的总表为准。
+当前学习进度为 D01–D07 已完成。已建立 Python 数据结构与接口、实现读取工具和基础循环，并通过同一 `generate()` 接口接入模拟模型与真实 `qwen3.8-flash`。真实示例完成工具调用、结果反馈和代码解释；下一步为 D08 实现受约束的文件编辑。尚未验证折扣修复或第一版完整验收，后续进度以阅读文件中的总表为准。
 
 ## 本地验证 D05
 
@@ -37,6 +37,49 @@ python -X utf8 -m examples.d06_loop
 ```
 
 该路径只适用于当前设备；其他设备需使用自己的解释器路径。
+
+## 本地验证 D07
+
+D07 的核心转换函数在 `mini_pi/qwen_provider.py`，真实模型适配器在 `mini_pi/qwen_client.py`。核心逻辑由用户根据助手给出的代码分段手敲；HTTP、配置、记录、测试与示例由助手准备，个别错误按用户明确授权修正。
+
+在项目根目录运行离线测试，不请求模型服务：
+
+```sh
+python -X utf8 -m unittest tests.test_qwen_provider tests.test_qwen_transport tests.test_loop tests.test_read_file -v
+```
+
+35 项通过：D07 转换 17 项、发送与适配器 8 项、D06 循环 5 项、D05 读取工具 5 项。网络入口在测试中模拟，测试中的 usage 是样例数据，真实 usage 另见下方运行摘要。
+
+真实示例读取临时文件，使用文件中的随机标记检查最终回答是否接收了读取结果。密钥通过 `DASHSCOPE_API_KEY` 读取；可用 `DASHSCOPE_BASE_URL` 和 `QWEN_MODEL` 修改接口与模型，默认采用百炼北京地域的 OpenAI 兼容接口及 `qwen3.8-flash`。
+
+先在本地配置环境变量。PowerShell 可使用隐藏输入，变量只在当前窗口及其子进程中生效：
+
+```powershell
+$taskSecret = Read-Host "输入 API Key" -AsSecureString
+$env:DASHSCOPE_API_KEY = [System.Net.NetworkCredential]::new("", $taskSecret).Password
+$taskSecret.Dispose()
+Remove-Variable taskSecret
+```
+
+只检查本地配置，不验证服务权限或发送请求：
+
+```sh
+python -X utf8 -m examples.d07_qwen --check-config
+```
+
+下面的命令实际调用服务并消耗额度。示例配置最多 4 次请求、每次 `max_completion_tokens=1024`、HTTP 超时 30 秒，不自动重试：
+
+```sh
+python -X utf8 -m examples.d07_qwen --live
+```
+
+Windows 当前设备若遇到 `python` 入口问题，使用前面记录的真实解释器路径，并保留 `-X utf8 -m examples.d07_qwen` 和对应模式参数。必须在项目根目录运行，不能在 `mini_pi` 子目录运行模块命令。
+
+2026-10-12 实际验证：服务返回模型 `qwen3.8-flash`，共 3 次请求、2 次文件读取，耗时约 12.10 秒。供应商 usage 合计输入 1,314、输出 232、总计 1,546 tokens；调用 ID 配对及工具结果回传均通过，最终解释包含文件中的随机标记。正常结束时 `task_passed=None`；D07 接入验收结论由记录和人工解释核对得出，不自动修改该字段。
+
+原始轨迹和测试输出保持 Git 忽略，保存在 `local-learning/evidence/`。示例会打印本次唯一的轨迹路径；源码和学习记录不保存密钥。自动检查不证明折扣修复正确，也不证明完整的取消、会话与预算控制已经实现。
+
+接口格式对照 [百炼 Chat API](https://help.aliyun.com/zh/model-studio/qwen-api-via-openai-chat-completions/) 与 [Function Calling 文档](https://help.aliyun.com/zh/model-studio/qwen-function-calling)。
 
 ## 跨设备继续学习
 
