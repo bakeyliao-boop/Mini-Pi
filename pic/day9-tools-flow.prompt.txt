@@ -1,0 +1,22 @@
+Use case: infographic-diagram
+Asset type: Chinese educational mind map for Mini-Pi Day 9, high-resolution readable landscape 16:10.
+Primary request: A clean learning infographic explaining how four tools enter one agent loop. Friendly flat illustrated cards, restrained blue and teal palette, amber for feedback and red only for failure, white background, large clear simplified Chinese typography, very little decorative clutter. Clear arrowheads and whitespace.
+Title exact: "D09：四工具与失败反馈"
+Main central flow with six large cards and a visible return arrow:
+"模型提出 ToolCall" → "ToolRouter 按 name 分发" → "对应工具校验并执行" → "返回 ToolResult" → "结果加入 history" → "下一次模型请求".
+Below execution card show four sibling tool cards, all sharing the execution role:
+"list_files｜列目录", "read_file｜读文件", "edit_file｜检查并修改", "run_tests｜运行固定测试命令".
+Small annotation near ToolCall/ToolResult: "id ↔ tool_call_id：一一配对".
+Separate clearly bounded example strip caption exact "本次联调：示例预设顺序，模型请求数为 0"; it MUST not be shown as an actually model-driven loop:
+"读取错误公式" → "call_005：20 ≠ 80，tests_failed" → "call_007：修改公式" → "call_008：测试通过".
+Two small learning cards along bottom:
+Card 1 heading "分别判断"
+Text exact: "error=None：工具未报告执行故障" and "tests_failed：测试运行了，但未通过". Keep each line distinct, no error=True or error=False.
+Card 2 heading "日志截断"
+Text exact: "truncated=True：模型只看到部分日志" and "full_output_path：完整日志位置".
+Final small footer: "工具反馈 → 模型选择下一步 → 循环安排执行".
+Constraints: accurate directions, tool router does not decide task strategy, do not imply passing one test proves all tasks or model autonomy; no claims that agent_end implies idle; no watermark, no unnecessary TS or process API details. Avoid excess text and tiny typography.
+
+定向修正：四个工具分支均来自“对应工具校验并执行”，不由 ToolResult 启动工具；回环箭头标明“模型若提出新调用，继续循环”。
+最终连线简化：四工具放在同一个“执行器”面板内，只从“对应工具校验并执行”连接到该面板；移除 ToolResult 下方的重复 ID 标签，避免遮住连线。
+使用内置 image_gen 生成及编辑，未使用 CLI；工具未提供可选择的具体模型 ID。
