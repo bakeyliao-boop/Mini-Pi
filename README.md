@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前学习进度为 D01–D07 已完成。已建立 Python 数据结构与接口、实现读取工具和基础循环，并通过同一 `generate()` 接口接入模拟模型与真实 `qwen3.8-flash`。真实示例完成工具调用、结果反馈和代码解释；下一步为 D08 实现受约束的文件编辑。尚未验证折扣修复或第一版完整验收，后续进度以阅读文件中的总表为准。
+当前学习进度为 D01–D08 已完成（8/30）。已建立 Python 数据结构与接口、实现读取和编辑工具及基础循环，并通过同一 `generate()` 接口接入模拟模型与真实 `qwen3.8-flash`。D08 已验证临时文件的实际编辑、工具结果反馈和真实符号链接越界拒绝；下一步为 D09 补齐工具与错误分类。尚未验证折扣业务修复或第一版完整交付，后续进度以阅读文件中的总表为准。
 
 ## 本地验证 D05
 
@@ -80,6 +80,17 @@ Windows 当前设备若遇到 `python` 入口问题，使用前面记录的真�
 原始轨迹和测试输出保持 Git 忽略，保存在 `local-learning/evidence/`。示例会打印本次唯一的轨迹路径；源码和学习记录不保存密钥。自动检查不证明折扣修复正确，也不证明完整的取消、会话与预算控制已经实现。
 
 接口格式对照 [百炼 Chat API](https://help.aliyun.com/zh/model-studio/qwen-api-via-openai-chat-completions/) 与 [Function Calling 文档](https://help.aliyun.com/zh/model-studio/qwen-function-calling)。
+
+## 本地验证 D08
+
+D08 在 `mini_pi/tools/edit_file.py`、`edit_policy.py` 和 `edit_executor.py` 中实现受约束的文件编辑；[学习记录](local-learning/pi-learning-roadmap.md#第八次学习记录) 和 [执行图](pic/day8-edit-flow.png) 展示从 `ToolCall` 到实际读写、差异反馈的过程。在项目根目录运行：
+
+```sh
+python -X utf8 -m unittest discover -s tests -p "test_edit_*.py"
+python -X utf8 -m examples.d08_edit_trace
+```
+
+当前设备的 Windows `python` 入口如不能启动，使用上文记录的实际解释器路径。Windows 下 48 项测试有 46 项通过，2 项因 WinError 1314 无法创建符号链接而跳过；在 Ubuntu WSL 的同一份工作区代码上 48 项全部通过，包括两项真实符号链接越界拒绝。示例构造 `ToolCall` 并真实修改临时文件，结果含差异和原调用 ID；不调用模型服务，也不判断折扣业务测试通过。原始输出保留在本地忽略目录 `local-learning/evidence/`。
 
 ## 跨设备继续学习
 
