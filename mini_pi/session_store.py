@@ -6,11 +6,12 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
-from mini_pi.models import ConversationItem, Message, ToolResult
+from mini_pi.models import ConversationItem, Message, ToolCall, ToolResult
+from mini_pi.session_records import LoadedSession, read_session_records
 
 
 class SessionStore:
-    """保存一次运行的记录；本步不实现会话加载或分支。"""
+    """保存与还原线性记录；恢复检查和继续运行分段实现。"""
 
     def __init__(self, path: str | Path, run_id: str | None = None):
         # 助手准备：路径、运行标识和目录配置；不覆盖已有记录。
@@ -46,3 +47,26 @@ class SessionStore:
             raise TypeError("item 必须是 Message 或 ToolResult")
         event_type = "tool_result" if isinstance(item, ToolResult) else "message"
         self.append_entry(event_type, asdict(item))
+
+    def _restore_item(self, event_type: str, data: dict[str, object]) -> ConversationItem:
+        """D11：将记录字典还原为统一对象；不执行历史工具调用。"""
+        if event_type == "tool_result":
+            return ToolResult(
+              tool_call_id=data["tool_call_id"],
+              tool_name=data["tool_name"],
+              output=data["output"],
+              error=data.get("error"),
+              )
+        if event_type == "message":
+            calls = [ToolCall(**call) for call in data.get("tool_calls", [])]
+            return Message(
+                role=data["role"], content=data["content"], tool_calls=calls)
+
+    def load(self) -> LoadedSession:
+        """加载完整记录和对话历史，不执行调用，也不决定能否继续运行。"""
+        records = read_session_records(self.path)
+        history = []
+        for record in records:
+            if record["type"] in {"message","tool_result"}:
+                history.append(self._restore_item(record["type"],record["data"]))
+        return LoadedSession(history=history,records=records)

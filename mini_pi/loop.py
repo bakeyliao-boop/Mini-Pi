@@ -12,12 +12,16 @@ async def run_loop(
     initial_messages: list[ConversationItem],
     tools: list[ToolDefinition],
     session_store: SessionStore | None = None,
+    already_saved: int = 0,
 ) -> RunResult:
     history = list(initial_messages)
+    # 助手准备：只接收可信调用方提供的已存历史长度，不改变模型可见历史。
+    if type(already_saved) is not int or not 0 <= already_saved <= len(history):
+        raise ValueError("already_saved 必须是 0 到历史长度之间的整数")
 
     if session_store is not None:
         session_store.append_entry("run_start", {"status": "running"})
-        for item in history:
+        for item in history[already_saved:]:
             session_store.append_item(item)
 
     while True:

@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前学习进度为 D01–D10 已完成（10/30），下一步为 D11 加载会话与恢复边界。四工具、基础循环、真实模型接入和正常运行的 JSONL 记录已分别验证；D09 完成示例预设的折扣用例修复，D10 确认示例进程退出后会话仍可查看。D10 使用模拟模型，尚未验证加载恢复、模型自主修复或第一版完整交付，后续进度以阅读文件中的总表为准。
+当前学习进度为 D01–D11 已完成（11/30），下一步为 D12 预算、超时和取消。四工具、基础循环、真实模型接入、JSONL 保存与加载、增量继续和恢复门禁已分别验证；D11 的 34 项相关测试与三场景示例通过。恢复判断只允许 `ready` 正常继续，其余状态先明确返回，不自动重放历史调用。D11 使用模拟模型与真实文件工具，未验证模型自主修复或第一版完整交付；后续进度以阅读文件中的总表为准。
 
 ## 本地验证 D05
 
@@ -117,6 +117,17 @@ python -X utf8 -m examples.d10_session
 ```
 
 11 项相关测试通过。示例使用模拟模型和实际读取工具，生成 `local-learning/evidence/d10-<运行ID>/session.jsonl` 与 `summary.json`，正常退出后可重新读取；原始记录保持 Git 忽略。示例含六条记录，最终 `history` 为四项；运行开始和结束事件不作为模型消息。D10 实现保存，不实现加载继续运行、未完成写操作核对或异常恢复。
+
+## 本地验证 D11
+
+`SessionStore.load` 还原统一对象，`find_pending_calls` 按运行 ID 和调用 ID 找出缺少配对结果的调用，`plan_recovery` 判断恢复状态；[resume_session](mini_pi/session_resume.py) 在进入循环前执行门禁。核心逻辑由用户分段手敲，容器、接口、测试和示例由助手准备，详见[第十一次学习记录](local-learning/pi-learning-roadmap.md#第十一次学习记录)。
+
+```sh
+python -X utf8 -m unittest tests.test_session_resume_gate tests.test_recovery_policy tests.test_session_recovery tests.test_session_restore tests.test_session_resume tests.test_loop_session tests.test_session_store tests.test_loop -v
+python -X utf8 -m examples.d11_resume_demo
+```
+
+34 项相关测试通过，无跳过。示例在独立的 `local-learning/evidence/d11-resume-<运行ID>/` 中保存三场景的恢复前后记录：正常继续使用两个独立进程；读取或编辑中断通过真实执行后故意不保存结果来模拟。非 `ready` 时模型与工具零调用、没有新记录；编辑已实际发生但结果未落盘时停在 `needs_review`。示例使用模拟模型，不请求真实模型服务、不运行业务测试；进程结束与任务验收仍分别判断。
 
 ## 跨设备继续学习
 

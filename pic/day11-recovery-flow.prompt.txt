@@ -1,0 +1,63 @@
+Use case: infographic-diagram
+Asset type: a new Simplified Chinese educational infographic for Mini-Pi Day 11, to save as pic/day11-recovery-flow.png.
+Primary request: Explain the actual implemented Mini-Pi D11 session loading and recovery gate to a Python learner. Create a NEW image, not a retitled prior-day image.
+Style references already inspected: the project's committed D10 session-flow, D09 tools-flow and D08 edit-flow diagrams. Match their visual language: white background, very large bold navy title, crisp navy body text, thin blue/teal rounded card borders with pale blue/teal fills, clean friendly flat document/database/robot/shield icons, thick directional arrows, ample whitespace. Green signifies allowed continuation, amber means read interruption, red means review required. These references guide STYLE ONLY; all content is D11.
+Composition: high-resolution landscape 16:10, approximately 2560 x 1600, sufficiently large legible Chinese and monospaced code labels. Avoid tiny text. Hierarchy: title, top loading pipeline, three recovery outcomes, two bottom explanation panels, narrow footer. No watermark.
+Title verbatim: "D11：加载会话与恢复门禁"
+Subtitle verbatim: "先判断，再继续；缺结果 ≠ 未执行"
+
+TOP PIPELINE, five cards left to right with clear arrows:
+1. "session.jsonl" / "磁盘记录"
+2. "SessionStore.load" / "还原 history / records"
+3. "find_pending_calls" / "按 (run_id, call_id) 配对"
+4. "plan_recovery" / "只判断恢复状态"
+5. "resume_session" / "进入循环前的门禁"
+Make long function names fit cleanly and accurately, never omit underscores. A compact caption below load: "加载不执行历史工具". The final gate branches to THREE sibling outcome cards, with visible arrowheads and no accidental path from either blocked card to model or loop.
+
+THREE OUTCOME CARDS:
+Green card heading "ready"
+Text: "没有 pending 调用"
+Then simple downward mini flow: "旧 history + 新用户消息" → "await run_loop"
+Bottom: "返回 plan + run_result"
+Amber card heading "read_interrupted"
+Text: "pending 全部属于明确配置的只读工具"
+Bottom two lines: "返回 plan" / "run_result = None"
+Red card heading "needs_review"
+Text: "存在写入、未知或未声明只读的工具"
+Bottom two lines: "返回 plan" / "run_result = None"
+Below the TWO blocked cards only, a shared clear stop strip spanning their combined width:
+"模型 0 次 · 工具 0 次 · 新增记录 0 条"
+Do not extend this zero-call strip underneath ready.
+
+BOTTOM LEFT PANEL: "正常继续：完整上下文，增量保存"
+Show a horizontal memory-history strip with FOUR pale-blue old-message tiles bracketed as "旧历史 4 项", followed by ONE highlighted teal tile "新用户消息".
+Two separate annotations:
+"模型看到完整 5 项"
+"already_saved = len(loaded.history) = 4"
+A bracket or arrow highlights ONLY the fifth tile, labeled "初始只保存 history[4:]".
+Short bottom note: "后续新回答与工具结果照常追加".
+CRUCIAL: loaded.history length remains 4; history after adding the new user has 5. Do not say already_saved=5. Do not imply the model sees only the new message. Do not imply only the user message is ever saved.
+
+BOTTOM RIGHT PANEL: "写入与结果落盘之间的不确定窗口"
+Three horizontal steps:
+"保存编辑请求" → "实际修改文件" → red interrupted mark "结果未落盘"
+Short explanation: "文件可能已改，记录却缺少 ToolResult"
+Strong conclusion: "needs_review：先核对，不自动重放"
+Do NOT draw a retry arrow or show automatic edit replay. Pending means result unconfirmed, not necessarily not executed.
+
+FOOTER, short readable lines:
+"只读集合由程序配置：read_file / list_files；run_tests 默认不算只读"
+"ready 表示允许继续；finished 不等于任务验收通过"
+
+Technical invariants: loading reconstructs Message, ToolCall, ToolResult only; complete history goes to provider; only unsaved items are initially persisted; a fresh run_id belongs to the new run; both read_interrupted and needs_review stop BEFORE model requests, tool execution and record appends. plan_recovery does not perform recovery actions. Do not claim automatic crash recovery, tool replay, compaction, session tree, budgets or cancellation. Keep both blocked statuses explicit, no confused success checkmarks. Exact technical spelling and readable Chinese are essential.
+
+执行方式：内置 image_gen；已查看 Git HEAD 中提交的 D08、D09、D10 图片，参考其布局与配色生成 D11 新图。未使用 CLI。
+
+定向修正提示词：
+Edit only the five history-tile captions inside the bottom-left panel of this existing D11 infographic. Preserve all other text, diagrams, colors, arrows, layout, title, dimensions, and spacing exactly. This is a targeted educational accuracy correction: the old four items are a user message, assistant tool request, ToolResult, and assistant answer. Their captions must read exactly:
+tile 1: "history[0]" with second line "用户问题"
+tile 2: "history[1]" with second line "读取请求"
+tile 3: "history[2]" with second line "读取结果"
+tile 4: "history[3]" with second line "模型回答"
+tile 5: "history[4]" with second line "新用户消息"
+Keep their four-old-plus-one-new grouping, the labels "旧历史 4 项", "模型看到完整 5 项", "already_saved = len(loaded.history) = 4", and "初始只保存 history[4:]" unchanged. Do not relabel ToolResult as an ordinary Message. Existing style, Chinese typography and technical spellings must remain crisp and legible. Make no other edits.
