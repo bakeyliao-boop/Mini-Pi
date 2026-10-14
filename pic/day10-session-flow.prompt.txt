@@ -1,0 +1,24 @@
+Use case: infographic-diagram
+Asset type: Chinese learning infographic for Mini-Pi D10.
+Reference image role: STYLE REFERENCE ONLY (D09 chart). Create a NEW chart for D10, not a retitled D09. Match navy title, white background, blue/teal rounded cards, flat icons, thick clear arrows and readable large Simplified Chinese. High-resolution landscape 16:10, ample whitespace, no tiny text.
+Title exact: "D10：内存历史与磁盘会话"
+Main diagram: at left a source card "新的 Message / ToolResult". Split into TWO separate parallel lanes with clearly directed arrows.
+Upper blue lane: "history.append" → "内存 history" → "下一次模型请求". Subtitle "服务当前循环". Do not imply disk JSONL is automatically sent to the model.
+Lower teal lane: "SessionStore.append_item" → "类型判断 + asdict" → "append_entry：JSON + 换行" → "磁盘 session.jsonl". Subtitle under disk "进程退出后仍可查看". Keep branch arrows clear and non-overlapping.
+Separate small amber card "run_start / run_end：运行状态事件", connected ONLY to the disk recording lane or append_entry, never to history or model requests.
+Below diagram, a clearly bounded six-row example panel, heading "本次示例：JSONL 6 条，history 4 项". Render six rows in a monospaced-style table:
+"1  run_start：running"
+"2  message：用户任务"
+"3  message：assistant 提出 call_001"
+"4  tool_result：call_001 的读取结果"
+"5  message：assistant 最终回答"
+"6  run_end：finished"
+Visually mark rows 2–5 as "history 内容", rows 1 and 6 amber as "运行事件". Add a short bracket linking rows 3 and 4 with label "id ↔ tool_call_id：配对".
+Bottom two compact cards:
+"记录外壳：type / run_id / timestamp / data"
+"结束 ≠ 验收通过：status=finished，task_passed=None"
+Footer exact "D10 保存记录；D11 学习加载后继续运行"
+Small scope note: "示例使用模拟模型与实际读取工具，未请求模型服务".
+Technical constraints: Record new items once rather than rewrite entire history each turn; assistant can hold several ToolCalls but this example has one; run_id identifies whole run not turn; do not claim recovery, crashes, compaction, tree branches, real model autonomy or business repair already implemented. No disk-to-model automatic arrow. Reference serves style only; do not retain four tool cards from D09. No watermark.
+
+执行方式：内置 image_gen；D09 图仅作为风格参考，生成 D10 新图。工具不提供选择具体模型 ID 的参数。

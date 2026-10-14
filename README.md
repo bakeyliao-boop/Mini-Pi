@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前学习进度为 D01–D09 已完成（9/30），下一步为 D10 会话持久化。四工具、基础循环与真实 `qwen3.8-flash` 接入已分别验证；D09 的示例预设调用使独立演示目录的折扣用例从失败变为通过。本次没有模型请求，尚未验证模型自主选择工具、完整修复验收或第一版交付，后续进度以阅读文件中的总表为准。
+当前学习进度为 D01–D10 已完成（10/30），下一步为 D11 加载会话与恢复边界。四工具、基础循环、真实模型接入和正常运行的 JSONL 记录已分别验证；D09 完成示例预设的折扣用例修复，D10 确认示例进程退出后会话仍可查看。D10 使用模拟模型，尚未验证加载恢复、模型自主修复或第一版完整交付，后续进度以阅读文件中的总表为准。
 
 ## 本地验证 D05
 
@@ -104,6 +104,19 @@ python -X utf8 -m examples.d09_tools
 ```
 
 13 项针对性测试通过。联调示例在 `local-learning/evidence/d09-<运行ID>/workspace/` 内创建演示项目，记录四工具的成功和失败结果，并实际测试折扣公式修改前失败、修改后通过；示例调用顺序预先安排，不能证明模型能自主修复。完整轨迹和测试输出保留在本地忽略目录，重复运行会生成新的证据目录。
+
+## 本地验证 D10
+
+`SessionStore` 在 `mini_pi/session_store.py` 中保存线性 JSONL；给 `run_loop` 传入可选的 `session_store` 后，初始消息、模型响应、工具结果和正常结束状态逐条追加。运行 ID 和时间戳位于记录外层，实际消息或结果位于 `data`。实现分工与验收边界见[第十次学习记录](local-learning/pi-learning-roadmap.md#第十次学习记录)，两条保存路径见[心智图](pic/day10-session-flow.png)。
+
+在项目根目录运行，不请求模型服务：
+
+```sh
+python -X utf8 -m unittest tests.test_loop_session tests.test_session_store tests.test_loop -v
+python -X utf8 -m examples.d10_session
+```
+
+11 项相关测试通过。示例使用模拟模型和实际读取工具，生成 `local-learning/evidence/d10-<运行ID>/session.jsonl` 与 `summary.json`，正常退出后可重新读取；原始记录保持 Git 忽略。示例含六条记录，最终 `history` 为四项；运行开始和结束事件不作为模型消息。D10 实现保存，不实现加载继续运行、未完成写操作核对或异常恢复。
 
 ## 跨设备继续学习
 
