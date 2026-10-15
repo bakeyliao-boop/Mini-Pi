@@ -129,6 +129,20 @@ python -X utf8 -m examples.d11_resume_demo
 
 34 项相关测试通过，无跳过。示例在独立的 `local-learning/evidence/d11-resume-<运行ID>/` 中保存三场景的恢复前后记录：正常继续使用两个独立进程；读取或编辑中断通过真实执行后故意不保存结果来模拟。非 `ready` 时模型与工具零调用、没有新记录；编辑已实际发生但结果未落盘时停在 `needs_review`。示例使用模拟模型，不请求真实模型服务、不运行业务测试；进程结束与任务验收仍分别判断。
 
+## 本地验证 D12（进行中）
+
+恢复学习先读 [Mini-Pi 学习对齐与 D12 整体复盘](local-learning/pi-mini-pi-learning-alignment.md)：先看完整行为图和正常/写前取消/写中取消轨迹，再继续实现。团队已复现编辑线程在循环返回后晚写的缺口，现有恢复入口也尚未接通运行预算；D12 保持进行中。
+
+目前已验证模型轮数预算、模型与模拟异步工具的总时限和主动取消，以及真实固定测试进程的停止与清理。执行控制核心由用户分段手敲，模型与工具的取消分支按用户明确授权由助手插入；进程管理辅助层、测试和演示由助手准备。完整范围见[学习路线 D12](local-learning/pi-learning-roadmap.md#d12-实现预算-超时和取消)。
+
+```sh
+python -X utf8 -m unittest tests.test_loop_budget tests.test_run_deadline tests.test_loop_timeout tests.test_loop_cancel tests.test_run_tests tests.test_process_cleanup -v
+python -X utf8 -m unittest tests.test_thread_worker tests.test_qwen_cancel tests.test_qwen_transport tests.test_qwen_provider -v
+python -X utf8 -m examples.d12_control_demo
+```
+
+第一组 D12 与测试工具共 30 项，加上线程与 Qwen 适配器的 32 项和 D11 的 34 项，合并的 96 项相关测试曾在 Windows 实际通过，无跳过。控制演示生成 `local-learning/evidence/d12-control-<运行ID>/`，保存三种停止状态、会话、进程 PID 与清理证据；使用模拟模型，不请求真实服务。预算演示命令只打印退出，不能据此声称业务测试通过。后续诊断确认 HTTP 取消仍依赖同步线程自然结束：0.05 秒预算约 0.305 秒才返回。旧测试证明了收尾，不足以证明按时间预算退出，HTTP 部分待整改，D12 保持进行中；详见路线中的 D12-01。阶段提交保存当前实现与已知缺口，不代表 D12 验收完成。
+
 ## 跨设备继续学习
 
 远程仓库为 [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi)。首次在其他设备使用时：
