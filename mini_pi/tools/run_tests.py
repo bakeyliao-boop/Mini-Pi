@@ -1,6 +1,5 @@
 """D09：按程序预设的参数数组运行测试，模型不能指定命令。"""
 
-import asyncio
 import json
 import math
 import subprocess
@@ -10,6 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from mini_pi.models import ToolCall, ToolDefinition, ToolResult
+from mini_pi.tools.managed_process import run_managed_process
 
 
 class RunTestsExecutor:
@@ -59,15 +59,11 @@ class RunTestsExecutor:
         # 命令由构造函数固定，模型只能请求运行，不能选择运行什么。
         started = time.monotonic()
         try:
-            completed = await asyncio.to_thread(
-                subprocess.run,
+            completed = await run_managed_process(
                 self.command,
                 cwd=self.workdir,
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
                 timeout=self.timeout_seconds,
-                check=False,
+                evidence_dir=self.evidence_dir,
             )
             exit_code = completed.returncode
             raw_output = completed.stdout or b""
@@ -98,9 +94,7 @@ class RunTestsExecutor:
         try:
             self.evidence_dir.mkdir(parents=True, exist_ok=True)
             output_path = self.evidence_dir / f"run-tests-{uuid4().hex}.txt"
-            await asyncio.to_thread(
-                output_path.write_text, full_output, encoding="utf-8", newline=""
-            )
+            output_path.write_text(full_output, encoding="utf-8", newline="")
             payload["full_output_path"] = str(output_path)
         except OSError as error:
             return ToolResult(

@@ -44,7 +44,7 @@ class ToolDefinition:
     parameters: dict[str, object]
 
 
-RunStatus = Literal["finished", "error", "cancelled"]
+RunStatus = Literal["finished", "error", "cancelled", "budget_exhausted", "timeout"]
 
 
 @dataclass

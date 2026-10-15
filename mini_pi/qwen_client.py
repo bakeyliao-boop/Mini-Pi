@@ -10,6 +10,7 @@ from urllib.parse import urlsplit
 from mini_pi.http_transport import post_json
 from mini_pi.models import ConversationItem, Message, ToolDefinition
 from mini_pi.qwen_provider import build_request, parse_assistant_message
+from mini_pi.thread_worker import run_sync_with_cleanup
 
 
 class QwenProvider:
@@ -71,9 +72,12 @@ class QwenProvider:
         }
         started = perf_counter()
         try:
-            response = await asyncio.to_thread(
+            response = await run_sync_with_cleanup(
                 post_json, self.endpoint, self._api_key, payload, self.timeout
             )
+            # response = await asyncio.to_thread(
+            #     post_json, self.endpoint, self._api_key, payload, self.timeout
+            # )
             record["returned_model"] = response.get("model")
             record["usage"] = deepcopy(response.get("usage"))
             choices = response.get("choices")
