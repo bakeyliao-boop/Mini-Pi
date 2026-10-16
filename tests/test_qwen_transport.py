@@ -18,6 +18,13 @@ from mini_pi.tools.read_file import ReadFileExecutor
 
 
 class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # 手敲切换尚未完成时也禁止测试意外访问真实服务。
+        legacy = patch("mini_pi.qwen_client.post_json", create=True,
+                       side_effect=AssertionError("Qwen 尚未切换异步 HTTP 入口"))
+        legacy.start()
+        self.addCleanup(legacy.stop)
+
     def response(self):
         return {
             "model": "qwen3.8-flash",
@@ -26,7 +33,7 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
         }
 
     def test_missing_credentials_fail_before_network(self):
-        with patch.dict(os.environ, {}, clear=True), patch("mini_pi.qwen_client.post_json") as send:
+        with patch.dict(os.environ, {}, clear=True), patch("mini_pi.qwen_client.post_json_async") as send:
             with self.assertRaisesRegex(ValueError, "DASHSCOPE_API_KEY"):
                 QwenProvider()
             send.assert_not_called()
@@ -36,7 +43,7 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
         request = {"model": provider.model, "messages": [{"role": "user", "content": "你好。"}], "stream": False}
         original = deepcopy(request)
         response = self.response()
-        with patch("mini_pi.qwen_client.post_json", return_value=response) as send:
+        with patch("mini_pi.qwen_client.post_json_async", return_value=response) as send:
             actual = await provider._send(request)
         self.assertEqual(actual, response)
         self.assertEqual(request, original)
@@ -54,7 +61,7 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_request_limit_prevents_another_send(self):
         provider = QwenProvider(api_key="fake-credential", max_requests=1)
-        with patch("mini_pi.qwen_client.post_json", return_value=self.response()) as send:
+        with patch("mini_pi.qwen_client.post_json_async", return_value=self.response()) as send:
             await provider._send({"model": provider.model, "messages": []})
             with self.assertRaisesRegex(RuntimeError, "请求次数上限"):
                 await provider._send({"model": provider.model, "messages": []})
@@ -63,7 +70,7 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_send_failure_is_recorded_without_automatic_retry(self):
         provider = QwenProvider(api_key="fake-credential")
-        with patch("mini_pi.qwen_client.post_json", side_effect=RuntimeError("模型请求失败：HTTP 401")) as send:
+        with patch("mini_pi.qwen_client.post_json_async", side_effect=RuntimeError("模型请求失败：HTTP 401")) as send:
             with self.assertRaisesRegex(RuntimeError, "HTTP 401"):
                 await provider._send({"model": provider.model, "messages": []})
         self.assertEqual(send.call_count, 1)
@@ -83,7 +90,7 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_generate_returns_unified_message_from_service_response(self):
         provider = QwenProvider(api_key="fake-credential")
-        with patch("mini_pi.qwen_client.post_json", return_value=self.response()):
+        with patch("mini_pi.qwen_client.post_json_async", return_value=self.response()):
             message = await provider.generate([Message("user", "你好。")], [])
         self.assertEqual(message, Message("assistant", "完成。"))
         self.assertEqual(provider.request_records[0]["request_body"]["messages"], [{"role": "user", "content": "你好。"}])
@@ -106,7 +113,7 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
         executor = Mock()
         executor.execute = AsyncMock()
         tool = ToolDefinition("read_file", "读取文件。", {"type": "object"})
-        with patch("mini_pi.qwen_client.post_json", return_value=response), patch(
+        with patch("mini_pi.qwen_client.post_json_async", return_value=response), patch(
             "mini_pi.qwen_client.parse_assistant_message"
         ) as parse:
             with self.assertRaisesRegex(ValueError, "未正常完成"):
@@ -148,7 +155,7 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
                     response["choices"][0]["message"]["content"] = "读取到：\n" + source
                 return response
 
-            with patch("mini_pi.qwen_client.post_json", side_effect=respond) as send:
+            with patch("mini_pi.qwen_client.post_json_async", side_effect=respond) as send:
                 run = await run_loop(provider, executor, [Message("user", "读取文件。")], [executor.definition])
         self.assertEqual(send.call_count, 2)
         self.assertEqual(len(run.messages), 4)

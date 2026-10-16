@@ -17,6 +17,8 @@ async def await_before_deadline(
     deadline: float | None,
 ) -> ResultT:
     """operation 在门禁通过后才调用；返回真实结果，不制造模型或工具反馈。"""
+    #先处理已请求的取消，再决定是否启动操作。
+    await asyncio.sleep(0)
     # 截止时间已到则拒绝启动；未配置则正常等待。
     if deadline is not None and asyncio.get_running_loop().time() >= deadline:
         raise RunDeadlineExceeded("运行总时间已到")

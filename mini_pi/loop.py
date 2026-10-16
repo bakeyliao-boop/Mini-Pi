@@ -7,6 +7,7 @@ from mini_pi.executor import ToolExecutor
 from mini_pi.models import ConversationItem, RunResult, ToolDefinition
 from mini_pi.provider import ModelProvider
 from mini_pi.run_deadline import RunDeadlineExceeded, await_before_deadline
+from mini_pi.run_finish import finish_run
 from mini_pi.session_store import SessionStore
 
 
@@ -56,14 +57,15 @@ async def run_loop(
                 status="budget_exhausted",
                 messages=history,
                 )
-            if session_store is not None:
-                session_store.append_entry(
-                    "run_end",
-                    {"status":run_result.status,
-                    "task_passed":run_result.task_passed,
-                    "error":run_result.error,
-                    })
-            return run_result
+            return await finish_run(run_result,session_store)
+            # if session_store is not None:
+            #     session_store.append_entry(
+            #         "run_end",
+            #         {"status":run_result.status,
+            #         "task_passed":run_result.task_passed,
+            #         "error":run_result.error,
+            #         })
+            # return run_result
         model_turns += 1
         try:
             message = await await_before_deadline(
@@ -76,25 +78,13 @@ async def run_loop(
                 messages=history,
                 error=str(error),
             )
-            if session_store is not None:
-                session_store.append_entry("run_end", {
-                    "status": run_result.status,
-                    "task_passed": run_result.task_passed,
-                    "error": run_result.error,
-                })
-            return run_result
+            return await finish_run(run_result, session_store)
         except asyncio.CancelledError:
             run_result = RunResult(
                 status="cancelled",
                 messages=history,
             )
-            if session_store is not None:
-                session_store.append_entry("run_end", {
-                    "status": run_result.status,
-                    "task_passed": run_result.task_passed,
-                    "error": run_result.error,
-                })
-            return run_result
+            return await finish_run(run_result, session_store)
         # message = await provider.generate(history, tools)
         history.append(message)
         if session_store is not None:
@@ -103,12 +93,13 @@ async def run_loop(
         tool_calls = message.tool_calls
         if not tool_calls:
             run_result = RunResult(status="finished", messages=history)
-            if session_store is not None:
-                session_store.append_entry("run_end",
-                {"status":run_result.status,
-                  "task_passed":run_result.task_passed,
-                  "error":run_result.error,})
-            return run_result
+            return await finish_run(run_result,session_store)
+            # if session_store is not None:
+            #     session_store.append_entry("run_end",
+            #     {"status":run_result.status,
+            #       "task_passed":run_result.task_passed,
+            #       "error":run_result.error,})
+            # return run_result
 
         for call in tool_calls:
             try:
@@ -122,24 +113,20 @@ async def run_loop(
                     messages=history,
                     error=str(error),
                     )
-                if session_store is not None:
-                    session_store.append_entry("run_end",{
-                    "status":run_result.status,
-                    "task_passed":run_result.task_passed,
-                    "error":run_result.error,})
-                return run_result
+                return await finish_run(run_result, session_store)
             except asyncio.CancelledError:
                 run_result = RunResult(
                     status="cancelled",
                     messages=history,
                 )
-                if session_store is not None:
-                    session_store.append_entry("run_end", {
-                        "status": run_result.status,
-                        "task_passed": run_result.task_passed,
-                        "error": run_result.error,
-                    })
-                return run_result
+                # if session_store is not None:
+                #     session_store.append_entry("run_end", {
+                #         "status": run_result.status,
+                #         "task_passed": run_result.task_passed,
+                #         "error": run_result.error,
+                #     })
+                # return run_result
+                return await finish_run(run_result,session_store)
             # result = await executor.execute(call)
             history.append(result)
             if session_store is not None:

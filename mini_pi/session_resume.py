@@ -26,6 +26,8 @@ async def resume_session(
     user_text: str,
     tools: list[ToolDefinition],
     read_only_tools: frozenset[str],
+    max_model_turns: int | None = None,
+    total_timeout_seconds: float | None = None,
 ) -> ResumeResult:
     """恢复已存在的会话；调用方提供同一路径、使用新 run_id 的 Store。
 
@@ -46,6 +48,8 @@ async def resume_session(
         initial_messages=history,
         tools=tools,
         session_store=session_store,
-        already_saved=len(loaded.history)
+        already_saved=len(loaded.history),
+        max_model_turns=max_model_turns,
+        total_timeout_seconds=total_timeout_seconds,
         )
     return ResumeResult(plan=plan,run_result=run_result)

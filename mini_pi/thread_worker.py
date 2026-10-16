@@ -16,9 +16,14 @@ def _invoke(function, args, kwargs):
         return None, error
 
 
-async def run_sync_with_cleanup(function: Callable[..., ResultT], *args, **kwargs) -> ResultT:
+async def run_sync_with_cleanup(
+    function: Callable[..., ResultT], *args,
+    on_cancel: Callable[[], None] | None = None, **kwargs,
+) -> ResultT:
     """正常传回结果/异常；取消时等待线程结束、消费结果，再传播原取消。
 
+    on_cancel 是等待层收到取消时调用的同步通知函数，不传给工作函数。
+    通知后仍须等线程结束；通知自身失败也先收尾，再向外抛出该错误。
     不记录传入参数，避免凭证等内容进入日志。收尾可能超出调用方截止时间。
     """
     await asyncio.sleep(0)  # 启动前给已经到达的取消/超时信号一个检查点。
@@ -31,13 +36,17 @@ async def run_sync_with_cleanup(function: Callable[..., ResultT], *args, **kwarg
             raise error
         return value
     except asyncio.CancelledError:
-        while not worker.done():
-            try:
-                await asyncio.shield(worker)
-            except asyncio.CancelledError:
-                pass  # 重复取消不跳过已经启动的线程收尾。
-            except Exception:
-                break  # 工作线程自身失败仍已结束；下面消费异常，保持取消语义。
-        if not worker.cancelled():
-            worker.result()
+        try:
+            if on_cancel is not None:
+                on_cancel()
+        finally:
+            while not worker.done():
+                try:
+                    await asyncio.shield(worker)
+                except asyncio.CancelledError:
+                    pass  # 重复取消不跳过已经启动的线程收尾。
+                except Exception:
+                    break  # 工作线程自身失败仍已结束；下面消费异常。
+            if not worker.cancelled():
+                worker.result()
         raise

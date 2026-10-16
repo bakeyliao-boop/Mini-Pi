@@ -7,6 +7,7 @@ from copy import deepcopy
 from time import perf_counter
 from urllib.parse import urlsplit
 
+from mini_pi.async_http_transport import post_json_async
 from mini_pi.http_transport import post_json
 from mini_pi.models import ConversationItem, Message, ToolDefinition
 from mini_pi.qwen_provider import build_request, parse_assistant_message
@@ -72,9 +73,12 @@ class QwenProvider:
         }
         started = perf_counter()
         try:
-            response = await run_sync_with_cleanup(
-                post_json, self.endpoint, self._api_key, payload, self.timeout
-            )
+            response = await post_json_async(
+                self.endpoint,self._api_key,payload,self.timeout
+                )
+            # response = await run_sync_with_cleanup(
+            #     post_json, self.endpoint, self._api_key, payload, self.timeout
+            # )
             # response = await asyncio.to_thread(
             #     post_json, self.endpoint, self._api_key, payload, self.timeout
             # )

@@ -109,6 +109,75 @@ class ThreadWorkerTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(work.finished.is_set())
         self.assertEqual(work.calls, 1)
 
+    async def test_normal_call_forwards_kwargs_without_notifying_cancel(self):
+        notifications = []
+
+        def complete(*, answer):
+            return answer
+
+        result = await run_sync_with_cleanup(
+            complete, answer=42, on_cancel=lambda: notifications.append("cancel"),
+        )
+        self.assertEqual(result, 42)
+        self.assertEqual(notifications, [])
+
+    async def test_cancel_callback_can_signal_worker_to_finish(self):
+        work = BlockingWork(self.loop, result=42)
+        task = asyncio.create_task(run_sync_with_cleanup(work, on_cancel=work.release.set))
+        self.addAsyncCleanup(settle_thread_task, task, work)
+        await asyncio.wait_for(work.started.wait(), 2)
+        task.cancel()
+        done, _ = await asyncio.wait({task}, timeout=2)
+        self.assertIn(task, done, "应由取消通知释放线程，而非测试主动释放")
+        with self.assertRaises(asyncio.CancelledError):
+            await task
+        self.assertTrue(work.finished.is_set())
+
+    async def test_repeated_cancel_notifies_once_and_still_waits(self):
+        work = BlockingWork(self.loop)
+        notifications = []
+        task = asyncio.create_task(run_sync_with_cleanup(
+            work, on_cancel=lambda: notifications.append("cancel"),
+        ))
+        self.addAsyncCleanup(settle_thread_task, task, work)
+        await asyncio.wait_for(work.started.wait(), 2)
+        task.cancel()
+        await asyncio.sleep(0)
+        self.assertEqual(notifications, ["cancel"])
+        self.assertFalse(task.done())
+        task.cancel()
+        await asyncio.sleep(0)
+        self.assertEqual(notifications, ["cancel"])
+        self.assertFalse(task.done())
+        work.release.set()
+        done, _ = await asyncio.wait({task}, timeout=2)
+        self.assertIn(task, done)
+        with self.assertRaises(asyncio.CancelledError):
+            await task
+        self.assertTrue(work.finished.is_set())
+
+    async def test_failed_notification_still_waits_then_reports_failure(self):
+        work = BlockingWork(self.loop)
+        error = RuntimeError("取消通知失败")
+
+        def fail_notification():
+            raise error
+
+        task = asyncio.create_task(run_sync_with_cleanup(work, on_cancel=fail_notification))
+        self.addAsyncCleanup(settle_thread_task, task, work)
+        await asyncio.wait_for(work.started.wait(), 2)
+        task.cancel()
+        await asyncio.sleep(0)
+        self.assertFalse(task.done())
+        self.assertFalse(work.finished.is_set())
+        work.release.set()
+        done, _ = await asyncio.wait({task}, timeout=2)
+        self.assertIn(task, done)
+        with self.assertRaises(RuntimeError) as caught:
+            await task
+        self.assertIs(caught.exception, error)
+        self.assertTrue(work.finished.is_set())
+
 
 if __name__ == "__main__":
     unittest.main()

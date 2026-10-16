@@ -26,6 +26,14 @@ class ListFilesExecutor:
             },
         )
 
+    def collect_names(self,directory:Path)->list[str]:
+        """扫描目录并生成名称列表，由后台线程调用"""
+        names = []
+        for entry in directory.iterdir():
+            suffix = "/" if entry.is_dir() else ""
+            names.append(entry.name + suffix)
+        return names
+
     async def execute(self, call: ToolCall) -> ToolResult:
         """检查参数、解析目录，然后返回列表或可解释的错误。"""
         if call.name != self.definition.name:
@@ -55,7 +63,8 @@ class ListFilesExecutor:
             return self._error(call, "参数错误：path 指向工作目录之外或无法解析")
 
         try:
-            entries = await asyncio.to_thread(list, directory.iterdir())
+            # entries = await asyncio.to_thread(list, directory.iterdir())
+            names = await asyncio.to_thread(self.collect_names,directory)
         except FileNotFoundError:
             return self._error(call, f"执行失败：目录不存在：{path}")
         except NotADirectoryError:
@@ -63,10 +72,10 @@ class ListFilesExecutor:
         except OSError as error:
             return self._error(call, f"执行失败：读取目录失败：{error}")
 
-        names = []
-        for entry in entries:
-            suffix = "/" if entry.is_dir() else ""
-            names.append(entry.name + suffix)
+        # names = []
+        # for entry in entries:
+        #     suffix = "/" if entry.is_dir() else ""
+        #     names.append(entry.name + suffix)
 
         names.sort(key=str.casefold)
         shown = names[:limit]

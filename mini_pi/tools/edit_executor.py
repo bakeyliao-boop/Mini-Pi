@@ -5,7 +5,9 @@ import asyncio
 from collections.abc import Sequence
 from pathlib import Path
 
+from mini_pi.file_cancellation import FileCancellation
 from mini_pi.models import ToolCall, ToolDefinition, ToolResult
+from mini_pi.thread_worker import run_sync_with_cleanup
 from mini_pi.tools.edit_diff import render_edit_diff
 from mini_pi.tools.edit_file import replace_unique_text
 from mini_pi.tools.edit_policy import EditPolicy
@@ -62,11 +64,25 @@ class EditFileExecutor:
 
         return target,before,after
 
-    def apply_edit(self,path:str,old_text:str,new_text:str)->tuple[Path,str,str]:
-        """完成检查，替换和实际写入，返回编辑前后的文本"""
+    def apply_edit(self,path:str,old_text:str,new_text:str,cancellation:FileCancellation | None = None,
+        )->tuple[Path,str,str]:
+        """检查取消，准备修改，获准写入后执行并且再次检查"""
+        if cancellation is None:
+            cancellation = FileCancellation()
+
+        cancellation.check()
         target,before,after = self.prepare_edit(path,old_text,new_text)
+
+        cancellation.begin_write()
         target.write_bytes(after.encode("utf-8"))
+
+        cancellation.check()
         return target,before,after
+    # def apply_edit(self,path:str,old_text:str,new_text:str)->tuple[Path,str,str]:
+    #     """完成检查，替换和实际写入，返回编辑前后的文本"""
+    #     target,before,after = self.prepare_edit(path,old_text,new_text)
+    #     target.write_bytes(after.encode("utf-8"))
+    #     return target,before,after
     def validate_edit_call(self, call: ToolCall) -> dict[str, str]:
         """校验工具名称和参数，返回合法的字符串参数。"""
         if call.name != self.definition.name:
@@ -93,10 +109,19 @@ class EditFileExecutor:
         """执行编辑调用，成功和预期失败都返回关联原调用的结果"""
         try:
             args = self.validate_edit_call(call)
-            _,before,after = await asyncio.to_thread(
-            self.apply_edit,
-            args["path"],args["old_text"],args["new_text"],
+
+            cancellation = FileCancellation()
+            _,before,after = await run_sync_with_cleanup(
+                self.apply_edit,
+                args["path"],args["old_text"],args["new_text"],
+                cancellation=cancellation,
+                on_cancel=cancellation.request_cancel,  #告知等待函数，收到取消时调用通知动作。不加括号表明通知会在取消发生时才执行
             )
+
+            # _,before,after = await asyncio.to_thread(
+            # self.apply_edit,
+            # args["path"],args["old_text"],args["new_text"],
+            # )
             diff = render_edit_diff(args["path"],before,after)
         except (ValueError,OSError) as error:
             return ToolResult(call.id,call.name,output="",error=str(error))
