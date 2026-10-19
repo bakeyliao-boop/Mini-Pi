@@ -1,0 +1,11 @@
+Edit this existing MEM-01 educational infographic precisely. Keep its title, typography, palette, panel layout, all already correct content, verification footer, grey MEM03/MEM04 pending status, and overall polished style unchanged. Fix ONLY the conceptual relationship diagram in band 1.
+Current problem: solid arrows between Source → Draft → Scope → Entry incorrectly imply these are sequential transformations. They must be depicted as caller-supplied parallel inputs and a persisted output.
+Required changes in band 1:
+1. Keep the existing session.jsonl box and its "只读原文" arrow into Source.
+2. Remove EVERY horizontal arrow between Source, Draft, Scope and Entry.
+3. Keep Source, Draft and Scope as three adjacent peer cards; group these three with a single subtle bracket or pale blue group boundary. Place the green label "可信调用方显式提供三项输入" centered above THESE THREE only.
+4. Keep Entry as a visibly separate output card, with a small green label "remember 成功后的输出" above/inside it. No arrow connecting Scope directly to Entry.
+5. Keep the exact explanatory sentence below: "Scope 限定范围；Draft 指向 Source；Entry 保存核验后的结果".
+6. If space permits, use one short clean downward arrow from the three-input group toward the "validate_draft" panel in band 2. Do not add any diagram-spanning arrow or connect Entry to a model.
+7. Band 2 remains unchanged and correctly explains actual processing. All text must be legible Simplified Chinese, no invented labels.
+Do not introduce new functionality or alter statuses. Keep original landscape aspect ratio and high resolution.

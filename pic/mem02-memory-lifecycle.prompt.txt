@@ -1,0 +1,72 @@
+Use case: scientific-educational / infographic-diagram
+Asset: NEW Chinese learning infographic, second of a matched two-image series for Mini-Pi memory.
+References: local D10/D12 are STYLE ONLY. Same white background, deep navy bold headings, pale cyan/teal rounded cards, vivid blue clean arrows, green verified accents, amber notes, red withdrawal badges and grey pending integration. Spacious high-resolution landscape 3:2, large crisp readable Chinese, precise monospace function/state names. Keep ONE simple learning-time preference example. No dense code, no future-scheduled-version scenario, no person art, no watermarks. Separate illustration from execution guarantees.
+
+Exact title: "MEM-02：记住、更新，再撤回"
+Subtitle: "已验收：显式版本更新、整系列撤回与操作回执"
+
+BAND 1, main focus: "① 一个偏好，经历三次操作"
+Three equal columns connected left-to-right with clear arrows. Each column shows a whole snapshot, not only the head:
+Column 1 green:
+"user：我晚上学习"
+"remember"
+Card "v1｜晚上学习｜active"
+Caption "首次记住"
+Column 2 blue:
+"user：以后改为早上学习"
+"replace（expected_version=1）"
+Stack cards "v1｜晚上学习｜superseded" / "v2｜早上学习｜active"
+Caption "保留 v1，新增 v2；旧区间止于新版本生效时间"
+Column 3 red/teal:
+"user：不要再记住我的学习时间"
+"retract（expected_version=2）"
+Stack cards "v1｜晚上学习｜retracted" / "v2｜早上学习｜retracted"
+Caption "整个系列撤回；不新增偏好 v3"
+Below all three columns one short legend:
+"同一系列 = 用户 / 项目 + key + 条件"
+and one amber note "superseded 仍可用于其原时间区间；retracted 停止作为有效记忆使用"
+Clarify that the latter describes stored withdrawal status and retrieval contract; current retrieval integration is pending, shown later.
+
+BAND 2: "② replace / retract 共用的可靠写入顺序"
+Main flow of four rounded cards:
+"校验并规范化请求" → "事务内先查操作回执" → "核对最新版本与状态" → "状态 + 来源 + 回执一起提交"
+Under the receipt card a small fork (short arrows, not across the whole chart):
+"同一次请求 → 核对后返回当前结果"
+"同编号改请求 → 冲突"
+Under version card short note "版本不匹配 → 拒绝修改"
+IMPORTANT normal no-receipt branch proceeds to version checks; matching receipt returns directly without redoing version/state changes. Keep this branch visually correct.
+Under commit card concise green result "提交并关闭连接后，才成功返回".
+A prominent amber horizontal strip below:
+"中途出错：全部回滚｜不重跑历史工具｜重试不重复写入"
+No claim of crash/power-loss proof or transaction spanning filesystem tools.
+
+BAND 3: "③ 撤回保留什么？当前还缺什么？"
+Left teal card with two document icons:
+"原偏好来源：早上学习"
+"撤回指令来源：不要再记住学习时间"
+"分别保存原文，另存操作回执"
+"事实版本号与历史时间区间保留"
+Right grey dashed card:
+"待接通：MEM-03 有效记忆检索"
+"待接通：MEM-04 Context 组装"
+"get 仍可按 ID 读回撤回记录，供审计核对"
+"后续检索须过滤 retracted"
+This distinguishes existing durable states from pending retrieval/model integration.
+Bottom prominent ribbon:
+"MEM-01 + MEM-02 技术验收通过｜117 项记忆测试通过"
+Small footer:
+"2026-10-19 快照｜跨进程读回、冲突、重试及受控失败回滚已验证"
+Accuracy: retract covers every version of exact scoped key+conditions; not physical deletion, not just cancelling v2, never falls back to active v1; no preference v3, no automatic restoration. Source and original session remain. Existing remember/replace cannot resurrect withdrawn series. Do not imply get filters state or an existing model Context integration. Avoid code-heavy details and explain with the simple snapshot sequence.
+
+
+--- Final accuracy edit (built-in image_gen, after initial generation) ---
+Edit this existing MEM-02 educational infographic with ONLY two small accuracy corrections in band 2, preserving everything else, all title/content/palette/positions/verification/pending statuses.
+1. On the main arrow from "事务内先查操作回执" to "核对最新版本与状态", add a clearly legible short label "无回执". This main route is only for first requests. Existing matching receipt branch "同一次请求／核对后返回当前结果" ends directly as a return and must NOT reconnect to version checking. Keep the conflicting same-ID branch.
+2. In the rightmost card "状态 + 来源 + 回执一起提交", replace body text containing "写入新版本状态" with these exact concise lines:
+"写入状态变更、原文来源"
+"和操作回执（同一事务内）"
+This avoids implying retract creates a new preference version. Preserve the top band showing both v1/v2 retracted and no v3, all other text and the bottom grey pending retrieval/context note.
+High-resolution landscape, crisp Simplified Chinese, same style.
+
+
+最终图已按当前实现和 2026-10-19 验收记录人工核对。使用内置 image_gen，参考 D10/D12 风格；技术验收与检索/Context 待实现状态分开。
