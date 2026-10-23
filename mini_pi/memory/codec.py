@@ -43,6 +43,8 @@ def normalize_draft(draft: MemoryDraft) -> MemoryDraft:
     if not isinstance(draft, MemoryDraft):
         raise MemoryPolicyError("draft 必须是 MemoryDraft")
     _text(draft.key, "key")
+    if draft.content is not None:
+        _text(draft.content, "content")
     if type(draft.start) is not int or type(draft.end) is not int:
         raise MemoryPolicyError("start/end 必须是整数")
     if draft.start < 0 or draft.end < draft.start:
@@ -126,6 +128,18 @@ def _source_dict(source: MemorySource) -> dict:
     }
 
 
+def _draft_dict(draft: MemoryDraft) -> dict:
+    """编码已规范化的候选；None 保留旧六字段，正文按字面单独保存。"""
+    result = {
+        "key": draft.key, "start": draft.start, "end": draft.end,
+        "valid_from": draft.valid_from, "kind": draft.kind,
+        "conditions": draft.conditions,
+    }
+    if draft.content is not None:
+        result["content"] = draft.content
+    return result
+
+
 def dump_source(source: MemorySource) -> str:
     return _json(_source_dict(normalize_source(source)))
 
@@ -146,11 +160,7 @@ def dump_entry(entry: MemoryEntry) -> str:
         "memory_id": normalized.memory_id,
         "scope": _scope_dict(normalized.scope),
         "source": _source_dict(normalized.source),
-        "draft": {
-            "key": draft.key, "start": draft.start, "end": draft.end,
-            "valid_from": draft.valid_from, "kind": draft.kind,
-            "conditions": draft.conditions,
-        },
+        "draft": _draft_dict(draft),
         "version": normalized.version, "state": normalized.state,
         "written_at": normalized.written_at, "valid_to": normalized.valid_to,
     })
@@ -206,9 +216,15 @@ def load_entry(payload: str) -> MemoryEntry:
         data = _fields(_parse(payload), {
             "memory_id", "scope", "source", "draft", "version", "state", "written_at", "valid_to",
         }, "entry")
-        raw_draft = _fields(data["draft"], {
+        draft_fields = {
             "key", "start", "end", "valid_from", "kind", "conditions",
-        }, "draft")
+        }
+        has_content = isinstance(data["draft"], dict) and "content" in data["draft"]
+        if has_content:
+            draft_fields.add("content")
+        raw_draft = _fields(data["draft"], draft_fields, "draft")
+        if has_content and raw_draft["content"] is None:
+            raise MemoryDataError("新格式 content 必须为非空正文，不能显式保存 null")
         raw_conditions = raw_draft["conditions"]
         if not isinstance(raw_conditions, list) or any(
             not isinstance(item, list) or len(item) != 2 for item in raw_conditions

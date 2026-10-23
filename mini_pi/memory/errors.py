@@ -15,3 +15,7 @@ class MemoryDataError(ValueError):
 
 class MemoryContextError(RuntimeError):
     """预期的请求准备失败；接入时必须形成明确 error 终态。"""
+
+
+class MemoryEmbeddingError(RuntimeError):
+    """向量生成或表示不满足契约；不能将技术失败解释为无相关记忆。"""

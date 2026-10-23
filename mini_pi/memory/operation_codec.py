@@ -9,7 +9,7 @@ import hashlib
 import re
 
 from mini_pi.memory.codec import (
-    _fields, _json, _parse, _read_scope, _read_source, _scope, _scope_dict,
+    _draft_dict, _fields, _json, _parse, _read_scope, _read_source, _scope, _scope_dict,
     _source_dict, dump_entry, load_entry, normalize_draft, normalize_source,
 )
 from mini_pi.memory.errors import MemoryDataError, MemoryPolicyError
@@ -46,11 +46,7 @@ def replacement_fingerprint(
     request = {
         "action": "replace", "scope": _scope_dict(scope),
         "source": _source_dict(source),
-        "draft": {
-            "key": draft.key, "start": draft.start, "end": draft.end,
-            "valid_from": draft.valid_from, "kind": draft.kind,
-            "conditions": draft.conditions,
-        },
+        "draft": _draft_dict(draft),
         "expected_version": expected_version,
     }
     return hashlib.sha256(_json(request).encode("utf-8")).hexdigest()

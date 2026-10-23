@@ -30,7 +30,11 @@ class MemorySource:
 
 @dataclass(frozen=True)
 class MemoryDraft:
-    """首版保存原文片段；start/end 使用 Python 左闭右开字符位置。"""
+    """来源定位与拟保存正文；content=None 保持旧原文读取语义。
+
+    start/end 始终定位 Source 原文，使用 Python 左闭右开字符位置；
+    独立 content 不改变来源，非空字符串的格式要求由辅助校验执行。
+    """
 
     key: str
     start: int
@@ -38,6 +42,7 @@ class MemoryDraft:
     valid_from: str
     kind: MemoryKind = "semantic"
     conditions: Conditions = ()
+    content: str | None = None
 
 
 @dataclass(frozen=True)
@@ -55,7 +60,17 @@ class MemoryEntry:
 
     @property
     def text(self) -> str:
+        if self.draft.content is not None:
+            return self.draft.content
         return self.source.text[self.draft.start:self.draft.end]
+
+
+@dataclass(frozen=True)
+class MemoryHit:
+    """向量检索的一条证据：完整已存条目及相似度，不生成新的事实。"""
+
+    entry: MemoryEntry
+    score: float
 
 
 MemoryOperation = Literal["replace", "retract"]

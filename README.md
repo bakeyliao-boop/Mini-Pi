@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-本工作区用于[记忆模块实现与验收](local-learning/agent-memory-implementation.md)，分支 `codex/agent-memory`，从已提交的 D12 基线 `74b12cb` 开始。原目录 D13-A/B 代码与暂停点保留。MEM-01 入库与 MEM-02 显式更新、整系列撤回及操作回执已通过技术验收，117 项记忆测试全部通过。下一步 MEM-03 有效记忆检索；MEM-04 Context 集成待实现，技术结果不代填学习者理解状态。
+当前学习分支为 `codex/agent-memory`，请从[跨电脑记忆接续页](local-learning/memory-resume.md)继续。MEM-01/02、MEM-03及MEM-W新增/重试、首次更新与首次明确撤回计划已完成分段验收；下一课是统一写入执行入口与单次持久变更边界，随后补齐真实提取与MEM-04。主线仍为12/30，原目录D13-B保持暂停。当前同步检查见[检查记录](local-learning/memory-sync-checks.md)，详细历史见[实现记录](local-learning/agent-memory-implementation.md)。
 
 ## 本地验证 D05
 
@@ -156,18 +156,18 @@ HTTP 取消已接通磁盘代码并验收：用户手敲 `_send` 的异步调用
 
 ## 跨设备继续学习
 
-远程仓库为 [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi)。首次在其他设备使用时：
+记忆模块的当前进度、下一课、环境、离线测试和边界统一见[跨电脑记忆接续页](local-learning/memory-resume.md)。首次克隆请指定分支：
 
 ```sh
-git clone https://github.com/bakeyliao-boop/Mini-Pi.git
+git clone --branch codex/agent-memory https://github.com/bakeyliao-boop/Mini-Pi.git
 cd Mini-Pi
 ```
 
-在其他设备克隆本仓库后，打开阅读文件的“当前进度与下一步”。每次开始学习前执行 `git pull --ff-only`，结束后提交阅读文件与本次代码改动，再执行 `git push`。
+已有仓库请先保存本地改动，再执行 `git fetch origin`、`git switch codex/agent-memory`、`git pull --ff-only origin codex/agent-memory`。不要默认停在主分支或旧D13学习分支。
 
-遇到远程进度更新或冲突时，先核对两台设备的学习记录，再合并内容，保留双方实际完成的动作与证据。
+学习记录和源码随Git同步；`.env`、真实Session/业务数据库及本机`local-learning/evidence/`原始记录不随Git同步。标准tests和合成fixtures应能在无私有配置的新环境复跑，具体结果见[同步检查记录](local-learning/memory-sync-checks.md)。
 
-阅读路线和学习进度随仓库同步。`local-learning/evidence/` 中的原始执行记录、模型输出，以及 `.env` 等凭证文件由 `.gitignore` 排除，仅保存在本地。
+检索阶段历史概念图：[Pi会话与Context](pic/pi-session-context-20261022.png)、[Mini-Pi记忆读取](pic/mini-pi-memory-read-20261022.png)。图是当时学习快照，当前字段与行为以代码和接续页为准。
 
 ## 上游项目
 

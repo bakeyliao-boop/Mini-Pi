@@ -9,7 +9,7 @@ from mini_pi.memory.codec import dump_entry, dump_source, load_entry, load_sourc
 from mini_pi.memory.errors import MemoryDataError
 from mini_pi.memory.models import Conditions, MemoryEntry, MemoryReceipt, MemoryScope, MemorySource
 from mini_pi.memory.operation_codec import dump_receipt, load_receipt
-from mini_pi.memory.validation_helpers import normalize_conditions
+from mini_pi.memory.validation_helpers import normalize_conditions, require_text
 
 
 _SCHEMA = (
@@ -95,27 +95,32 @@ class SQLiteMemoryBackend:
         if not self.path.exists():
             yield None
             return
-        conn = sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True, isolation_level=None, timeout=0)
-        conn.row_factory = sqlite3.Row
+        conn = None
         try:
-            conn.execute("PRAGMA foreign_keys = ON")
-            conn.execute("BEGIN")
-            tables = {row[0] for row in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
-            )}
-            if not tables:
-                # 首次写事务回滚可能留下空 SQLite 文件，尚无任何来源或记忆。
-                yield None
-            elif not {"sources", "entries"} <= tables:
-                raise MemoryDataError("记忆数据库缺少必要表")
-            else:
-                yield conn
+            try:
+                conn = sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True, isolation_level=None, timeout=0)
+                conn.row_factory = sqlite3.Row
+                conn.execute("PRAGMA foreign_keys = ON")
+                conn.execute("BEGIN")
+                tables = {row[0] for row in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+                )}
+                if not tables:
+                    # 首次写事务回滚可能留下空 SQLite 文件，尚无任何来源或记忆。
+                    yield None
+                elif not {"sources", "entries"} <= tables:
+                    raise MemoryDataError("记忆数据库缺少必要表")
+                else:
+                    yield conn
+            finally:
+                if conn is not None:
+                    try:
+                        if conn.in_transaction:
+                            conn.rollback()
+                    finally:
+                        conn.close()
         except sqlite3.DatabaseError as error:
             raise MemoryDataError(f"记忆数据库无法读取：{error}") from error
-        finally:
-            if conn.in_transaction:
-                conn.rollback()
-            conn.close()
 
     def get_source(self, conn, scope: MemoryScope, source_id: str) -> MemorySource | None:
         row = conn.execute(
@@ -286,6 +291,18 @@ class SQLiteMemoryBackend:
             if conn is None:
                 return None
             return self.get_receipt(conn, scope, operation_id)
+
+    def read_latest(
+        self, scope: MemoryScope, key: str, conditions: Conditions = (),
+    ) -> MemoryEntry | None:
+        """助手准备：只读最高持久版本，保留未来或撤回状态供写入规划判断。"""
+        _scope_values(scope)
+        require_text(key, "记忆属性名")
+        conditions = normalize_conditions(conditions)
+        with self._reader() as conn:
+            if conn is None:
+                return None
+            return self.latest_entry(conn, scope, key, conditions)
 
     def read_entry(self, scope: MemoryScope, memory_id: str) -> MemoryEntry | None:
         _scope_values(scope)

@@ -4,8 +4,9 @@ from dataclasses import replace as replace_fields
 from pathlib import Path
 
 from mini_pi.memory.codec import candidate_id, make_entry, normalize_draft, normalize_source
-from mini_pi.memory.errors import MemoryConflict, MemoryDataError, MemoryPolicyError
-from mini_pi.memory.models import Conditions, MemoryDraft, MemoryEntry, MemoryScope, MemorySource
+from mini_pi.memory.errors import MemoryConflict, MemoryDataError, MemoryEmbeddingError, MemoryPolicyError
+from mini_pi.memory.models import Conditions, MemoryDraft, MemoryEntry, MemoryHit, MemoryScope, MemorySource
+from mini_pi.memory.embedding import Embedder, cosine_similarity, normalize_document_vectors, unit_vector
 from mini_pi.memory.operation_codec import (
     make_replace_receipt, replacement_fingerprint, validate_operation_input,
     make_retract_receipt, retraction_fingerprint, validate_retraction_shape,
@@ -13,6 +14,8 @@ from mini_pi.memory.operation_codec import (
 from mini_pi.memory.policy import validate_draft
 from mini_pi.memory.sqlite_backend import SQLiteMemoryBackend
 from mini_pi.memory.validation_helpers import normalize_conditions
+from mini_pi.memory.retrieval import is_usable
+from mini_pi.memory.retrieval_helpers import normalize_search_request, normalize_vector_search_request
 
 
 class MemoryStore:
@@ -188,6 +191,82 @@ class MemoryStore:
                 self._backend.update_entry(conn, withdrawn)
             self._backend.insert_receipt(conn, receipt)
             return result
+
+    async def search(
+        self, scope: MemoryScope, query: str, *,
+        at: str, embedder: Embedder,
+        conditions: Conditions = (), top_k: int = 5,
+        min_score: float,
+    ) -> list[MemoryHit]:
+        """自然语言查询；先读取并筛选允许使用的候选。"""
+        conditions, at, query, top_k, min_score = normalize_vector_search_request(
+            scope, conditions, at, query, top_k, min_score,
+        )
+        candidates = self._backend.read_entries(scope)
+
+        eligible = []
+        for entry in candidates:
+            if not is_usable(entry, scope, conditions=conditions, at=at):
+                continue
+            eligible.append(entry)
+
+        if not eligible:
+            return []
+        spec = embedder.spec
+        query_vector = await embedder.embed_query(query)
+        if embedder.spec != spec:
+            raise MemoryEmbeddingError("问题向量返回时模型规格发生变化")
+
+        query_vector = unit_vector(query_vector,spec.dimensions)
+
+        texts = [entry.text for entry in eligible]
+        document_vectors = await embedder.embed_documents(texts)
+        if embedder.spec != spec:
+            raise MemoryEmbeddingError("候选向量返回时模型规格发生变化")
+
+        document_vectors = normalize_document_vectors(
+            document_vectors, len(eligible), spec.dimensions,
+        )
+
+        scored = []
+        for entry, vector in zip(eligible, document_vectors):
+            score = cosine_similarity(
+                query_vector, vector, spec.dimensions,
+            )
+            scored.append(MemoryHit(entry, score))
+
+        current_by_id = {
+            entry.memory_id: entry
+            for entry in self._backend.read_entries(scope)
+        }
+        verified = []
+        for hit in scored:
+            current = current_by_id.get(hit.entry.memory_id)
+            if current is None:
+                continue
+            if (
+                current.source != hit.entry.source
+                or current.draft != hit.entry.draft
+                or current.version != hit.entry.version
+                or current.written_at != hit.entry.written_at
+            ):
+                raise MemoryDataError("计分后的记忆来源或定义发生变化")
+            if not is_usable(current, scope, conditions=conditions, at=at):
+                continue
+            verified.append(MemoryHit(current, hit.score))
+
+        selected = []
+        for hit in verified:
+            if hit.score >= min_score:
+                selected.append(hit)
+        selected.sort(key=lambda hit: hit.score,reverse=True)
+        return selected[:top_k]
+
+    def latest(
+        self, scope: MemoryScope, key: str, *, conditions: Conditions = (),
+    ) -> MemoryEntry | None:
+        """助手准备：取得规划时的最高持久版本；实际变更仍须事务内重查。"""
+        return self._backend.read_latest(scope, key, conditions)
 
     def get(self, scope: MemoryScope, memory_id: str) -> MemoryEntry | None:
         """助手准备：按范围读回已存版本供核对，不判定该版本当前是否可用。"""

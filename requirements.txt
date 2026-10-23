@@ -1,2 +1,2 @@
-# D12: tested async HTTP client version; install with python -m pip install -r requirements.txt
+# Shared async HTTP transport for D12 and memory embedding; install with python -m pip install -r requirements.txt
 httpx==0.28.1

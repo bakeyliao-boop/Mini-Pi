@@ -59,6 +59,8 @@ def validate_shapes(
     require_text(source.role, "来源角色")
     require_text(source.text, "来源原文")
     require_text(draft.key, "记忆属性名")
+    if draft.content is not None:
+        require_text(draft.content, "规范化正文")
     if draft.kind not in ("semantic", "episodic", "procedural"):
         raise MemoryPolicyError("不支持的记忆类型")
     if type(draft.start) is not int or type(draft.end) is not int:
