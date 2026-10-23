@@ -2,7 +2,7 @@
 
 更新：2026-10-23。学习分支：`codex/agent-memory`。当前提交以 `git log -1 --oneline` 为准。
 
-接续快照已通过独立源码副本与新虚拟环境验证：全量491项中489通过、2项旧Windows权限跳过。执行口径和提交状态见[同步检查记录](memory-sync-checks.md)。
+接续代码已以 `b02a7d1` 提交并推送至 `origin/codex/agent-memory`，远端提交已核对一致。该快照通过独立源码副本与新虚拟环境验证：全量491项中489通过、2项旧Windows权限跳过。执行口径和推送回执见[同步检查记录](memory-sync-checks.md)。
 
 ## 现在学到哪里
 
