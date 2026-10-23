@@ -100,12 +100,16 @@ class ProcessCleanupTests(unittest.IsolatedAsyncioTestCase):
 
     async def ready(self, task):
         async with asyncio.timeout(5):
-            while not self.marker.exists():
+            while True:
+                try:
+                    pids = json.loads(self.marker.read_text(encoding="utf-8"))
+                    break
+                except (FileNotFoundError, PermissionError):
+                    pass  # 就绪证据需实际可读；Windows 短暂占用仍受原5秒上限约束。
                 if task.done():
                     task.result()
                     self.fail("测试进程在创建存活证据之前结束")
                 await asyncio.sleep(0.01)
-        pids = json.loads(self.marker.read_text(encoding="utf-8"))
         self.assertTrue(all(process_is_running(pid) for pid in pids))
         return pids
 

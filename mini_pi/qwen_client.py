@@ -10,7 +10,11 @@ from urllib.parse import urlsplit
 from mini_pi.async_http_transport import post_json_async
 from mini_pi.http_transport import post_json
 from mini_pi.models import ConversationItem, Message, ToolDefinition
-from mini_pi.qwen_provider import build_request, parse_assistant_message
+from mini_pi.qwen_provider import (
+    ModelResponseError,
+    build_request,
+    parse_response,
+)
 from mini_pi.thread_worker import run_sync_with_cleanup
 
 
@@ -105,12 +109,23 @@ class QwenProvider:
         tools: Sequence[ToolDefinition],
     ) -> Message:
         """组装请求、等待响应、检查结束原因，再返回统一 Message。"""
-        # 在这里敲入本步骤的核心代码。
         request = build_request(self.model, history, tools)
-        response = await self._send(request)
+        try:
+            response = await self._send(request)
+        except RuntimeError as error:
+            return Message(
+                role = "assistant",
+                content="",
+                stop_reason="error",
+                error_message=str(error),
+                )
 
-        choice = response["choices"][0]
-        if choice["finish_reason"] not in ("stop", "tool_calls"):
-            raise ValueError("模型响应未正常完成，不执行其中的调用")
-
-        return parse_assistant_message(choice["message"])
+        try:
+            return parse_response(response)
+        except ModelResponseError as error:
+            return Message(
+                role="assistant",
+                content="",
+                stop_reason="error",
+                error_message=f"模型响应格式错误:{error}",
+                )

@@ -4,7 +4,7 @@ import asyncio
 import math
 
 from mini_pi.executor import ToolExecutor
-from mini_pi.models import ConversationItem, RunResult, ToolDefinition
+from mini_pi.models import ConversationItem, RunResult, ToolDefinition, ToolResult
 from mini_pi.provider import ModelProvider
 from mini_pi.run_deadline import RunDeadlineExceeded, await_before_deadline
 from mini_pi.run_finish import finish_run
@@ -90,6 +90,14 @@ async def run_loop(
         if session_store is not None:
             session_store.append_item(message)
 
+        if message.stop_reason in ("error","aborted"):
+            run_result = RunResult(
+                status="cancelled" if message.stop_reason == "aborted" else "error",
+                messages=history,
+                error=message.error_message,
+                  )
+            return await finish_run(run_result,session_store)
+
         tool_calls = message.tool_calls
         if not tool_calls:
             run_result = RunResult(status="finished", messages=history)
@@ -100,6 +108,19 @@ async def run_loop(
             #       "task_passed":run_result.task_passed,
             #       "error":run_result.error,})
             # return run_result
+
+        if message.stop_reason == "length":
+            for call in tool_calls:
+                result = ToolResult(
+                    tool_call_id=call.id,
+                    tool_name=call.name,
+                    output="",
+                    error="未执行，模型回复长度被限制截断，请重新提供完整参数",
+                )
+                history.append(result)
+                if session_store is not None:
+                    session_store.append_item(result)
+            continue
 
         for call in tool_calls:
             try:

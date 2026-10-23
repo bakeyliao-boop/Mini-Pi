@@ -10,7 +10,8 @@ class ToolCall:
 
     id: str
     name: str
-    arguments: dict[str, object]
+    arguments: dict[str, object] | None
+    raw_arguments: str | None = None
 
 
 @dataclass
@@ -30,6 +31,8 @@ class Message:
     role: str
     content: str
     tool_calls: list[ToolCall] = field(default_factory=list)
+    stop_reason: str | None = None
+    error_message: str | None = None
 
 
 ConversationItem = Message | ToolResult  #对话历史

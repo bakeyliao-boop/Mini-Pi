@@ -10,22 +10,22 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 最后维护日期 | 2026-10-16 |
+| 最后维护日期 | 2026-10-23 |
 | 路线版本 | 初版 跨设备同步 |
 | 学习开始日期 | 2026-10-08 |
 | 已完成学习步骤 | 12 / 30 |
-| 当前步骤 | D12 完成归档，待提交推送 |
-| 当前状态 | D12 已完成；D13 待提交推送后开始 |
+| 当前步骤 | D13-C 追加输入队列（待开始） |
+| 当前状态 | D13-A 模型终态与反馈、D13-B 活动运行与空闲已完成；本次准备提交推送 |
 | 远程仓库 | [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi) |
-| 下一步 | 按已核对的 D12 范围提交并推送；完成后开始 D13-A 的模型终态与反馈学习 |
-| 当前阻塞 | D12 已按阶段范围完成。D13-A 待补：普通模型错误的统一终态、截断调用的逐 ID 错误反馈与重试；本轮仅源码核对与说明，尚未实现 |
+| 下一步 | 提交已完成的 D13-A/B；下一章先核对 Pi 上游 main 及固定基线差异，再学习 steer/followUp 递送边界 |
+| 当前阻塞 | D13-C/D 尚未实现；D13 整体未完成，计数保持 12/30。旧编辑缓冲回写来源未确定，本次提交只采用已复测内容 |
 | Pi 源码版本 | `7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333`；D08 对照 `edit.ts` |
 | 模型接入 | 已接入百炼 `qwen3.8-flash`；真实读取与解释已验证，接口、模型 ID、耗时及 usage 见 D07 记录 |
 | 第一版完成情况 | 四工具、基础循环、真实模型接入、JSONL 保存与加载、正常继续和中断恢复门禁已分别验证；模型自主修复和完整执行控制尚未完成 |
 
-**D01–D12 已完成，先提交推送 D12，再开始 D13-A。**D01–D04 完成有指导的阅读与推演，D05–D06 完成本地工具和模拟循环验证。D07 完成真实模型接入与读取反馈；D08 完成编辑和路径边界验证；D09 完成四工具联调及失败分类；D10 将初始消息、模型响应、工具结果和正常结束状态逐条写入 JSONL；D11 加载统一对象、正常继续并增量保存，对缺结果的调用返回明确恢复状态。34 项相关测试通过，三场景示例保留恢复前后记录。D11 使用模拟模型和真实文件工具，不据此声称已实现自动重放、模型自主修复或第一版完整交付。
+**D01–D12 已完成并推送；D13-A/B 已完成，D13-C 待开始；D13 整体仍进行中（12/30）。**D01–D04 完成有指导的阅读与推演，D05–D06 完成本地工具和模拟循环验证。D07 完成真实模型接入与读取反馈；D08 完成编辑和路径边界验证；D09 完成四工具联调及失败分类；D10 将初始消息、模型响应、工具结果和正常结束状态逐条写入 JSONL；D11 加载统一对象、正常继续并增量保存，对缺结果的调用返回明确恢复状态。34 项相关测试通过，三场景示例保留恢复前后记录。D11 使用模拟模型和真实文件工具，不据此声称已实现自动重放、模型自主修复或第一版完整交付。
 
-开发分支为 `codex/mini-pi-v0.1`，D11 完成范围见[第十一次学习记录](#第十一次学习记录)。D12 已完成运行预算与受控停止，下一次从 D13-A 的模型终态与反馈开始。手敲只聚焦当前学习目标的少量核心决策；时间戳、路径配置、测试和示例等由助手准备和解释，具体边界见 [AGENTS.md](../AGENTS.md)。
+开发分支为 `codex/mini-pi-v0.1`，D11 完成范围见[第十一次学习记录](#第十一次学习记录)。D13-A 已完成模型终态与反馈，D13-B 已完成活动运行、取消与空闲门禁，下一单元为 D13-C。手敲只聚焦当前学习目标的少量核心决策；时间戳、路径配置、测试和示例等由助手准备和解释，具体边界见 [AGENTS.md](../AGENTS.md)。
 
 路线准备和此前调研不计入学习完成数。D01–D12 计为 12 / 30；D01–D04 是阅读与推演，D05 是本地工具验证，D06 是模拟循环验证，D07 是真实模型配合读取的循环验证，D08 是实际编辑与受限路径验证，D09 是四工具联调与演示用例修复，D10 是正常运行记录的持久化验证，D11 是加载、增量继续与显式恢复门禁验证。各阶段不能互相代替；不据此声称用户已独立实现全部代码。
 
@@ -185,7 +185,7 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 | D10 | 阅读与编码 | 保存执行事件和会话 | 已完成 | 2026-10-14 |
 | D11 | 编码与测试 | 加载会话并明确恢复边界 | 已完成 | 2026-10-14 |
 | D12 | 编码与测试 | 实现预算、超时和取消 | 已完成 | 2026-10-16 |
-| D13 | 阅读与编码 | 补齐 Agent 生命周期、队列与模型反馈后组装 harness 和 CLI | 待开始（D12 推送后） | — |
+| D13 | 阅读与编码 | 补齐 Agent 生命周期、队列与模型反馈后组装 harness 和 CLI | 进行中（A/B已完成，C/D待开始）（D12 推送后） | — |
 | D14 | 验收 | 验证单 agent 核心行为及真实修复任务 | 待开始 | — |
 | D15 | 阅读 | 理解上下文压缩和消息配对 | 待开始 | — |
 | D16 | 编码 | 分开完整历史与请求上下文 | 待开始 | — |
@@ -1583,3 +1583,181 @@ D13-A 首先解决“模型为什么停止，循环该如何反馈与结束”�
 例子：模型提出 edit_file 但 finish_reason=length，即使某条参数碰巧仍是合法 JSON，也不能执行这批调用；应保存截断事实、为可识别的每个调用 ID 生成配对错误结果，再让模型按预算重新给出完整请求。服务请求失败或模型错误则需形成清楚的 error 结果及 run_end，保留已有历史，不被当作 finished。上述行为是目标设计和固定源码推断，本轮尚未新增实现或运行 D13 反例，不能计为 D13 验收通过。下一步先解释终态如何随响应经过适配器、循环和记录，再准备反例与手敲代码。D13-B 生命周期、D13-C 队列、D13-D Harness/CLI 顺序不变；未提交或推送。
 
 **D12 提交顺序调整（2026-10-16）：**用户通过侧聊明确要求先提交推送 D12，再进入 D13。当前 D12 保持已完成、进度 12/30；D13-A 此前只作源码核对与问题预告，没有新实现，现登记为待开始，不在 D12 推送完成前继续推进。候选范围包括 D12 核心和辅助层、测试、依赖登记、三份学习文档，以及 `pic/day12-execution-control.png` 和完整生成提示词。图片是接线完成时的学习快照，底部“待最终整体复核”为绘图时状态，最终验收与当前阶段状态以本路线最新记录为准。保留此前失败、修复和理解回顾的历史，不以新结论覆盖原始反例。
+
+**D13-A 反例准备与当前行为核对（2026-10-16）：**D12 已按授权分两次提交为 166cd4d、779688a，并推送至 origin/codex/mini-pi-v0.1，远端 HEAD 已核验。用户在理解 Pi 的“length 且含工具调用时零执行、逐 ID 反馈、给下一轮机会”后要求准备反例，再分段手敲；不将纯文字截断误解为一定重试，也不保证重试成功。
+
+助手新增 tests/test_model_outcomes.py 共 10 个行为测试。只替换 HTTP 返回，保留实际 Qwen 转换、循环、工具路由、真实临时文件编辑/读取与 JSONL 保存/加载；分别检查停止状态、run_end、执行 ID、实际磁盘字节、下一请求内配对错误反馈及预算。覆盖普通连接错误、provider 错误结束原因、前一轮已完成结果后再失败、合法 JSON 与不完整 JSON 的截断批次、完整 edit_002 重试、预算拒绝下一请求、纯文字 length 保留原因，以及正常回答、正常编辑、主动取消三个正向对照。
+
+实际新增 10 项中 3 通过、7 失败；原 Qwen 传输 8、转换 17、基本循环 5、统一结束 7 共 37 项均通过，总计 47 项：40 通过、7 失败、0 错误、0 跳过。当前错误/截断场景直接抛出 RuntimeError/ValueError，尚无返回结果或 run_end。截断 batch 的真实执行 ID 为空、文件不变，已有拒绝执行保护有效；缺少按 ID 反馈、停止原因保留和继续路径。普通模型错误前已完成的读取结果仍在历史中，但结束状态缺失。测试失败是目标行为未实现的证据，不降低断言来迁就当前设计；原 D07“截断抛错”的局部测试暂保留，行为切换时需改为新反馈契约，同时保留零执行保护。
+
+脚本、完整输出、观察轨迹和全部核心 Python 文件 SHA-256 在 `local-learning/evidence/d13-a-outcomes-counterexamples-fe7a818df8e0434a99df58c47e91662e/`。本轮核心测试前后哈希一致，没有请求真实模型服务，没有修改现有 qwen_provider.py 独立空白改动；没有提交或推送本轮内容。
+
+调整设计分四步：Message 添加可选 stop_reason 与 error_message，保留旧消息兼容默认；Qwen 层保留结束原因及截断调用标识，不能先要求截断参数是完整 JSON 才给反馈，也不执行它们；run_loop 对 error 明确结束，对 length 批次逐 ID 生成未执行错误结果，并继续遵守预算、总时限与取消；保存/加载保留新信息，旧记录不强制补造原因。第一段只由学习者手敲 Message 的两个可选字段，尚不声称消除了 7 条反例。待后续分别明确不完整参数的保存及历史转换，再接线和验收。
+
+**D13-A 正常链路与循环错误判断验收（2026-10-16）：**学习者已手敲 Message 的 stop_reason/error_message、parse_assistant_message 的两个可选参数及返回字段、Qwen generate 的正常停止原因传递、SessionStore 加载还原，以及 run_loop 在消息保存后、工具处理前对 error/aborted 的判断。错误映射为 RunResult.status="error"，aborted 映射为 cancelled，保留 history 和错误说明，经 finish_run 记录与返回。用户修正 return 缩进后，语法检查通过；助手未代改核心。普通模型请求异常与 length 反馈尚未接通。
+
+正常响应链路与兼容性 44 项曾实际通过，证据为 `local-learning/evidence/d13-a-normal-response-wiring-47e48e9b840d427698f3d49d02700c4c/`。本轮加上独立循环模型停止判断 4 项，共 48 项全部通过，0 失败、0 错误、0 跳过，全部核心文件测试前后哈希一致；证据为 `local-learning/evidence/d13-a-loop-model-stop-4d015bae1caa4ab3a879f0cb02719672/`。独立循环测试由模拟模型直接返回 error/aborted Message，核对错误回复内工具零执行、真实文件不变、前一轮已完成结果保留、结束状态和记录一致；不能把它当作真实 Qwen 错误路径已接入。
+
+下一段在 QwenProvider.generate 的 _send 等待处处理当前传输层明确报告的 RuntimeError，转换为无模型正文、带 error 停止原因及错误说明的 Message，交给已接好的循环判断。保持主动 CancelledError 的原路径，暂保留 finish_reason 的截断拒绝，待 length 容错和反馈完整再切换。本轮未提交或推送。
+
+**D13-A 请求异常接线验收（2026-10-16）：**学习者在 QwenProvider.generate 的 _send 等待处手敲 try/except RuntimeError，将当前传输层报告的请求失败转换为 content 为空、stop_reason="error"、error_message 带说明的 Message。助手核对参数和缩进正确，未代改核心。run_loop 保存该消息后，经已接好的模型停止判断构造 error 的 RunResult，再交 finish_run 统一记录并返回；主动 CancelledError 沿 D12 取消异常路径传递，不在此转换为普通错误消息。循环可识别 aborted 消息与当前 Qwen 的 Task 取消路径须区分，用户已就此提问并接受了两条入口的解释。
+
+本轮分两组验证：本步与回归 71 项全部通过；剩余 D13-A 反例 5 项均失败，0 测试错误或跳过。连接失败返回 error 且有唯一 run_end，前一轮真实读取结果保留，主动取消仍 cancelled，正常响应/保存加载/资源关闭等回归保持。剩余失败分别是服务返回 content_filter 等错误原因、合法 JSON 和不完整 JSON 的 length 批次反馈/完整重试、截断反馈后预算停止、纯文字 length 保留原因。故当前只判定请求异常链路通过，D13-A 尚未完成，不能将适配器报告的 RuntimeError 和所有服务端结束原因混为一谈。
+
+首次回归另有 1 条旧本地 HTTPS 正常响应测试，仍预期 stop_reason=None，而实际已按新设计保留 stop。助手仅把该测试的消息预期更新为 stop_reason="stop"，连接关闭、状态与文件等其他检查保留；复跑后 71 项通过。原失败记录保留于 `local-learning/evidence/d13-a-request-error-wiring-300fa95806df494a806e673721d3e724/`；最终分组结果、详细观察及全部核心文件哈希在 `local-learning/evidence/d13-a-request-error-recheck-db4d7b32951d431ab25835407e3de587/`。测试前后核心哈希一致，未使用真实模型服务，本轮未提交或推送。
+
+**D13-A 服务错误结束原因接线验收（2026-10-16）：**学习者在 QwenProvider.generate 取出 choice 后手敲 finish_reason 分类；当前不属于 stop、tool_calls、length 的结束原因，经 parse_assistant_message 转为 stop_reason="error"，error_message 包含原始服务原因。服务 message 的正文与可解析调用 ID 保留，run_loop 在工具执行前结束并经 finish_run 记录。stop/tool_calls 继续原正常路径，length 保留旧拒绝，不因新增分支提前放行。助手仅核对与测试，未代改核心。
+
+本步和相关回归共 72 项全部通过，0 失败、0 错误、0 跳过；另行运行的 4 条 length 反例仍失败，D13-A 保持进行中。服务错误本轮以 content_filter 且含可解析 edit_001 的响应验证：返回和 run_end 均为 error，原始原因、模型停止标签、错误说明及调用 ID 保存一致，真实工具零执行、文件不变、只请求一次模型。请求阶段 RuntimeError、主动取消及正常响应等回归均保持。不能据此声称任意畸形响应或不完整参数已处理；截断参数表示及反馈仍在下一单元。
+
+分组测试输出、执行脚本、实际调用轨迹和全部核心文件 SHA-256 在 `local-learning/evidence/d13-a-service-error-wiring-faf8d551893b40348d728e5006e231e5/`，测试前后核心哈希一致，未请求真实模型服务，未提交或推送。下一步先讲清 ToolCall 的参数完整性与原文保存，再分段实现截断批次反馈，避免静默补全参数后误执行或丢失审计信息。
+
+**D13-A 截断调用的数据表示设计与辅助准备（2026-10-16）：**固定 Pi json-parse.ts 的 parseStreamingJson 会尝试恢复不完整 JSON，并在失败时返回空对象；agent-loop.ts 的 failToolCallsFromTruncatedMessage 仍拒绝 length 回复中的全部调用，逐 ID 反馈，避免参数碰巧可解析而误执行。Mini-Pi 当前是非流式接口，本单元保留调用 ID、工具名与原参数文本，无法形成参数对象时显式使用 arguments=None；即使得到字典，只要整条回复为 length 仍整批零执行。这是内部表示选择，不移植流式部分参数恢复；影响是没有 Pi 的流式部分参数预览，但必须保留零执行、配对反馈与继续请求的核心行为。下一请求的历史还需编码原文，不能静默补成空字典或 null 后丢失证据，真实服务兼容性仍需后续联调，不能把离线测试当在线验收。
+
+准备由学习者手敲 ToolCall.arguments 可为字典或 None，新增 raw_arguments 可选字符串；随后分段接解析、历史编码和循环。助手按辅助分工修改 session_records 的记录校验以兼容可选 raw_arguments：保留原三个必需字段，拒绝未知字段和非字符串原文；arguments=None 仅在 length/error/aborted 消息且带字符串原文时允许加载，普通回复仍要求参数字典。该校验是记录输入限制，不负责执行，也不把可解析字典等同于可执行。助手未改 ToolCall、Qwen 转换或循环核心。
+
+新增 tests/test_unparsed_tool_call.py，记录校验 7 项及原加载/恢复/转换回归共 43 项实际通过，无失败、错误或跳过；验证前后源文件哈希一致。字段层的真实保存加载/缺结果识别与执行器拒绝 None 参数两项测试也已准备，须学习者敲入字段后验收，未混入本次通过数。证据在 `local-learning/evidence/d13-a-unparsed-record-prep-6faaeabd8472437295fb74f8a27b1f23/`。length 的四条整体验收反例仍待后续接线，本轮不声称通过，不提交或推送。
+
+**D13-A 调用解析修正与验收（2026-10-16）：**用户明确要求“帮我修正并且验证推进到下一步”后，助手仅修正 parse_tool_call 的已发现问题：移除 try 前重复解析，先取得并校验原参数字符串；统一 preserve_unparsed 拼写；修正 isinstance(arguments, dict)；保留模式返回原文和 None/字典，严格模式维持抛错。其他独立空白及代码未覆盖。此前 5 项测试的 9 条子场景错误保留在 `local-learning/evidence/d13-a-call-parser-check-6d2155b921904f89a62878ebd6b99708/`，不改写为通过。
+
+修正后的 5 项调用解析测试及字段、记录、恢复、转换、循环回归共 64 项全部通过，0 失败、0 错误、0 跳过，全部核心源文件测试前后哈希一致。证据在 `local-learning/evidence/d13-a-call-parser-fixed-ed114527ac4545cc999d5eee07c18915/`。这只验收解析函数的两种模式，不等同 length 整体能力通过；Qwen 的旧 length 拒绝仍保留。
+
+下一段由学习者手敲 parse_assistant_message 的调用：只有 stop_reason 属于 length/error/aborted 时才传 preserve_unparsed=True，普通/旧消息继续严格模式。助手已准备 3 项消息转换测试，检查整批调用 ID 和原文、错误/中止的未解析调用保留、正常消息拒绝残缺 JSON；这 3 项尚未计入当前通过数。其后仍需历史 API 编码保留原文、循环逐 ID 拒绝反馈，最后才调整 generate 的 length 保护。未提交或推送。
+
+**D13-A 保留模式接线恢复与验证（2026-10-16）：**用户手敲接线后，当前磁盘同时出现旧严格调用与新调用，且关键字写成 perserve_unparsed；检查还确认上一步已经修正并通过 64 项的 parse_tool_call 三处修复再次不在当前磁盘中。先运行 8 项调用/消息转换测试，报 12 条错误，记录保留于 `local-learning/evidence/d13-a-preserve-mode-check-a9116171e7364629a53777da6ff32d4b/`。询问编辑器状态后用户要求助手直接检查；助手只读核对磁盘、修改时间与历史验证，确认错误存在，未能确定回写来源，不归因于编辑器自动保存。
+
+沿用用户此前“帮我修正并且验证推进到下一步”的授权，助手仅修正当前两个解析函数：恢复原文赋值、参数类型检查和开关拼写；删除 parse_assistant_message 中仍执行的旧严格调用；新调用根据 length/error/aborted 传入正确的 preserve_unparsed 参数，每个原始调用只转换一次。其他独立空白与代码保留。未将生成器中的 length 拒绝提前移除。
+
+实际执行 82 项回归全部通过，0 失败、0 错误、0 跳过，覆盖 5 项解析、3 项消息转换、原文/ID 保存加载、恢复分类、正常/API 转换、模型错误/中止零执行以及本地 HTTPS 正常与取消等。全部核心文件测试前后哈希一致。日志、脚本、哈希及当次 qwen_provider 源码快照在 `local-learning/evidence/d13-a-preserve-mode-restored-e0f5e952caf74c08ba96f051e7003e8b/`。已打开当前源文件便于核对，但该动作不证明外部编辑器未保存缓冲区已同步；后续仍以磁盘重读和测试为准。
+
+当前仅解析保留模式接线通过，length 四条整体反例仍待历史 API 原文编码、循环逐 ID 反馈及最后的生成器接线，不把本步等同于 D13-A 完成。下一步从当前核对版本继续，避免在旧版本上追加；未提交或推送。
+
+**D13-A 历史参数回传反例准备（2026-10-16）：**核对当前 qwen_provider.py 哈希仍为关闭编辑标签后恢复的已测版本，未再观察到回写。本轮只读检查 core，新增辅助 tests/test_raw_call_history.py。当前 tool_call_to_api 直接 json.dumps(call.arguments)，未解析调用的 None 会变成字符串 null，丢失下一请求中的原始参数文本。5 项新反例实际全部失败，0 错误或跳过；涵盖残缺原文/ID、可解析原文的空格格式、空字符串原文、无字典也无原文时拒绝，以及下一请求中的调用与错误结果配对/历史不变。证据在 `local-learning/evidence/d13-a-raw-history-counterexamples-84f4cf99c5d743a8b65ad38048c6569e/`，核心未改。
+
+本步拟由学习者手敲 tool_call_to_api：raw_arguments 非 None 时优先使用原字符串（包括空串）；否则仅对参数字典 JSON 编码；两者都没有时报明确错误，禁止静默发 null。该函数只构造历史消息，不调用工具；未来 length 的未执行反馈仍需循环生成。固定 Pi openai-completions.ts 的 convertMessages 会 JSON.stringify 已恢复的 tc.arguments；Mini-Pi 非流式实现采用保留原文和 None 的不同内部表示，因此本步历史参数内容保留原文。这里的差异与选择明确记录，零执行、ID 配对及预算内继续的核心要求不变。本轮只验证本地请求构造，不把它当成真实模型服务接受畸形历史参数的在线兼容证据，后续联调仍需核对。
+
+核心手敲尚待用户完成；length 的生成器拒绝继续保留，不能提前放行。未提交或推送。
+
+**D13-A 历史参数回传接线验收（2026-10-16）：**学习者已手敲 tool_call_to_api：有 raw_arguments 时直接保留原字符串，无原文时对参数字典 JSON 编码；两者都没有则抛明确 ValueError。助手核对三条分支正确，未代改核心。函数仍只构造历史消息，不执行工具；模型消息的内部 stop_reason/raw_arguments 字段名不额外发送到服务消息结构中，原文只作为 function.arguments 的字符串值。
+
+5 项历史回传反例现全部通过，连同调用解析、消息保留模式、记录恢复、正常/错误/取消及本地 HTTPS 等回归共 87 项实际通过，0 失败、0 错误、0 跳过。核对残缺原文不变成 null、空字符串原文保留、可解析原文的空格格式不被重编码、缺少两种表示时拒绝，以及下一模型请求中调用 ID 与未执行反馈配对、原历史不变。测试前后全部核心文件哈希一致，当前两个解析函数的已验证修正仍保留，本轮未再观察到旧内容回写。
+
+完整日志、脚本及 SHA-256 在 `local-learning/evidence/d13-a-raw-history-wiring-01437b56141a42f3b119c1213d533c00/`。原先 5 条失败反例证据保留。此次验证为本地请求构造/受控模型和本地连接，不包含真实模型服务对畸形参数历史的在线兼容验收。下一步才在 run_loop 中实现 length 批次零执行和逐 ID 未执行反馈；在循环验收前继续保留 Qwen generate 的 length 拒绝，不能先删保护。D13-A 进行中，未提交或推送。
+
+**D13-A 循环 length 批次反例与手敲准备（2026-10-16）：**再次对照固定 Pi agent-loop.ts:262–276 和 failToolCallsFromTruncatedMessage：length 回复中所有调用逐 ID 返回未执行错误结果，批次不进入实际执行器，结果加入上下文后允许继续。Mini-Pi 拟在 run_loop 的无工具结束分支之后、正常工具执行 for 之前插入独立 length 分支：逐调用创建 ToolResult、追加 history 与会话，完成整批后 continue 外层 while，由既有预算/时间/取消逻辑决定下一请求。continue 必须在新增 for 之外，避免生成反馈后仍落入正常执行路径。纯文字 length 无调用保持既有结束路径，不强制重试。
+
+助手仅补充 ToolResult 导入，核心分支等待学习者手敲；新增 tests/test_loop_truncated_batch.py 五项，模拟模型直接给出 length 消息、工具与文件保持真实，以便在适配器仍拒绝 length 时独立验证循环。实际当前 5 项中 1 通过、4 失败，连同原基本循环 5 项和模型停止判断 4 项总计 14 项：10 通过、4 失败、0 错误或跳过。合法参数批次、残缺与合法混合批次、预算停止、完整新调用重试均发现当前循环仍执行截断批次，纯文字对照通过。测试操作仅发生在各自临时目录；不能将该模拟入口结果说成当前 Qwen 已会执行截断回复，后者仍有生成器拒绝保护。
+
+证据在 `local-learning/evidence/d13-a-loop-length-counterexamples-e39863bbcea8471cb007e9524165e86d/`，包含观察到的执行 ID、磁盘内容、反馈与模型请求次数。全部核心文件测试前后哈希一致。待用户完成分支并通过本组后，才进行生成器接线及四条整体反例。未提交或推送。
+
+**D13-A 循环 length 批次反馈验收（2026-10-16）：**学习者手敲 length 分支后，history.append 与会话追加缩进多一级，语法检查在第 120 行报 IndentationError，未执行回归。用户明确要求“帮我改好，然后跑测试”后，助手仅修正该块闭括号和三行记录追加的缩进，保留用户错误提示文字、其他实现及原有学习注释；continue 保持在新增 for 之外。
+
+本轮实际执行 123 项回归全部通过，0 失败、0 错误、0 跳过。其中独立循环截断 5 项覆盖合法参数的截断批次也零执行、残缺与合法混合批次全部拒绝、先保存反馈再由预算阻止下一请求、只允许完整 edit_002 重试实际改文件、纯文字截断不强制下一请求；另核对旧错误/正常/取消、记录恢复、历史原文、总时限和启动前取消。测试使用模拟模型与实际临时文件、本地 HTTPS，不访问模型服务。原 4 条循环负例现转为通过，但不与 Qwen 整体截断反例混淆。
+
+证据在 `local-learning/evidence/d13-a-loop-length-fixed-ca5d1876b4dc4531bd325980d952c595/`，包含日志、脚本、全部核心文件哈希和本轮 loop 源码快照。核心源文件测试前后哈希一致。Qwen generate 的旧 length 拒绝仍保留，因此目前不宣称真实适配器已走到反馈/重试；下一步按手敲规则移除该旧拒绝分支，保留错误结束原因判断，然后运行四条整体反例。D13-A 进行中，未提交或推送。
+
+**D13-A 适配器 length 最后接线准备（2026-10-16）：**当前循环的 length 反馈已通过独立验收，parse_assistant_message 会在 length/error/aborted 时开启保留模式，历史 API 编码会保留原文。Qwen generate 仍有旧的“两行拒绝非 stop/tool_calls”分支，实际 length 目前在此抛出 ValueError。本段由学习者仅删除该两行，保留此前 stop/tool_calls/length 与服务错误归类，再让最后的 parse_assistant_message 将 length 交给已验收的转换及循环。
+
+助手更新旧 test_truncated_response_does_not_reach_parser_or_executor：新契约改为截断回复进入真实解析器保留信息、执行器零调用、按 ID 产生错误反馈，并用单轮预算阻止额外请求；没有删除零执行保护或仅移除旧测试。整体重试反例同时加强检查 length 原因与原始参数经过落盘和下一请求仍保持一致，不完整参数仍为 None，合法新 edit_002 才修改文件。
+
+为先验证接线设计，助手只在独立测试进程的内存里移除候选两行，运行整体模型结果 10、Qwen 传输 8、独立循环截断 5、原转换 17、历史原文 5，共 45 项全部通过，无失败、错误或跳过。磁盘核心未改，测试前后全部核心文件哈希一致；候选验证不算学习者当前磁盘实现通过。证据在 `local-learning/evidence/d13-a-adapter-length-prep-f8949bb3362c41ea9946b6b63ef90084/`。用户手敲删除后仍须实际复验，D13-A 继续进行中，未提交或推送。
+
+**D13-A length 实际适配器接线验收（2026-10-16）：**学习者已注释 Qwen generate 的旧“两行拒绝非 stop/tool_calls”分支，保留服务错误归类和最后携带 finish_reason 的响应转换。助手核对实际磁盘正确，未代改核心。length 现通过保留模式进入 Message，循环逐 ID 保存未执行反馈并 continue，由既有预算/时限/取消决定是否继续；参数即使可解析也整批零执行。
+
+对当前完整磁盘代码实际执行测试发现集 253 项：251 通过、2 跳过、0 失败、0 错误。跳过仍是旧 D08 真实符号链接越界测试，Windows 权限 WinError 1314；D13 新增用例无跳过。此前四条 length 整体反例全部通过：合法 JSON 截断和残缺 JSON 截断均有完整配对反馈，下一模型请求中的调用 ID 与原文保留，截断 batch 未进入执行器，只有完整 edit_002 真正改文件；轮数用完时反馈已保存而下一请求未启动；纯文字 length 保存停止原因且不强制下一请求。请求异常、服务错误、主动取消、循环预算及恢复等已覆盖回归均保持。
+
+本轮使用真实 Qwen 适配器代码配合模拟 HTTP 响应及真实临时文件，未在内存替换核心实现；与此前 45 项候选测试区分。完整日志、实际观察、执行脚本、源文件 SHA-256 和三个核心文件快照位于 `local-learning/evidence/d13-a-integrated-wiring-5e113448c3ed495fbda3b81034703f67/`。所有核心文件测试前后哈希一致，本轮未观察到回写。没有请求真实模型服务，不能据此证明线上服务对残缺参数历史的接受兼容性；原文回传与 Pi 的部分恢复对象序列化差异继续保留记录。
+
+结论是当前所列模型错误与截断链路接通，不等于所有外部响应异常均已穷尽。下一步做 D13-A 整体复盘，特别核对响应格式损坏等预期外部解析错误是否仍能形成统一终态，以及接口文档与当前返回错误消息的契约是否一致；不以测试全绿代替该核对，也不自动进入 D13-B。本轮不判定 D13 全部完成，不提交或推送。
+
+**D13-A 整体复盘与响应格式边界审计（2026-10-16，未通过最终验收）：**当前已接通的职责链为：发送阶段明确 RuntimeError 转为 error Message；服务结束原因在适配器归类；length 消息保留调用标识和原文，循环逐 ID 返回未执行错误反馈，并遵守预算/超时/取消；普通结束结果经 finish_run 保存与返回。上一轮完整 253 项（251 通过、2 条 D08 符号链接因权限跳过）的证据继续保留，不能据此认定未覆盖的输入已安全处理。
+
+核对固定 Pi openai-completions.ts:688–728，其适配器对请求/流处理和结束原因检查的错误形成带 errorMessage 的 error/aborted 最终模型消息，循环 agent-loop.ts:245–257 识别并结束。Mini-Pi 当前 generate 只在 _send 等待处捕获 RuntimeError，choice 解包和后续解析仍在该边界之外；ModelProvider 协议文档还写着“模型请求失败应抛异常”，与当前预期错误 Message 返回方式未同步。这属于 D13-A 的既定统一模型错误目标尚未覆盖完整，不是新增独立功能，也不能推到生命周期或 CLI 阶段。
+
+助手只新增 tests/test_model_response_validation.py 5 项，核心未改。真实 Qwen 代码配合模拟 HTTP 数据、实际临时文件和 JSONL；4 条外部格式错误反例与 1 条内部断言对照，加上原模型结果 10 项及循环模型停止 4 项，共 19 项实际执行：15 通过、4 失败、0 测试错误、0 跳过。缺 choices 抛 KeyError、空 choices 抛 IndexError、错误消息角色抛 ValueError，都没有 RunResult 和 run_end。正文被设置为字典但包含可解析 edit_001 时，当前代码实际执行了临时文件编辑，之后返回并记录 finished；历史加载报“会话第 3 行无效：content 必须是字符串”。不只是缺日志，还存在外部结构错误未在实际副作用前被拒绝。该请求是测试构造的错误数据，不是线上 Qwen 故障证据。
+
+内部 AssertionError 对照保持直接可见，未误报正常结果、未执行工具；此对照约束后续不能用无差别 except Exception 把程序错误都归为服务失败。调整方向是把预期外部响应的结构/字段校验和转换集中在适配器入口：先验证为可用统一消息，外部格式问题规范为合法 error Message，再交给既有循环及 finish_run；不要在 loop 为每种供应商解析异常增加零散分支，也不能先落盘坏消息再发现问题。原严格参数校验与 length 的保留/反馈语义继续区分，下一次先说明该入口职责、输入输出和预期错误类型，再分段手敲。
+
+日志、脚本、实际观察及全部核心文件 SHA-256 在 `local-learning/evidence/d13-a-response-boundary-audit-25d98c1e82b842b18ea4a3f2d056bd47/`。本轮核心测试前后哈希一致，没有修改核心文件，没有重新运行整个发现集，没有请求真实模型服务，没有提交或推送。D13-A 保持进行中，当前应先修补这一契约边界，再做最终理解回顾；不进入 D13-B。
+
+**D13-A 外壳校验分段实现（2026-10-16）：**本轮用户明确要求“帮我完成”，助手代写 qwen_provider.py 中 ModelResponseError 与 get_response_choice；未代写后续正文校验或修改 generate。新增辅助 tests/test_response_envelope.py 5 项，覆盖非对象响应、choices 缺失/空/类型错误、首项类型错误、合法候选与输入保持不变，以及空 choice 留给后续字段校验。与原消息转换和截断调用转换回归合计实际执行 30 项，全部通过；日志位于 local-learning/evidence/d13-a-envelope-f7c186dfa1fa407998b28c929ec730a7/test-results.txt。仅为局部分段验证，尚未接入 generate，不能认定此前 4 条整体反例已修复，D13-A 继续进行中。下一段先在 parse_assistant_message 检查消息对象、角色和正文类型，再补调用结构与统一转换入口。未请求真实模型，未提交推送；不由测试通过推定学习者已理解。
+
+**D13-A 外壳与正文补齐验证（2026-10-16）：**用户明确要求“帮我改好”后，助手补入缺失的 ModelResponseError/get_response_choice，并把角色拒绝改用 ModelResponseError；保留学习者已保存的消息对象/正文校验和 content=content。新增 tests/test_response_message.py 4 项，覆盖非对象消息、错误角色、字典/列表/数字/布尔正文在调用解析前拒绝，以及 null/缺失正文归一与文本保留。与外壳、既有转换和截断转换合计实际运行 34 项，全部通过。测试前后及跨工具调用复读 SHA-256 一致；源码快照、哈希和日志在 local-learning/evidence/d13-a-envelope-body-ad8f9090f851493691344e29475f1e4f/。当前仅局部转换验证：get_response_choice 尚未接入 generate，预期格式异常尚未在统一入口转为 error Message，不能宣称原有整体反例通过或 D13-A 完成。下一步仍为调用结构校验与统一转换接线，未提交推送，未调用真实模型，不由测试通过推定已理解。
+
+**D13-A 调用列表校验核对（2026-10-16）：**学习者保存的 raw_calls 缺失/null 归一、非列表拒绝及逐条转换逻辑正确。外壳、正文/调用列表、原有转换和截断转换合计实际执行 36 项，全部通过，源码前后与跨调用复读哈希一致。日志及源码快照在 local-learning/evidence/d13-a-call-list-verified-ef73dab5e904405aa9dc2aa3019008f4/。助手未修改核心代码，新增辅助 tests/test_response_call_structure.py 7 个测试方法（含子场景），对严格及保留两种模式检查单条对象、ID、类型、function、名称及参数原文类型。修改前已运行：合法调用方法通过，其余 6 个方法存在未通过子场景（24 个子场景失败、30 个子场景错误）；不能称为 54 个独立测试方法。证据在 local-learning/evidence/d13-a-call-structure-before-2273327150d047ba915cd5f73a3e95e5/。下一步由学习者手敲 parse_tool_call 的结构校验前缀；原严格 JSON 与截断原文保留语义继续保留，批次 ID 唯一性及统一响应接线仍待处理。D13-A 进行中，未提交推送。
+
+**D13-A 单条调用结构分段验收（2026-10-16）：**用户明确要求“本次帮我改好并且验收”，助手按本段范围代写 parse_tool_call 的前置结构校验：调用必须为对象，id/name 为非空字符串，type 必须为 function，function 为对象，arguments 原文为字符串。返回对象使用已校验的 call_id/name，未改写 ID/名称，保留严格 JSON 解析及 length/error/aborted 的原文保留逻辑。辅助反例补充缺失 type/name。实际执行单条结构、外壳、消息及调用列表、既有转换、截断转换、原文历史、未解析调用、截断批次循环、模型终态共 72 项，全部通过，0 失败/错误/跳过。涵盖模拟 HTTP 配合实际临时文件和 JSONL 的正常编辑、模型错误零执行、截断批次零执行与逐 ID 反馈、完整重试、预算和取消回归；不是在线模型验证。源码快照、测试日志与哈希在 local-learning/evidence/d13-a-call-structure-verified-05facbac04714351af76e827310dd56c/；测试前后及跨工具复读哈希一致。本段实现与测试通过，不代替学习者理解确认，也不等于 D13-A 整体验收：批次 ID 重复检查、finish_reason/消息字段统一转换和 generate 接线及接口契约说明仍待补齐，原格式错误整体反例尚未在本轮宣告修复。未修改其他核心模块，未提交或推送。
+
+**D13-A 同消息重复 ID 校验分段验收（2026-10-16）：**用户明确授权代写并验收，助手在 parse_assistant_message 的调用转换循环中使用局部 seen_ids；转换单条调用后检查重复，再登记并追加。重复则抛 ModelResponseError，整条消息不返回；不修改调用 ID，不改变严格解析及截断原文保留逻辑，检查范围限定同一消息。实际执行 76 项相关测试全部通过，0 失败/错误/跳过，包括重复 ID 在普通/保留模式及残缺参数下拒绝、不同 ID 顺序和输入不变、检查状态不跨消息泄漏，以及已有单条结构、外壳、正文/列表、转换、原文历史、截断批次和模型结果回归。证据在 local-learning/evidence/d13-a-duplicate-ids-verified-a0454c8ec9a8458e97edebe4c81dfbf5/，含源码快照、哈希与测试日志；测试前后及跨工具复读哈希一致。助手代写，未请求真实模型，未提交推送。本段代码与测试验收通过，不替代学习者理解确认；generate 的统一校验/错误转换接线和 D13-A 整体格式反例验收仍未完成。
+
+**D13-A 统一转换入口核对（2026-10-16）：**学习者已敲入 parse_response 及非对象参数改抛 ModelResponseError，发现 rasie 语法错误和 JOSN 提示拼写。按用户授权助手仅修正这两处核心拼写，新增 tests/test_parse_response.py 8 项，覆盖正常转换、外壳/消息缺失、结束原因类型、服务错误归类、普通畸形 JSON 的异常归类与 cause、非对象参数、截断原文/ID 保留及内部 AssertionError 不吞。连同相关回归共实际执行 84 项全部通过。日志、快照和哈希在 local-learning/evidence/d13-a-parse-response-verified-7d1cc16cf18641e28f5dab6a08cebcbd/；解析源码测试前后及跨调用复读一致。助手另准备 qwen_client 的 ModelResponseError/parse_response 导入，保留旧解析导入供旧 generate 继续使用，导入检查通过；generate 核心接线尚未修改，下一段仍由学习者手敲。不能把局部测试当作原 4 条整体格式反例通过。D13-A 进行中，未提交推送。
+
+**D13-A generate 接线行为验证（2026-10-16）：**学习者已接入 parse_response 与 ModelResponseError→合法 error Message。助手只补辅助整体反例、同步接口说明及旧测试观察入口，未代改 generate；发现原旧解析块仍留在新 return/except-return 之后不可达，待学习者清理。新增 6 条整体格式场景：缺结束原因、缺消息、非法调用列表、重复编辑 ID、合法编辑后附畸形调用、非对象参数；与原 4 条格式反例共 10 条，真实临时文件与 JSONL 验证 error 返回/单条 error run_end/工具零执行/文件不变/历史加载并与返回一致。内部 AssertionError 对照仍直接可见，不误报正常结束。
+
+首轮全量 294 项：290 通过、1 失败、1 错误、2 跳过。失败是旧测试仍观察 qwen_client.parse_assistant_message，已改为观察新 parse_response，原零执行和同 ID 反馈断言保留。错误为既有进程清理测试读取 pids.json 出现 PermissionError；未修改该进程测试或生产清理逻辑，后续全量重跑未复现，根因未确定，首轮日志保留。首轮证据 local-learning/evidence/d13-a-generate-integrated-23947b40b1454c45a37034991f86ce9c/。
+
+同步 ModelProvider 文档说明预期请求/格式错误返回 error Message，取消传播，内部异常不伪装服务失败。第二轮全量实际执行 294 项：292 通过、0 失败、0 错误、2 条 Windows 符号链接权限不足跳过。覆盖正常、错误、截断反馈/重试、预算、超时、取消、恢复和真实临时副作用；未请求真实模型。证据 local-learning/evidence/d13-a-generate-regression-e831b9c626434ee2a221d963aec038f9/，含源码快照、脚本、日志、观察与全部核心源码哈希。测试前后及跨调用复读一致。不由测试通过替学习者确认理解；尚需删除 generate 不可达旧代码并复盘后再收口 D13-A。未提交推送。
+
+**D13-A 清理与最终理解复盘入口（2026-10-16）：**按用户明确要求，助手删除 generate 的不可达旧解析块、无用 parse_assistant_message 导入及过时手敲占位注释，未改变新接线语义。删除旧导入暴露 test_qwen_cancel 仍 mock 旧入口的错误；辅助测试已同步为观察 parse_response，保留取消后零解析的断言。首次针对性 51 项中 50 通过、1 测试错误的日志保留在 local-learning/evidence/d13-a-cleanup-verified-1a608c429fd240f8ac855f798a49db9b/；同步测试后实际重跑 51 项全部通过，0 失败/错误/跳过。证据 local-learning/evidence/d13-a-cleanup-regression-2e60c22396fb4350b2f3490c84faa6cc/，含清理后源码、日志和哈希，测试前后及跨工具复读一致。本轮未重复全量；上一轮全量 294 项（292 通过、2 条符号链接权限跳过）作为清理前证据保留。实现验证通过，尚待用户逐题说明格式错误整条拒绝、截断全批零执行/反馈及内部异常与取消边界；不能预填“已理解”，D13-A 仍未标完成。未提交推送。
+
+**D13-A 最后理解复盘与收口（2026-10-16）：**学习者经有指导问答与纠正完成三项复盘。第一题：同消息中前一个编辑合法、后一个调用 JSON 残缺，因整条消息解析完成前不会交给循环，两者均不执行；最初把最终状态答为 finished，纠正后明确三个位置为 error（模型消息停止原因、RunResult.status、run_end.data.status），并阅读完整因果表述。第二题：length 响应中完整与残缺调用都不执行，逐调用生成同 ID 的未执行反馈；经提示澄清“未执行”不等于已执行失败、“参数可能不完整”不等于每条都不完整，以及反馈进入下一次模型请求而非自动重放，最终填答“未执行、模型请求”。第三题：区别外部响应格式错误、内部断言异常和取消；最初混淆捕获与传播，经讲解明确 ModelResponseError→error Message，CancelledError→循环→cancelled，并最终独立表述“[AssertionError] 不会 [转成 error Message]，没有该异常捕获分支”。这里仅确认本轮有指导复盘的理解边界，不宣称闭卷掌握或独立实现。
+
+技术证据沿用清理前全量 294 项（292 通过、2 条符号链接权限跳过）和清理后相关 51 项全部通过；本轮逐文件核对全部核心源码，qwen_client 与清理后快照一致，其余与全量快照一致，没有源码漂移，因此不重复测试。先前进程标记 PermissionError 的初次失败记录保留，根因仍未确定；后续全量未复现。本轮仅更新记录，D13-A 标为已完成，D13-B 待开始。D13 整体仍进行中，完成计数保持 12/30；未提交推送，未调用真实模型，D13-B 的 activeRun/重入门禁/abort/waitForIdle 尚不能由当前循环能力推定已实现。
+
+**D13-B 启动与行为契约（2026-10-16）：**已重新读取 AGENTS.md，核对固定 Pi HEAD 为 7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333。源码 agent.ts:341–351 为 abort 仅发信号及 waitForIdle 等当前运行；:374–380 为 prompt 重入门禁；:507–529 在执行前建立 activeRun、finally 完成生命周期；:550–555 在收尾后 resolve 并释放；:609–611 逐个 await 监听。agent.test.ts:399–432 用异步监听屏障验证 waitForIdle 不提前完成。Mini-Pi 在现有 run_loop 外加 Agent，不重复循环：prompt 提交即占用，运行中/取消收尾中拒绝重入；abort 协作请求取消且重复请求不打断收尾；wait_for_idle 等当前运行完整结束，等待者取消不能顺带取消实际运行。运行正常或异常均释放占用，异常保持 D13-A 已选可见性，不照搬 Pi 的外层错误转换。
+
+本阶段以可选、被 await 的 on_run_end(result, error) 作为最小结束通知收尾，暂不实现 Pi 全事件订阅；纳入当前循环中的请求/工具既有清理、run_end 写入、结束通知。结束通知未完成期间不允许下一任务；未注册或自行启动且未等待的外部后台任务不在保证范围，后续完整事件系统需另定义。prompt 仍接收调用方准备的初始消息/会话配置，Agent 内隐式历史管理及统一恢复入口在 D13-D 集成，不绕过 D11 恢复门禁。本阶段也不实现 D13-C 的 steer/followUp。
+
+验收门禁计划覆盖正常完成后第二任务、运行中及回调收尾中重复 prompt 零新增模型/工具/记录、请求/进程/在途编辑取消的实际收尾顺序、重复 abort、提交后尚未调度即 abort、waiter 取消不干扰运行、内部异常及结束通知异常不永久占用、预算和已有取消/记录回归；保留文件可能已经修改的 D12 边界，不承诺回滚或硬实时取消。助手仅新增 mini_pi/agent.py 导入与回调类型骨架、tests/test_agent_lifecycle.py 初始空闲与零启动反例；核心类尚待用户手敲，当前 1 项因 Agent 尚不存在产生预期 AttributeError。日志 local-learning/evidence/d13-b-initial-before-97702681a4e948189aca1e014a80c1aa/。未提交推送，未请求真实模型。
+
+**D13-B 初始状态分段验证（2026-10-16）：**按用户“帮我敲入”的明确授权，助手写入 Agent.__init__ 与 is_running，保存依赖、复制工具列表、保存可选结束回调及单一 _active_run=None。助手准备 dataclass 导入供下一段使用。实际运行 tests.test_agent_lifecycle 1 项通过，验证新 Agent 为空闲且模型、工具、结束回调均未调用；不外推为 prompt/abort/wait_for_idle 已实现。证据 local-learning/evidence/d13-b-initial-verified-30dd0dcf7eec4f27ad0333b0e0cc46e2/，含源码快照、日志和哈希，跨工具复读一致。下一段由学习者手敲活动运行记录 _ActiveRun 与 _reserve_run：记录 task、启动/取消/收尾标志及 idle Event，同步检查并占用，不含 await；随后 prompt 调用该入口并托管运行，尚不能执行实际任务。idle Event 由该次运行拥有，等待者等待 Event 而不是直接取消运行 Task；后续 prompt 结果等待也需隔离调用方取消。未提交推送。
+
+**D13-B 占用入口修补与局部验证（2026-10-16）：**用户已有部分手敲 _ActiveRun/_reserve_run；核对发现 ayncio导致 NameError，且遗漏 abort_requested 字段。按用户明确“帮我补好”授权，助手将 ayncio修正为 asyncio，并补 abort_requested=False，保留其他已有实现。修改前新增反例实际执行 4 项，1 通过、3 错误，证据 local-learning/evidence/d13-b-reservation-before-d6f97d5729cc41b7886d998836e780bd/；修补后 4 项全部通过，覆盖初始空闲、占用不启动工作、重复占用保留原记录、closing 标志下仍拒绝新占用。这里 closing 是测试显式设置的状态，不是实际异步收尾的端到端证据。修补后证据 local-learning/evidence/d13-b-reservation-verified-fbb1cf2bb59942cd9424d4b5b6035795/，源码哈希测试前后及跨工具复读一致。
+
+下一步讲清 prompt 接入：普通 def 在调用时同步申请槽位并创建托管运行任务，返回可等待的结果句柄；只创建 async def 协程不能保证调用即占位。实际 _run 负责接现有 run_loop、结束回调及 finally 释放/通知；调度失败应撤销占用，提交后未启动即 abort、重复 abort、结果等待者取消隔离均保留验收门禁，不在辅助代码里隐藏这些核心决策。当前 prompt/_run/abort/wait_for_idle 尚未实现，D13-B 进行中，未提交推送。
+
+**D13-B prompt/_run 配合讲解与运行托管反例（2026-10-16）：**用户已理解普通 def 的立即执行语义。接下来先分段实现 _run 的完整托管路径，再接 prompt，以免启动后缺少释放路径。prompt 负责同步占位、创建并保存 Task、返回隔离取消的结果等待句柄；_run 负责调用现有 run_loop、保留结果或内部异常、等待 on_run_end，最后释放槽位并 set idle。启动前 abort 以 abort_requested 标志保留，_run 启动后向自身任务请求取消，由现有循环门禁处理，不能直接取消尚未启动的 Task 而跳过整个 finally。_run 中 BaseException 仅用于记录并重新抛出，不把内部异常伪装成模型错误；嵌套 finally 要保证结束回调自身报错也能解除占用。
+
+助手仅新增 4 条运行托管辅助反例：正常完成及回调结果、回调屏障期间拒绝重入且 idle 未通知、内部 AssertionError 可见且释放、启动前取消零模型/工具启动。连同已有 4 项共执行 8 项，已有 4 项通过、新增 4 项因 _run 尚未实现产生预期 AttributeError；证据 local-learning/evidence/d13-b-run-owner-before-26ccddae42f647799f2540c41415f54e/。没有修改核心实现，下一段由用户手敲 _run，核心验收保持未通过；prompt/abort/wait_for_idle 尚未实现。未提交推送。
+
+**D13-B _run 手敲核对与修正验证（2026-10-16）：**学习者已敲入 _run，初次核对发现函数/try/return 多处缩进不一致，以及 self.on_run_end 漏下划线；语法检查在第 56 行报 IndentationError，尚不能导入。用户明确要求“帮我调整好”后，助手仅整理 _run 的缩进、调用换行及 _on_run_end 属性名，保持先前设计，未实现后续 prompt/abort/wait_for_idle。实际运行生命周期、模型格式错误整体反例、模型终态及取消结束回归共 31 项全部通过，0 失败/错误/跳过。生命周期 8 项覆盖初始/占用门禁、正常运行和回调参数、真实异步回调屏障期间仍占用且不通知 idle、内部断言原样传播但收尾释放、预先登记取消经现有循环形成 cancelled 且零模型/工具启动。这里尚不是公开 prompt 提交后的并发验收，也未替代真实文件/进程取消门禁。证据 local-learning/evidence/d13-b-run-owner-verified-b70edbf5878c4b67bc53bd29fe633f72/，含源码快照、日志和哈希，测试前后及跨工具复读一致。下一步 prompt 接入及其反例，D13-B 进行中，未提交推送。
+
+**D13-B 磁盘复核恢复与 prompt 手敲准备（2026-10-16）：**用户明确要求修正当前磁盘后再给手敲代码。磁盘 _run 再次成为旧缩进/属性错误版本，来源未确定。恢复前比较 _run 区域之前的文本与已测快照完全一致，备份当前版本后仅恢复 _run 至已测实现；恢复前源码保留在 local-learning/evidence/d13-b-run-owner-restored-bd664fd3f8d04888907d16f115527e0d/，恢复后原有 31 项回归通过。本轮没有宣称回写根因已解决。
+
+助手新增 prompt 5 条辅助反例：调用即占位/同步拒绝第二任务/完成后可再启动、回调等待期间门禁、结果句柄取消不取消实际运行、Task 调度失败撤销占用且零工作、初始消息列表在提交时复制。修改前连同已有生命周期 13 项中已有 8 项通过，5 项因 prompt 缺失产生预期错误，证据 local-learning/evidence/d13-b-prompt-before-863aaa2af52647109a07e5ff73e69d38/。助手只准备 prompt 的参数签名、会话/预算配置透传和 NotImplementedError 占位，未代写占用、调度、失败回滚与 shield 核心。带骨架的当前源码再执行既有 31 项回归全部通过，证据 local-learning/evidence/d13-b-prompt-scaffold-2b85735e76df43c0a944a760273b04a1/，测试前后及跨工具哈希一致。
+
+下一段由学习者替换 prompt 的 NotImplementedError：取得当前事件循环并复制消息列表，调用 _reserve_run，同步创建 _run 协程与 Task；调度失败关闭尚未启动的协程并撤销本次占用/通知 idle，异常继续抛出；成功返回 asyncio.shield(task)，隔离等待结果者的取消，实际任务仍由 Agent 持有。_run 与 prompt 使用同一 _ActiveRun，不在 prompt 正常路径提前释放。公开 prompt 反例仍待实现后验证，abort/wait_for_idle 尚未接入，D13-B 未完成。未提交推送。
+
+**D13-B 暂停与记忆专题切换（2026-10-19）：**用户明确要求保留现有代码、记录暂停点，并为 2026-10-21 10:00（Asia/Shanghai）的 Agent 记忆方向面试提前学习。主线 D13-B 已暂停在 prompt 接入前，保留 _ActiveRun、占用入口和 _run，prompt 仍为 NotImplementedError，abort/wait_for_idle 尚未实现；D13 整体未完成，完成数保持 12/30。恢复先核对磁盘与暂停快照，复盘占位、调度和收尾关系，再分段手敲 prompt 并准备公开入口反例。
+
+助手在修改记录前保存 122 个原有已跟踪/未跟踪文件的本地快照，逐文件验证副本 SHA-256 与原文件一致，附 HEAD、分支、Git 状态及差异；位置为 local-learning/evidence/learning-pause-20261019-07dc77e3/。忽略证据、配置和独立 pi-textbook checkout 留在原位置，没有纳入这个文件快照；证据目录不自动跨设备同步。本聊天此前实际运行生命周期 8 项全部通过，本次文档维护不重复计作测试，不据此宣称公开 prompt 或记忆能力通过。
+
+新增 [Agent 记忆专题路线](agent-memory-learning-roadmap.md)，2026-10-19 先学 M01 整体框架和 M02 记忆读写流程，10 月 20 日学 M03 方案取舍及 M04 失败、评测和追问；暂不安排演示或原型交付。当前 M01 开始讲解，理解待确认，专题尚未新增 Python 实现。D15–D17 保持待开始，提前阅读不自动改变其实现验收状态。记录由助手维护，核心手敲与辅助代码分工继续遵循 AGENTS.md；本次不提交或推送。
+
+**D13-B prompt 手敲核对（2026-10-23，本线程 codex/mini-pi-v0.1）：**学习者已按段敲入普通 def prompt：获取 loop、浅复制初始消息列表、同步占用、创建 _run 协程并提交 Task、调度失败 close 协程及撤销占用/通知 idle、成功返回 shield 结果句柄，逻辑正确；return 后尚有不可达旧 NotImplementedError，助手未静默改核心，待学习者删除。原先准备的 AgentPromptTests 已不在当前测试文件中，原因未确定；助手独立新增 tests/test_agent_prompt.py 6 项行为测试，未覆盖或删除其他改动。实际执行公开提交入口、生命周期、格式反例、模型结果及取消结束回归共 37 项全部通过，0 失败/错误/跳过，RuntimeWarning 按错误处理。验证同步占位和重复拒绝/再次启动、回调屏障下零新增请求或会话记录、等待句柄取消不取消实际模型/运行、调度失败关闭协程并释放、提交时列表快照及会话预算传递、内部和回调异常可见但不永久占用。使用真实循环、临时 JSONL，模型与工具探针模拟，不声称已验真实文件/进程在 Agent.abort 下的清理。
+
+证据 local-learning/evidence/d13-b-prompt-review-f0e98dcab34e4b368e642bf4e9269496/，含手敲源码快照、日志与哈希，测试前后及跨工具复读一致。公开 prompt 本段行为验证通过，旧占位清理及理解确认未完成；abort/wait_for_idle 尚未实现，D13-B 不标完成。本轮仅更新原目录主线门禁和追加记录，未调整 memory 工作区或其当前学习优先级，未提交推送。
+
+**D13-B prompt 清理与取消接口准备（2026-10-23）：**用户授权删除旧占位，助手仅删除 prompt return 后不可达 NotImplementedError；现有公开入口/生命周期/格式反例/模型终态/取消结束共 37 项回归全部通过。证据 local-learning/evidence/d13-b-prompt-cleanup-ad647828cc85493880602cca6ee0c521/，源码测试前后及跨工具复读一致。取消配合设计：abort 只请求取消，不释放占位、不承诺回滚；wait_for_idle 等当前运行的 idle 通知，只有现有循环与约定结束回调完成或异常退出后才通知。已 started 的任务只发一次 Task.cancel，未启动只登记 abort_requested 由 _run 启动后传递，避免直接取消尚未运行的 Task 跳过 finally；closing 期间不再打断结束回调。这里 closing 防重复取消是 Mini-Pi Python 任务管理设计，Pi 的 AbortSignal 可传播给监听，不宣称两种机制完全等同。
+
+助手新增 tests/test_agent_abort.py 4 项反例：空闲取消零启动、提交后未调度即取消形成 cancelled/run_end、重复取消不能跳过受控模型清理屏障及重入门禁、结束回调阶段取消不打断收尾。当前核心尚无 abort，4 项实际均以 AttributeError 失败，证据 local-learning/evidence/d13-b-abort-before-451e73ebb3064485972e3deb2915fd41/。该屏障是模拟资源，不代替之后真实请求/进程/编辑验收。下一段由学习者手敲 abort，再接 wait_for_idle；D13-B 未完成，未提交推送，未改 memory 工作区。
+
+**D13-B abort 缩进修正与 wait_for_idle 准备（2026-10-23）：**学习者已敲入 abort，核对发现第130–132行多一个空格导致 IndentationError，首次测试未能导入，证据 local-learning/evidence/d13-b-abort-review-6a0132664b834cd6bf2f1ae45b3943fa/。用户明确要求“帮我调整好”后，助手仅修正 abort 缩进、签名格式和相邻注释，保持用户逻辑。实际执行取消、公开提交、生命周期、格式反例、模型结果与结束取消回归共41项全部通过，0失败/错误/跳过，RuntimeWarning按错误处理。证据 local-learning/evidence/d13-b-abort-fixed-478a2ca764914c2eb4b93dce174c7251/。包含空闲取消零启动、提交未调度即取消形成cancelled与单条结束记录、重复abort不跳过受控模型清理屏障、结束回调阶段不打断并继续占用；尚不能外推到真实文件/进程的Agent端到端验收。
+
+下一段 wait_for_idle 使用普通 def 在调用时捕获 run，返回内部 async wait 协程；等待该 run.idle，而非等待/取消真实运行 Task。空闲调用立即绑定空闲状态，不被之后新任务影响；旧run的等待不随新run切换，取消等待者不取消实际运行，等待结束不代表任务成功。助手仅新增 tests/test_agent_idle.py 4条反例，尚无核心实现时实际4项均报AttributeError，证据 local-learning/evidence/d13-b-idle-before-73aaf74ee9004b708e09a1f8db4ae6be/；此为待实现基线，不与前述41项通过混同。未改memory工作区，未提交推送。遵循AGENTS新增规则，不对常规小修与测试做固定哈希扫描。
+
+**D13-B 等待空闲与整体技术验收（2026-10-23，本线程 codex/mini-pi-v0.1）：**学习者已敲入 wait_for_idle，原始逻辑正确，但 abort 的旧缩进错误再次存在、wait_for_idle 方法前为3空格；导入阶段失败，证据 local-learning/evidence/d13-b-idle-review-9f599018c0604c59a87003facfb999cd/。用户明确要求调整两个方法后，助手仅统一这两个方法缩进、签名间距和就地注释，保持捕获run并返回内部等待协程的设计。针对性45项通过，证据 local-learning/evidence/d13-b-idle-fixed-36aebf928f914bbe87b82847678a1ddb/。此前回写来源未确定，不由本轮成功推定已解决。
+
+助手新增 tests/test_agent_resources.py，通过公开 Agent.prompt/abort/wait_for_idle 加既有真实循环验证4项资源场景：本地HTTPS响应体等待中取消后客户端/响应关闭及服务端观察断连；固定测试脚本的实际父子进程与监督进程在idle后均停止且进程等待完成；真实临时文件写前取消保持原内容；获准写入后的受控分段写在取消时保持Agent占用及waiter未完成，线程放行并结束后才写run_end/通知idle，保留已完成修改。重复abort及收尾中B任务拒绝、后续第二编辑未启动均有断言。写入测试是受控真实分段写，不是声称抢占单次OS写入，亦不承诺回滚；只覆盖既定资源范围及被await的结束回调，不扩张到未登记后台任务。资源专项4项全部通过，证据 local-learning/evidence/d13-b-real-resources-97302252157a451e836ea6f393626851/。
+
+随后全仓库实际执行320项：318通过、0失败、0错误、2条旧Windows符号链接权限跳过；RuntimeWarning按错误处理，未请求真实云模型。完整日志、脚本、观察记录及当前Agent源码快照在 local-learning/evidence/d13-b-full-acceptance-006d1375cc564e219b26fa188bddcfa6/。按AGENTS要求，本次常规修正/测试不做固定哈希扫描。技术验收通过不替学习者填写“已理解”：接下来逐题回顾提交/收尾职责、abort不等于idle、取消不回滚、等待者取消不取消实际运行、内部异常可见且仍释放占用。D13-B保持待理解验收，不进入D13-C，总步骤仍12/30。本轮仅修正主线Agent、准备辅助测试及更新主线记录，未修改memory工作区，未提交推送。
+
+**D13-B 有指导理解验收通过、最终磁盘漂移阻塞（2026-10-23）：**学习者逐题确认：1）abort只请求取消，收尾中仍is_running=True、wait_for_idle未完成，B任务被拒绝；明确不是要求A完成原业务目标。2）取消不保证文件回滚，必须等待在途编辑线程结束，cancelled不代表文件没修改。3）等待者取消不会取消实际运行或释放占位；最初将停止入口答为cancel，经纠正后明确agent.abort。4）结束回调异常继续抛出、finally仍释放；最初将idle误作成功，经讲解后主动复述“idle表示本次运行已完成收尾，不代表任务成功”。5）对调用时绑定A、之后B启动的等待对象回答“A，不需要”等B，正确。五题有指导理解复盘通过，不宣称独立闭卷或全部手写。
+
+最终只读核对时，当前agent.py又出现旧abort缩进（第130行）和wait_for_idle的3空格方法缩进；AST解析直接IndentationError，不能将之前318通过/2跳过的快照结果当作当前磁盘通过。已备份当下源码与相对已验快照差异，证据local-learning/evidence/d13-b-final-review-drift-0f42741a7ea1408cb2faa7d3cb16c57c/。此前多次按授权修正后仍重复出现，回写来源未确定。本轮未再次盲目恢复，需先让用户关闭可能持有旧缓冲的agent.py编辑标签，排除持续回写，再按既有授权仅恢复这两个方法并复测。D13-B暂不标整体完成，不进入D13-C，总数保持12/30；未提交推送，未改memory工作区。
+
+**D13-B 最终恢复与收口（2026-10-23）：**五题有指导理解复盘已完成，详见上条记录。用户再次明确“帮我调整”后，助手仅恢复 abort 与 wait_for_idle 的正确缩进及就地说明，其他核心实现保留。首次全量320项中317通过、1条旧进程测试错误、2条权限跳过；错误发生于测试ready读取pids.json的PermissionError，非Agent业务断言失败。已在测试辅助ready原有5秒时限内对FileNotFoundError/PermissionError做读取重试，以实际读到PID替代exists后立即读取，JSON结构及真实进程存活/退出断言全部保留，未修改生产进程清理逻辑。初次日志保留在local-learning/evidence/d13-b-final-restoration-b1ee7d2d0a1c4aceae5afcf0fd1f0d83/。
+
+修正辅助等待后全仓库实际执行320项，318通过、0失败、0错误、2条旧Windows符号链接权限跳过。证据local-learning/evidence/d13-b-final-recheck-15f765a150e949cc94479c7e9294de7a/，含脚本、日志、真实资源观察和已测Agent快照。跨工具复读当前Agent可解析，AST与该已测实现一致；本轮未再观察到旧缓冲回写，来源仍未确定，不宣称根因已解决。按当前磁盘复测及已经完成的理解验收，将D13-B标为已完成；覆盖单活动运行门禁、启动前/运行中取消、重复取消、结束回调等待及异常释放、等待者取消隔离、绑定本次运行等待，以及真实本地HTTPS、固定父子进程和受控编辑线程收尾。不承诺回滚、任意后台任务或硬实时取消；不是线上云端模型验收。D13-C待开始，D13整体未完成，计数仍12/30。当前memory专题入口及独立工作区保持原样，未提交推送。
+
+**D13-A/B 提交准备（2026-10-23）：**本次仅提交已完成的 D13-A/B 源码、相关测试及本路线的主线记录；记忆专题、图片、教程 checkout、私有配置和本地证据不纳入。最终行为与取消边界已通过技术及有指导理解验收；本次另从暂存区导出副本执行完整回归，结果以提交范围清单为准。尚未提交或推送，不把准备完成写成已推送。

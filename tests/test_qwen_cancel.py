@@ -88,7 +88,9 @@ class QwenCancelTests(unittest.IsolatedAsyncioTestCase):
         self.last_result = result
         self.assertEqual(result.status, "finished")
         self.assertIsNone(result.task_passed)
-        self.assertEqual(result.messages, self.initial + [Message("assistant", "本地正常响应。")])
+        self.assertEqual(result.messages, self.initial + [
+            Message("assistant", "本地正常响应。", stop_reason="stop"),
+        ])
         executor.execute.assert_not_awaited()
         loaded = self.store.load()
         self.assertEqual(loaded.history, result.messages)
@@ -103,7 +105,7 @@ class QwenCancelTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.server.errors, [])
 
     async def test_direct_send_cancel_closes_request_without_parsing_response(self):
-        with patch("mini_pi.qwen_client.parse_assistant_message") as parse:
+        with patch("mini_pi.qwen_client.parse_response") as parse:
             task = self.start(self.provider.generate(self.initial, []))
             await asyncio.wait_for(self.server.started.wait(), 2)
             task.cancel()

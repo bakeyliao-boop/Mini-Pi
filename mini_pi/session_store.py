@@ -60,7 +60,14 @@ class SessionStore:
         if event_type == "message":
             calls = [ToolCall(**call) for call in data.get("tool_calls", [])]
             return Message(
-                role=data["role"], content=data["content"], tool_calls=calls)
+                role=data["role"],
+                content=data["content"],
+                tool_calls=calls,
+                stop_reason=data.get("stop_reason"),
+                error_message=data.get("error_message"),
+            )
+            # return Message(
+            #     role=data["role"], content=data["content"], tool_calls=calls)
 
     def load(self) -> LoadedSession:
         """加载完整记录和对话历史，不执行调用，也不决定能否继续运行。"""

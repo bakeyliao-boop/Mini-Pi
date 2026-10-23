@@ -16,6 +16,7 @@ class ModelProvider(Protocol):
 
         适配器把 ToolResult 转换为供应商的工具结果消息，并保留调用 ID。
         输出使用 Message/ToolCall，避免原始供应商格式进入核心循环。
-        模型请求失败应抛出异常，交给上层运行控制处理。
+        预期的请求失败与外部响应格式错误返回 stop_reason="error" 的合法 Message。
+        取消继续传播给上层运行控制；内部程序错误不伪装成模型服务失败。
         """
         ...

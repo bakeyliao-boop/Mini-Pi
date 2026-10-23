@@ -46,11 +46,23 @@ def _validate_record(record: object) -> None:
         if calls and data["role"] != "assistant":
             raise ValueError("只有 assistant 消息可以包含工具调用")
         for call in calls:
-            if not isinstance(call, dict) or set(call) != {"id", "name", "arguments"}:
+            required_fields = {"id", "name", "arguments"}
+            allowed_fields = required_fields | {"raw_arguments"}
+            if (
+                not isinstance(call, dict)
+                or not required_fields <= set(call)
+                or set(call) - allowed_fields
+            ):
                 raise ValueError("调用必须包含 id、name 和 arguments")
             _text(call, "id", nonempty=True)
             _text(call, "name", nonempty=True)
-            if not isinstance(call["arguments"], dict):
+            raw_arguments = call.get("raw_arguments")
+            if raw_arguments is not None and not isinstance(raw_arguments, str):
+                raise ValueError("raw_arguments 必须是字符串或 null")
+            if call["arguments"] is None:
+                if data.get("stop_reason") not in ("length", "error", "aborted") or not isinstance(raw_arguments, str):
+                    raise ValueError("未解析参数只允许用于带有原文的 length/error/aborted 消息")
+            elif not isinstance(call["arguments"], dict):
                 raise ValueError("arguments 必须是字典")
     elif event_type == "tool_result":
         _text(data, "tool_call_id", nonempty=True)

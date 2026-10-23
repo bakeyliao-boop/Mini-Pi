@@ -14,6 +14,7 @@ from mini_pi.http_transport import post_json
 from mini_pi.loop import run_loop
 from mini_pi.models import Message, ToolDefinition, ToolResult
 from mini_pi.qwen_client import QwenProvider
+from mini_pi.qwen_provider import parse_response
 from mini_pi.tools.read_file import ReadFileExecutor
 
 
@@ -92,10 +93,10 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
         provider = QwenProvider(api_key="fake-credential")
         with patch("mini_pi.qwen_client.post_json_async", return_value=self.response()):
             message = await provider.generate([Message("user", "你好。")], [])
-        self.assertEqual(message, Message("assistant", "完成。"))
+        self.assertEqual(message, Message("assistant", "完成。", stop_reason="stop"))
         self.assertEqual(provider.request_records[0]["request_body"]["messages"], [{"role": "user", "content": "你好。"}])
 
-    async def test_truncated_response_does_not_reach_parser_or_executor(self):
+    async def test_truncated_response_is_parsed_but_never_executed(self):
         provider = QwenProvider(api_key="fake-credential")
         response = self.response()
         response["choices"][0] = {
@@ -114,12 +115,18 @@ class QwenTransportTests(unittest.IsolatedAsyncioTestCase):
         executor.execute = AsyncMock()
         tool = ToolDefinition("read_file", "读取文件。", {"type": "object"})
         with patch("mini_pi.qwen_client.post_json_async", return_value=response), patch(
-            "mini_pi.qwen_client.parse_assistant_message"
+            "mini_pi.qwen_client.parse_response", wraps=parse_response,
         ) as parse:
-            with self.assertRaisesRegex(ValueError, "未正常完成"):
-                await run_loop(provider, executor, [Message("user", "读取文件。")], [tool])
-        parse.assert_not_called()
+            result = await run_loop(
+                provider, executor, [Message("user", "读取文件。")], [tool], max_model_turns=1,
+            )
+        self.assertEqual(result.status, "budget_exhausted")
+        parse.assert_called_once_with(response)
         executor.execute.assert_not_awaited()
+        self.assertEqual(result.messages[1].stop_reason, "length")
+        feedback = [item for item in result.messages if isinstance(item, ToolResult)]
+        self.assertEqual([item.tool_call_id for item in feedback], ["call_001"])
+        self.assertTrue(feedback[0].error)
 
     async def test_provider_joins_existing_loop_with_real_file_and_mocked_http(self):
         test_parent = Path(__file__).resolve().parent
