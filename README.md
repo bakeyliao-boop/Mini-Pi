@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前学习进度为 D01–D12 已完成（12/30），D13-A 模型终态与反馈、D13-B 活动运行与空闲已完成，D13-C/D 待开始。已验证模型错误终态、截断批次零执行与同 ID 反馈，以及单活动运行、取消、等待收尾和真实本地连接/进程/编辑资源边界。D13-B 全量验收 320 项中 318 通过、2 项 Windows 符号链接权限跳过；不承诺取消回滚或硬实时停止。下一单元先对照 Pi 源码，再实现 steer/followUp；详细范围及证据边界见学习路线。
+当前主线已完成 D01–D13（13/30）：模型终态反馈、单活动运行、双队列递送、统一 Harness 和 CLI 已通过技术及有提示理解验收。Python 3.14.5 全量 396 项中 394 通过、2 项 Windows 符号链接权限跳过。D14 真实自主修复和第一版完整交付尚未验收；运行结束不等于任务验收成功，不承诺取消回滚或硬实时停止。
 
 ## 本地验证 D05
 
@@ -191,3 +191,21 @@ D12 已完成归档（2026-10-16）：技术验收及用户本次理解回顾均
 ![D12：预算、超时、取消与统一结束](pic/day12-execution-control.png)
 
 [完整生成提示词](pic/day12-execution-control.prompt.txt)。图为接线完成时的学习快照；底部“待最终整体复核”是绘图时状态。最终复核及理解回顾已完成，当前先提交推送 D12，再开始 D13，最新验收边界和执行证据见学习路线。
+
+## D13 统一入口与 CLI
+
+在项目根目录运行；请使用已配置 `requirements.txt` 的 Python 3.14.5。默认 `mock` 不请求云模型、不执行实际任务验收：
+
+```powershell
+python -X utf8 -m mini_pi "检查当前项目" --session local-learning/evidence/cli-demo.jsonl --workdir .
+python -X utf8 -m mini_pi "继续检查" --session local-learning/evidence/cli-demo.jsonl --workdir . --resume
+python -X utf8 -m mini_pi --help
+```
+
+首条命令须使用不存在的会话文件；已有路径显式使用 `--resume`，且恢复门禁为 `ready` 才能继续。每次运行使用新的 `run_id`，旧历史不重复追加。`--allow-file` 可重复指定允许编辑的相对文件；默认空清单不允许编辑。`--test-command-json` 配置程序固定的测试命令数组，模型不能替换命令；默认是当前解释器执行 `-m unittest discover -s tests`。默认轮数上限为 4、总时限为 60 秒，可通过 `--max-model-turns` 和 `--total-timeout` 调整。
+
+只有显式选择 `--provider qwen` 才使用真实模型，密钥仍由既有 `DASHSCOPE_API_KEY` 环境变量提供；该选择会产生真实模型请求，本次 D13 验收未运行付费任务。`ContextProvider` 每次请求使用历史深拷贝，默认保留全量消息，实际筛选/裁剪尚未实现。
+
+终端输出 JSON，包含 `status`、绝对 `session_path`、`task_passed` 和 `error`；`task_passed: null` 表示尚无任务验收结论。退出码：正常结束 0、运行错误或明确验收失败 1、参数/配置/文件错误 2、预算耗尽 3、恢复受阻 4、超时 124、取消 130。中断请求 Agent 取消，等待资源和结束回调收尾后退出；重复 SIGINT 不跳过该等待。
+
+本次验证覆盖模拟模型、真实受控文件/进程/本地请求及 Python SIGINT；未把模拟输出、进程退出 0 或 `finished` 当作真实自主修复验收。

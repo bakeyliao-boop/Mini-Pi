@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from mini_pi.executor import ToolExecutor
 from mini_pi.loop import run_loop
+from mini_pi.message_queue import PendingMessageQueue
 from mini_pi.models import ConversationItem, RunResult, ToolDefinition
 from mini_pi.provider import ModelProvider
 from mini_pi.session_store import SessionStore
@@ -39,10 +40,18 @@ class Agent:
         self._tools = list(tools)
         self._on_run_end = on_run_end
         self._active_run = None
+        self._steering_queue = PendingMessageQueue()  # 本Agent独立的方向调整队列
+        self._follow_up_queue = PendingMessageQueue()  # 另建后续队列，避免两类消息混用
 
     @property
     def is_running(self) -> bool:
         return self._active_run is not None
+
+    def steer(self,text:str)->None:
+        self._steering_queue.enqueue(text)
+
+    def follow_up(self,text:str)->None:
+        self._follow_up_queue.enqueue(text)
 
     def _reserve_run(self)->_ActiveRun:
         """拒绝重入，并登记本次活动运行"""
@@ -105,6 +114,8 @@ class Agent:
                 self._executor,
                 messages,
                 self._tools,
+                get_steering_messages=self._steering_queue.drain_one,
+                get_follow_up_messages=self._follow_up_queue.drain_one,
                 **options,
             )
             return result

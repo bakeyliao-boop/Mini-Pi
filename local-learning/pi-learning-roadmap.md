@@ -10,24 +10,24 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 最后维护日期 | 2026-10-23 |
+| 最后维护日期 | 2026-10-26 |
 | 路线版本 | 初版 跨设备同步 |
 | 学习开始日期 | 2026-10-08 |
-| 已完成学习步骤 | 12 / 30 |
-| 当前步骤 | D13-C 追加输入队列（待开始） |
-| 当前状态 | D13-A 模型终态与反馈、D13-B 活动运行与空闲已完成；本次准备提交推送 |
+| 已完成学习步骤 | 13 / 30 |
+| 当前步骤 | D13 已完成，D14 待开始 |
+| 当前状态 | D13-A/B 已推送；C/D 已完成，本次提交准备包含其实现、测试及主线记录 |
 | 远程仓库 | [bakeyliao-boop/Mini-Pi](https://github.com/bakeyliao-boop/Mini-Pi) |
-| 下一步 | 提交已完成的 D13-A/B；下一章先核对 Pi 上游 main 及固定基线差异，再学习 steer/followUp 递送边界 |
-| 当前阻塞 | D13-C/D 尚未实现；D13 整体未完成，计数保持 12/30。旧编辑缓冲回写来源未确定，本次提交只采用已复测内容 |
+| 下一步 | 确认本次 C/D 提交范围；随后进入 D14，先核对上游并准备受控单 Agent 任务验收 |
+| 当前阻塞 | D14 真实自主修复和 M1 验收未完成；文件旧内容回写来源未确认，不承诺已解决；付费模型执行须另获授权 |
 | Pi 源码版本 | `7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333`；D08 对照 `edit.ts` |
 | 模型接入 | 已接入百炼 `qwen3.8-flash`；真实读取与解释已验证，接口、模型 ID、耗时及 usage 见 D07 记录 |
 | 第一版完成情况 | 四工具、基础循环、真实模型接入、JSONL 保存与加载、正常继续和中断恢复门禁已分别验证；模型自主修复和完整执行控制尚未完成 |
 
-**D01–D12 已完成并推送；D13-A/B 已完成，D13-C 待开始；D13 整体仍进行中（12/30）。**D01–D04 完成有指导的阅读与推演，D05–D06 完成本地工具和模拟循环验证。D07 完成真实模型接入与读取反馈；D08 完成编辑和路径边界验证；D09 完成四工具联调及失败分类；D10 将初始消息、模型响应、工具结果和正常结束状态逐条写入 JSONL；D11 加载统一对象、正常继续并增量保存，对缺结果的调用返回明确恢复状态。34 项相关测试通过，三场景示例保留恢复前后记录。D11 使用模拟模型和真实文件工具，不据此声称已实现自动重放、模型自主修复或第一版完整交付。
+**D01–D13 已完成（13/30）；D13-A/B 已推送，本次准备提交 C/D。**D13-C 完成用户文本双队列及递送时序；D13-D 完成四工具组装、共享 Agent 两入口、可替换请求上下文和 CLI 状态/路径/退出码/中断收尾。Python 3.14.5 全量 396 项中 394 通过、2 项旧 Windows 符号链接权限跳过。有提示理解复盘已完成，不等于独立闭卷设计；D14 真实自主修复和第一版完整交付尚未验收。
 
-开发分支为 `codex/mini-pi-v0.1`，D11 完成范围见[第十一次学习记录](#第十一次学习记录)。D13-A 已完成模型终态与反馈，D13-B 已完成活动运行、取消与空闲门禁，下一单元为 D13-C。手敲只聚焦当前学习目标的少量核心决策；时间戳、路径配置、测试和示例等由助手准备和解释，具体边界见 [AGENTS.md](../AGENTS.md)。
+开发分支为 `codex/mini-pi-v0.1`。D13-A/B/C/D 已按选定首版范围完成；手敲只聚焦当前学习目标的核心决策，辅助代码由助手准备并解释，具体边界见 [AGENTS.md](../AGENTS.md)。
 
-路线准备和此前调研不计入学习完成数。D01–D12 计为 12 / 30；D01–D04 是阅读与推演，D05 是本地工具验证，D06 是模拟循环验证，D07 是真实模型配合读取的循环验证，D08 是实际编辑与受限路径验证，D09 是四工具联调与演示用例修复，D10 是正常运行记录的持久化验证，D11 是加载、增量继续与显式恢复门禁验证。各阶段不能互相代替；不据此声称用户已独立实现全部代码。
+路线准备和此前调研不计入学习完成数。D01–D13 计为 13/30；阅读推演、模拟验证、真实工具验证与真实模型任务验收分别记录，不能相互替代，不据此声称用户已独立实现全部代码。
 
 ## 怎样使用和维护这份路线
 
@@ -185,7 +185,7 @@ R02 中优先读 `pi-ai and pi-agent-core`、`Minimal agent scaffold` 和 `Minim
 | D10 | 阅读与编码 | 保存执行事件和会话 | 已完成 | 2026-10-14 |
 | D11 | 编码与测试 | 加载会话并明确恢复边界 | 已完成 | 2026-10-14 |
 | D12 | 编码与测试 | 实现预算、超时和取消 | 已完成 | 2026-10-16 |
-| D13 | 阅读与编码 | 补齐 Agent 生命周期、队列与模型反馈后组装 harness 和 CLI | 进行中（A/B已完成，C/D待开始）（D12 推送后） | — |
+| D13 | 阅读与编码 | 补齐 Agent 生命周期、队列与模型反馈后组装 harness 和 CLI | 已完成（技术与有提示理解验收通过；A/B已推送，C/D本次提交准备） | 2026-10-26 |
 | D14 | 验收 | 验证单 agent 核心行为及真实修复任务 | 待开始 | — |
 | D15 | 阅读 | 理解上下文压缩和消息配对 | 待开始 | — |
 | D16 | 编码 | 分开完整历史与请求上下文 | 待开始 | — |
@@ -1761,3 +1761,147 @@ D13-A 首先解决“模型为什么停止，循环该如何反馈与结束”�
 修正辅助等待后全仓库实际执行320项，318通过、0失败、0错误、2条旧Windows符号链接权限跳过。证据local-learning/evidence/d13-b-final-recheck-15f765a150e949cc94479c7e9294de7a/，含脚本、日志、真实资源观察和已测Agent快照。跨工具复读当前Agent可解析，AST与该已测实现一致；本轮未再观察到旧缓冲回写，来源仍未确定，不宣称根因已解决。按当前磁盘复测及已经完成的理解验收，将D13-B标为已完成；覆盖单活动运行门禁、启动前/运行中取消、重复取消、结束回调等待及异常释放、等待者取消隔离、绑定本次运行等待，以及真实本地HTTPS、固定父子进程和受控编辑线程收尾。不承诺回滚、任意后台任务或硬实时取消；不是线上云端模型验收。D13-C待开始，D13整体未完成，计数仍12/30。当前memory专题入口及独立工作区保持原样，未提交推送。
 
 **D13-A/B 提交准备（2026-10-23）：**本次仅提交已完成的 D13-A/B 源码、相关测试及本路线的主线记录；记忆专题、图片、教程 checkout、私有配置和本地证据不纳入。最终行为与取消边界已通过技术及有指导理解验收；本次另从暂存区导出副本执行完整回归，结果以提交范围清单为准。尚未提交或推送，不把准备完成写成已推送。
+
+**D13-C 开始：最新 main 与固定基线对照（2026-10-23）：**按 AGENTS 新章要求，在不切换固定阅读 checkout 的前提下 git ls-remote 核对并 fetch 上游 main，读取 936e5f40aede9327b9142b63506ed2b68bc6b4ac 的 agent.ts/agent-loop.ts；固定基线仍为7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333。核对 PendingMessageQueue.enqueue/peek/drain、Agent.steer/followUp/createLoopConfig 和 runLoop 的初始steering轮询、工具批次后轮询、自然停止后的follow-up入口。两文件差异新增请求identity等字段，相关队列时点未变，没有静默切换学习基准。最新/基线源码、差异及日期/SHA记录在本轮 d13-c-upstream-review-* 忽略证据目录。
+
+本章完整行为：运行中 prompt 仍拒绝重入，steer/follow_up 只把追加输入排入相应队列；steering 在当前回答和工具批次后进入下一模型请求（上游也有首次请求前及长准备阶段的轮询）；follow-up 在没有工具/steering等自然继续条件、原本准备停下时才接入。同一 run 内继续，不在运行中另启 prompt；steer 不承诺阻止当前批次第二个工具，应使用工具门禁或取消处理硬限制。Mini-Pi 保留串行工具/线性会话，首段先讲用户文本队列与时序，尚未决定/实现队列模式等细节，需继续按完整范围记录差异再分段手敲。
+
+验收计划以请求快照和实际副作用检查：同批第二工具不因steer被误称禁止、steering先于下一模型请求、follow-up不能在仍有自然工具循环时提前递送、同run记录顺序与调用结果配对、无队列普通结束不变、预算/超时/取消/错误终态不被队列绕过、不静默丢失未递送消息。源码阅读不等于实现完成，本轮没有新增核心代码或运行测试。
+
+当前本地agent.py又为旧缩进缓冲版本并不能解析；远端32f65af保存的是已验D13-A/B版本。该本地阻塞须在新核心代码前解决，不能把已推送结果当作当前磁盘可执行；回写来源仍未知。本轮仅源码核对、记录和概念讲解，未改memory工作区，未提交推送D13-C。
+
+**D13-C 转入接线与证据推进（2026-10-23）：**用户明确要求不用重学概念，围绕现有代码接入与时序证明推进，仅在出现理解缺口时再解释。按此前对这两个方法的修复授权，助手先备份当前agent.py，再仅恢复abort/wait_for_idle为HEAD已提交实现；恢复前AST核对其前缀与HEAD一致，并检查wait之后无其他代码，其他修改保留。26项现有Agent生命周期/公开提交/取消/等待及真实资源回归实际全部通过，恢复证据local-learning/evidence/d13-c-baseline-restore-5d1ede932bb8/。本轮不推定回写根因已解决。
+
+三处接入安排：message_queue.py负责用户文本入队和一次取一条；Agent持有两个独立实例、提供steer/follow_up并向run_loop传递取消息入口；loop在轮次边界与自然停止边界分别取消息，追加同一history并保存，再发下一请求。先选Pi默认one-at-a-time/FIFO，完整可配置批量模式暂不实现；队列首版仅用户文本→user Message，是对Pi通用AgentMessage的输入范围裁剪，保留正文原文；不按任务结束自动清空未递送消息，后续清理/跨运行语义须明确接线并验收。Mini-Pi模型轮数/总时限继续有效，不因有队列绕过门禁。
+
+助手仅新增message_queue.py导入骨架与tests/test_message_queue.py 6条反例，覆盖空队列、FIFO且每次一条不重送、非法输入拒绝、两实例隔离、正文空白原样保留、取空后再入队。当前类尚未手敲，6项实际均报AttributeError，证据local-learning/evidence/d13-c-queue-before-7bc051d142f940a8b879efa93e0682a0/；不将准备反例称作实现通过。下一段给学习者完整小段核心类并逐行注释，后续用事件屏障固定插入时刻、核对模型请求快照及真实文件/JSONL证明递送时序。没有实现新队列核心或提交推送；memory工作区保持原样。
+
+**D13-C 队列手敲核对通过（2026-10-23）：**学习者已敲入 PendingMessageQueue 的初始化、enqueue 和 drain_one，核对逻辑及缩进正确。实际运行 tests.test_message_queue 6项全部通过，0失败/错误/跳过；验证空队列、FIFO一次一条且不重送、非法文本拒绝、steering/follow-up实例隔离、原文空白保留、取空后可继续入队。证据local-learning/evidence/d13-c-queue-review-d3ff059eafa441dabb8a1942fd7a1f48/。助手未修改学习者核心实现。
+
+准备接Agent前进行单文件语法检查，发现agent.py又被旧缓冲改回第130行IndentationError；同轮队列测试通过不代表Agent接线可执行。鉴于多次修复后重现，当前暂停向该文件叠加新代码，需先关闭持有旧内容的agent.py编辑标签、避免保存旧缓冲，再恢复已提交版本。没有再次盲目覆盖或改memory工作区；D13-C队列小段通过，Agent入口与循环时序接线仍待实现，未提交推送。
+
+**D13-C 关闭编辑标签后恢复与 Agent 入队入口准备（2026-10-23）：**用户已明确“已关闭”。助手备份当前agent.py，核对abort之前AST与HEAD一致、wait之后没有其他实现，再仅恢复abort/wait_for_idle为已提交代码，其他改动保留。证据local-learning/evidence/d13-c-closed-editor-restore-e9f920042efd/。助手只准备PendingMessageQueue导入，未代写Agent队列字段或入口；队列与已有Agent/真实资源回归共32项实际全部通过，证据local-learning/evidence/d13-c-restored-agent-review-b3c33f1dc3304211a3220059acab0b22/。本轮恢复后未再观察到回写，不推断原根因。
+
+接线下一小段由学习者在Agent初始化两个独立PendingMessageQueue，并添加steer(text)/follow_up(text)只转发enqueue。与已核对Pi的enqueue入口一致，允许空闲预排队，不在入队时启动模型、保存历史或占用新run；输入范围限非空用户文本且snake_case follow_up对应Pi followUp。消息直到后续循环边界才递送，空闲预入队时点需要下一段同样纳入验证，不能靠入口通过宣称实际时序通过。助手新增tests/test_agent_input_queue.py 3项局部反例：独立入队且零模型/工具启动、两入口非法文本拒绝、不同Agent实例不共享。当前尚无入口，3项实际均AttributeError，证据local-learning/evidence/d13-c-agent-input-before-dd58af0c56b34063af2ff5ae0e9d49df/。不新增steer抢占工具等语义，不绕过D13-B prompt重入门禁。未提交推送，memory工作区未修改。
+
+**D13-C Agent 入队核对通过与递送回调准备（2026-10-23）：**学习者已正确实现两个独立队列字段、steer/follow_up向相应enqueue转发。实际运行入口/队列与已有Agent生命周期、取消、等待、真实资源回归共35项全部通过，0失败/错误/跳过，证据local-learning/evidence/d13-c-agent-input-review-dbfdcceddf054f4685242dd49ec52213/。未以该局部结果认定模型已经看见追加消息。
+
+助手仅准备loop.py的Callable和Message导入，未改循环签名或递送核心。新增tests/test_agent_input_delivery.py 6条端到端时序反例，用事件屏障在真实读取完成、同批编辑尚未执行时插入追加消息，真实文件/工具路由/JSONL及MockProvider请求快照保留。验证steering在整批后第二请求出现（本批编辑仍发生）、follow-up在自然最终回答后第三请求出现、两类队列优先时点、FIFO每请求一条、预排队steering进入首次请求、预算停止不静默丢消息。修改前实际6项中预算保留对照1通过、5条递送反例失败，0错误，证据local-learning/evidence/d13-c-delivery-before-e69cd6a2066a4178bb870b535e0f8b92/。失败说明队列尚未被循环读取，不降低断言。
+
+下一小段由学习者为run_loop增加get_steering_messages/get_follow_up_messages两个可选无参回调（返回list[Message]），Agent._run传入对应drain_one方法引用而非立即调用；随后才分段安排循环取出/历史保存/继续判断。预算边界允许待输入仍留在队列，或已追加并保存在本次RunResult/history；不得静默丢失，也不能把写入历史直接当作已被模型看到。具体请求时序以6条反例及之后的错误/取消场景验收。D13-C进行中，未提交推送，未修改memory工作区。
+
+**D13-C 取消息接口核对与首次 steering 递送段（2026-10-23）：**学习者已正确为run_loop增加两个可选Callable参数，并在Agent._run传入两个drain_one方法引用，未提前调用；options保持会话与预算透传。上一轮接口核对35项相关测试通过，本轮只读确认接口仍一致，不重复既有回归。用户确认继续实际递送，本段先提供request_model内部协程：在现有await_before_deadline通过取消/截止门禁后，取一条steering、加入history并同步追加JSONL，再请求模型；替换原lambda为该函数引用，不移动预算门禁或提前在工具批次中轮询。
+
+本段目标仅是预排队steering及工具批次后下一模型请求可见；自然停止处的steering/follow-up选择仍下一段接线，届时需一次性标记避免已在停止处递送后在请求入口再取一条，保持每请求一次一条。已选消息若遇预算/取消/超时终止，必须仍留在队列或已写入返回history/JSONL，不静默消失。现有6条时序反例保持，先针对steering请求位置与预算对照验收；未改新核心、未宣称完整C通过，未提交推送。
+
+**D13-C 请求前 steering 分段修正与验证（2026-10-23）：**学习者已敲入 request_model 及替换调用，但内部协程误放到run_loop外层、request_model参数后缺逗号，语法检查报第84行SyntaxError；尚未执行行为测试。用户明确“帮我调整好”后，助手仅修正该内部协程缩进、逗号及对应行尾注释，保留原有预算、取消、时限和工具循环位置。
+
+实际运行请求时序3项专项（steering在整批工具后第二请求出现、预排队进入第一请求、预算耗尽不丢消息）及入队/队列/Agent生命周期/取消等待/真实资源/模型格式终态/取消结束回归，共61项全部通过，0失败/错误/跳过。专项使用事件屏障、真实文件读取编辑、JSONL和模型请求快照，证明同批第二个编辑仍执行、配对工具结果先进入历史再出现steering；不是以测试数量代替时点证明。证据local-learning/evidence/d13-c-steering-fixed-b3d1b70b798842b1a93565aff041e7c4/。未请求真实云模型，未提交推送，未修改memory工作区。
+
+自然停止处的steering/follow_up递送仍未接通，完整6条时序集中的follow-up/两队列优先/多steering持续递送尚待实现，不能由本轮61项通过推定D13-C完成。下一段在没有工具调用时先选steering、再选follow-up，写入历史后继续同一run；请求前函数须有一次性跳过标记，防止停止分支已递送后又额外取一条；选中消息须在预算或取消结束时留在队列或本次返回历史/JSONL中，不静默消失。
+
+**D13-C 自然停止递送段准备（2026-10-23）：**下一段整体修改两处：无工具调用时先尝试steering、无steering才取follow-up；选中消息即追加history/JSONL并continue同一run，没有消息才finished。另在request_model共享skip_steering_once标记：停止处分发过消息时，下一请求跳过再次读取steering，之后复位，避免one-at-a-time同一请求合并两条。已选消息在下一轮预算/超时/取消挡住模型请求时仍保存在本次history/JSONL，不能当作模型已看到，也不静默丢弃。错误/aborted硬终态保持在自然停止分支之前。
+
+助手只加强辅助反例，未改新核心：FIFO改为3条steering＋1条follow-up，能揭露停止处选B后请求入口又选C的双取缺陷；新增自然回答后预算不足仍保留follow-up、模型错误不递送follow-up、首请求前取消保留两队列。完整时序集当前实际9项，5通过、4失败、0错误，失败为尚未接线的自然停止递送场景；证据local-learning/evidence/d13-c-natural-stop-before-7497b30f46ff46f1a52c7817f65730a6/。下一步由学习者按行尾注释手敲自然停止分支和一次性标记，再验完整9项及回归。D13-C仍进行中，未提交推送。
+
+**D13-C 自然停止处分流修正与验证（2026-10-23）：**学习者已敲入自然停止分支与一次性标记，但skip_steering_once/request_model误置run_loop外、queue/queued变量不一致、get_steering_message少s及请求参数逗号缺失，语法检查未通过。用户明确“帮我调好”后，助手仅修正这四处并加入对应行尾注释，保留学习者的分流逻辑。
+
+实际执行完整9项递送时序反例及队列/Agent入队/生命周期/公开提交/取消/等待/真实资源/模型错误终态/取消结束回归，共67项全部通过，0失败/错误/跳过，RuntimeWarning按错误处理。证明预排队steering进入首次请求、同批工具完成后再递送steering、本批编辑仍实际发生、follow-up在自然最终回答后进入下一请求、steering优先且3条输入每请求只递送1条、同run历史/JSONL配对一致、预算阻止请求不丢已选消息、模型错误不递送follow-up、首请求前取消保留两队列。证据local-learning/evidence/d13-c-natural-stop-fixed-6552b64ead194f0cb9d1e917f5beef4a/。来源为受控真实文件/记录与请求快照，不是线上模型验收。
+
+本段实现验证通过，不替代全章理解确认，也未在本轮运行全仓库；D13-C保持进行中，后续先核对其余预算/超时/取消与跨run待输入边界，再做全量回归及理解验收。未提交推送，未修改memory工作区。
+
+**D13-C 关闭 loop 标签后恢复与全章技术验收（2026-10-23）：**用户明确“已关闭”后，助手保留漂移前备份，仅恢复此前已验证的四处修正（内部协程/标记缩进、queued变量、复数get_steering_messages、请求参数逗号）。关闭前当前磁盘再次SyntaxError的证据local-learning/evidence/d13-c-final-boundary-drift-33df1cd35ee4/；恢复前源码备份local-learning/evidence/d13-c-closed-loop-restore-b49c84bb9d8040569a11b9cc8b9ad2c1/。恢复后原18项队列/入口/时序反例通过。没有新增核心逻辑，也不宣称旧缓冲回写根因已确定。
+
+助手补tests/test_agent_input_boundaries.py 7项：首请求前受控超时不取steering且下一run可递送、follow-up已选后下一请求受控超时或实际取消仍保留历史/JSONL而模型未读、模型等待中取消保留未取的两队列供下一run、多个follow-up按FIFO每请求一条、结束回调追加输入保留到下一run、length批次同ID未执行反馈先于steering且follow-up后续递送。超时组合位置用受控门禁精确安排，不把它当硬实时或云端超时实测；原有真实本地HTTPS/进程/编辑及运行时限另由全量覆盖。25项C专项全部通过，证据local-learning/evidence/d13-c-boundaries-ffba200d7dc149c2b4657dc7ac16d33c/。
+
+全仓库实际执行345项，343通过、0失败、0错误、2条旧Windows符号链接权限跳过，RuntimeWarning按错误处理，未请求真实云模型。证据local-learning/evidence/d13-c-full-acceptance-1bbd1cffcf404223a76604f6e5d6d5b7/，含完整脚本、日志、观察及3个C相关模块源码快照；跨工具读取AST与已测实现一致，本轮未再观察到回写，没有做常规全库哈希扫描。技术验收通过，接下来逐题做有指导理解复盘；未代填已理解，D13-C暂不标完成，不进入D13-D。
+
+范围边界：首版只接非空用户文本，两个独立内存FIFO队列，每次最多取一条，不实现Pi全部队列模式/通用AgentMessage或长准备钩子；已对照最新main和固定基线的相关递送时点。未递送输入在同一Agent实例内跨run保留，不承诺进程重启后的队列恢复；已递送消息进入history/JSONL，但不等于已进入模型请求。D13-B运行门禁与资源收尾保持，steer不抢占当前工具批次，错误/aborted先退出，不绕过预算/时限/取消。记忆工作区未改动，未提交推送D13-C。
+
+**D13-C 最终理解复盘与收口（2026-10-23）：**技术验证后逐题进行有指导理解确认。第一题：学习者明确第2次模型请求新增steer内容，第2次回复无工具调用后，第3次才接follow-up；已进一步澄清工具来自同一次模型回复、程序执行完整批次后递送，以及“原本准备停止但尚未结束”而不是先结束run再新建。第二题：针对A已在第2次请求递送、停止分支选择B后，学习者回答第3次只新增B，skip_steering_once用于避免再取C，正确。第三题：针对follow-up已写history/JSONL但下一请求被预算挡住，学习者明确没有丢失、不能认为模型已见、终态为budget_exhausted，正确。三题有指导理解验收通过，不宣称独立闭卷设计或全量代码由学习者独立完成。
+
+本轮只读核对loop.py、agent.py、message_queue.py可解析且AST与全量验收快照一致，无新核心变化，因此沿用本轮345项技术验收（343通过、2旧Windows权限跳过、0失败/错误），不为答题重复跑测试，不做固定哈希扫描。证据仍为local-learning/evidence/d13-c-full-acceptance-1bbd1cffcf404223a76604f6e5d6d5b7/；新增closure-decision.json记录本次理解确认与完成决定，原verification.json的待理解快照保持原样。
+
+按已选首版范围将D13-C标为已完成：用户文本双队列、FIFO一次一条、steering轮次递送、follow-up自然停止递送、同run记录、预算/错误/取消/超时/截断组合边界通过。队列仅同一Agent实例内存保留，不承诺进程重启恢复；不实现Pi全部队列模式/通用消息或长准备钩子，不承诺steer抢占当前工具批次。D13-D待开始，D13整体计数保持12/30。D13-C尚未提交推送，A/B提交32f65af保留；未修改memory工作区或其专题优先级。
+
+**D13-D 开始：最新 main 对照、完整行为与工具组装准备（2026-10-23）：**按AGENTS进入新章规则，fetch核对Pi最新main为3141dfdcf409e0bb2685a98ed298fa65920b1c7d，固定学习基线仍7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333，未切换固定checkout。核对sdk.ts:createAgentSession（最新191行，session context210行、new Agent403行、new AgentSession453行）、main.ts:CLI解析/SessionManager/服务组装与createAgentSessionRuntime、agent-session-services.ts:createAgentSessionServices/createAgentSessionFromServices、agent-session-runtime.ts的切换前abort与关闭。CLI并非直接把所有逻辑塞进Agent循环，而是服务/SDK组装后调用会话运行入口；SDK与main相对固定基线有模型/请求配置变化，不照搬完整实现。最新及基线5文件和review.json保存在local-learning/evidence/d13-d-upstream-review-fd9e1372eb5b/。当前C相关模块语法检查通过。
+
+本章完整链路：CLI解析→bootstrap组装注入的模型/四工具→Harness区分新任务或恢复门禁→同一Agent.prompt→既有loop→输出状态及记录路径。保留串行工具、线性JSONL、D13生命周期/队列与D11 pending门禁，不实现Pi的完整资源发现、扩展系统、会话树或自动重放。现有resume_session直接调用run_loop，接Harness时必须处理这处生命周期旁路，让ready后的恢复同样经过共享Agent并透传本次预算，非ready零模型/工具/记录追加。每次新run要有新的记录run_id，不隐式覆盖或混入旧会话；CLI中断需要明确请求abort并等idle，不把取消结果等待当作取消运行。首轮只用模拟模型与受控真实文件/固定进程验证，不发起新的付费模型请求。
+
+分段顺序：统一四工具bundle→新任务Harness→复用恢复判断且经同一Agent→CLI参数/输出/取消接线。验收覆盖模型看到的定义与实际路由一致、编辑允许清单与固定测试命令不被绕过、组装本身零模型/工具启动、新任务与ready恢复预算一致、非ready零追加且文件不变、记录增量和新run_id、CLI能输出真实状态与会话路径并等待取消收尾。技术通过不能替学习者填写已理解。
+
+助手只准备bootstrap.py导入、ToolBundle容器和build_tools签名/占位、tests/test_bootstrap.py 4条辅助反例；四工具组装核心仍待用户手敲。反例涉及能力/路由匹配、真实读取编辑及拒绝越界编辑、模型不能替换固定命令、非法配置零执行；实际基线4项因NotImplementedError报错，证据local-learning/evidence/d13-d-bootstrap-before-2f8b626d1aac4cc4aaf8563b9386e7da/，之后补充同一非法配置用例中的单字符串允许清单子场景。没有运行新组装核心或真实模型，不把准备完成算验收通过。D13-D进行中，D13总体仍12/30，未提交推送，未改memory工作区。
+
+**D13-D build_tools 手敲首次核对（2026-10-23）：**学习者已敲入四工具构造及ToolBundle返回，组装顺序与范围检查结构正确，但返回中executoes拼写错误、fronzenset拼写错误、只读工具名list_file少s，且return后留有不可达旧NotImplementedError。实际运行4条bootstrap反例，非法配置对照1项通过、其余3项首先因executoes NameError报错，未继续推定后续两个拼写已被执行验证。证据local-learning/evidence/d13-d-bootstrap-review-1e914311c3504e08a65a3e6047f466c3/。助手未静默代改核心，给出对应位置和逐行注释修正后再验收；D13-D尚未通过本段门禁，未接Harness、未提交推送。
+
+**D13-D build_tools 拼写修正与分段验收（2026-10-23）：**用户明确“帮我调好”，助手仅修正executoes→executors、fronzenset→frozenset、list_file→list_files并删除return后不可达旧NotImplementedError，保留学习者已写组装逻辑。实际运行bootstrap4项专项与读取/编辑/目录/固定测试命令/路由/真实进程清理回归共49项：47通过、0失败/错误、2条旧Windows符号链接权限跳过。bootstrap4项全部通过，证明组装不启动模型/工具、不创建执行证据，模型可见定义与实际路由一致，真实读取及允许编辑成功、清单外文件未变、模型提供命令被拒绝而空参数只执行程序固定命令、非法配置不执行。证据local-learning/evidence/d13-d-bootstrap-fixed-28b4c2b093a94a06969ca9a396516236/。本轮只做对应小修和针对性测试，无常规哈希扫描，未请求真实模型服务。
+
+四工具组装小段实现验证通过，不代表Harness新任务/恢复或CLI已完成，也不代填学习者理解。下一步准备Harness配置与构造辅助，核心任务入口仍分段手敲；D13-D进行中，未提交推送，memory工作区未改动。
+
+**D13-D Harness 新任务入口准备（2026-10-23）：**核对当前bootstrap三处拼写修正仍在，Agent/C循环可继续使用。关系固定为bootstrap提供ToolBundle（路由、定义、只读名单），Harness提供应用级新任务/恢复门禁与统一预算，Agent仍持有单活动run和全部循环/队列/取消收尾。新任务API选用Harness.run(user_text, session_store)普通def，调用方显式提供本次新SessionStore；返回Agent.prompt的受保护结果等待句柄，调用即进入Agent占位。已有记录路径拒绝当新任务追加，后续须走ready恢复入口；本段不复制run_loop或绕过Agent。SessionStore及目录准备由调用方负责，首版单Harness管理同一路径，不把exists检查宣称为跨进程文件锁；CLI后续负责独立会话路径，恢复复用旧路径时另验门禁。默认新Store的run_id由既有UUID逻辑生成，不隐式重用旧Store。
+
+助手只准备harness.py导入、不可变RunBudget容器、Harness.__init__/run签名和占位；核心Agent组装、重入/文本/旧会话检查和预算透传仍由学习者手敲。RunBudget仅承载配置，合法性仍由已有loop门禁检查，不隐藏新控制逻辑。默认初始上下文为单条user消息，可替换Context组装入口与统一恢复将在本章后续接入；当前不宣称完整D13-D完成。
+
+辅助tests/test_harness.py新增8项，覆盖构造零启动、通过共享Agent实际读取与JSONL/工具定义、旧会话字节不变且零模型请求、非法文本零提交、轮数预算实际阻止第二请求、真实等待模型按总时限取消清理、忙碌时第二任务零追加、新Store生成独立run_id且复用同Agent。当前只准备签名，8项实际均因NotImplementedError报错，证据local-learning/evidence/d13-d-harness-before-95e9c3cb8a514baeafc1cc1dd8429284/；没有把准备当作通过，未请求真实云模型、未提交推送、未修改memory工作区。
+
+**D13-D 新任务入口接续（2026-10-26）：**两分钟回顾后，学习者正确回答Agent持有活动运行并负责取消与收尾，要求继续分段手敲并逐行行尾注释。重新核对AGENTS和当前磁盘：bootstrap拼写修正仍在，Agent/loop/bootstrap/harness均可解析；Harness两个方法仍为占位，尚未实际敲入。已有8项Harness反例保持，未重复运行已知占位失败。先只提供__init__：保存ToolBundle和RunBudget、构造一个共享Agent并透传可选结束回调，不请求模型/执行工具/写记录；保存后先验构造零启动，再给run门禁与提交段。这样缩小单次手敲范围，不改变完整新任务行为和8项最终门禁。只更新学习记录，未代写本段核心、未发付费请求、未提交推送，memory工作区未改动。
+
+**D13-D Harness 构造手敲核对（2026-10-26）：**学习者已正确保存ToolBundle/RunBudget并组装一个Agent、透传结束回调，语法及接线正确；但第37行旧NotImplementedError仍可达，构造会在完成赋值后立即抛错。实际只运行构造零启动专项1项，报该占位异常，证据local-learning/evidence/d13-d-harness-constructor-review-c6a4a06a856d4171b1a5ada71962f7dc/。助手未静默修改核心，指导仅删除__init__旧占位，保留run占位；待构造测试通过再给run门禁/提交代码。未把赋值完成当作构造验收通过，未提交推送，未修改memory工作区。
+
+**D13-D Harness 构造验收通过（2026-10-26）：**用户已删除__init__旧占位，核对只剩run占位，构造保存配置与共享Agent逻辑不变。实际运行构造零启动专项1项＋bootstrap组装4项，共5项全部通过，0失败/错误/跳过，证据local-learning/evidence/d13-d-harness-constructor-verified-f345beadd2174cc0a9806f46855f97b8/。确认构造不请求模型、不调用结束回调、不创建会话文件或工具执行证据；不把该结果当作新任务run已通过。
+
+下一段给学习者run方法：忙碌先拒绝，非空用户文本校验，已有会话路径拒绝当新任务，随后用共享Agent.prompt提交单条user上下文、透传Store及统一轮数/总时限。返回受保护结果Future，调用即占位，未增加新循环或异常吞并；已有记录必须后续走恢复门禁。核心待手敲，相关7条run用例尚待验证，未提交推送，memory工作区未改动。
+
+**D13-D Harness.run 首次核对（2026-10-26）：**学习者已接入忙碌检查、文本检查、已有路径拒绝和共享Agent提交及预算透传，旧run占位已删除。发现第42行缺少第二个not，实际写成“not isinstance(...) or user_text.strip()”：非空合法任务被拒绝，空字符串反而提交。实际运行8个Harness测试方法，构造专项通过，其余7个方法有未通过结果；计数为1个失败子场景和7个错误（非法输入测试同时出现失败及后续忙碌错误），不把子场景计数当作独立测试数量。证据local-learning/evidence/d13-d-harness-run-review-ac43406bc5994236a24a6e2392e391b2/。助手未静默代改核心，给出对应行的not修正及原因；待修正后重验，不继续恢复入口。未发真实模型请求、未提交推送、未修改memory工作区。
+
+**D13-D Harness.run 新任务分段验收通过（2026-10-26）：**学习者已将文本检查修正为not isinstance(user_text,str) or not user_text.strip()，旧run占位不存在；助手只读核对，未代改核心。实际执行tests.test_harness全部8项通过，0失败/错误/跳过，RuntimeWarning按错误处理。证据local-learning/evidence/d13-d-harness-run-verified-f9983323efaa41baaa53c85cf22f9660/。验证构造零启动、真实读取/模型工具定义与JSONL一致、已有会话不追加且零模型请求、无效文本不提交、轮数预算实际阻止第二请求、总时限使等待模型清理并记录timeout、忙碌第二任务零追加、同Harness复用同Agent而新Store各自run_id。没有请求真实云模型。
+
+本段新任务实现验证通过，不替学习者填写已理解，也不等于完整D13-D完成。下一段复用D11加载/待核对调用/恢复判断，只有ready才能经这个共享Agent提交；不能绕过busy门禁或另起直接run_loop，须增量保存并透传同一预算。可替换Context组装与CLI仍待后续，D13总体仍12/30，C及D本地改动未提交推送；memory工作区未改动。
+
+**D13-D Harness.resume 恢复入口准备（2026-10-26）：**复用D11的SessionStore.load、find_pending_calls和plan_recovery；非ready返回ResumeResult(plan,None)，不得请求模型、执行工具或追加记录。ready后使用旧历史加新用户消息，经同一个self.agent.prompt提交，already_saved跳过旧历史，并透传新运行预算。调用方用旧路径构造新的SessionStore，ready路径拒绝已在旧记录中出现的run_id；单Harness范围不宣称跨进程文件锁，也不自动重放未配对工具。
+
+助手仅准备导入、resume签名/占位及tests/test_harness_resume.py九个测试方法，核心仍待学习者分两段手敲。反例覆盖共享Agent与预排队steering、真实读取及增量JSONL、非ready零副作用、非法配对、历史轮数不预扣新预算、总时限清理、忙碌先拒绝、旧run_id拒绝、非法文本与缺失文件。实际基线九个方法因NotImplementedError未通过（含子场景共十四个错误），证据local-learning/evidence/d13-d-harness-resume-before-59c399b59fd04cdb89f588ed38fa6e2d/；不把辅助准备算恢复验收通过。resume需await才开始执行，预算约束新循环，不包含同步加载历史耗时。旧独立resume_session入口暂保留，新Harness入口不调用其直接run_loop路径。未提交推送、未发真实模型请求，未修改memory工作区。
+
+**D13-D resume 手敲核对（2026-10-26）：**恢复门禁、历史拼接及增量保存已敲入；第78行return多缩进一级，恢复专项在导入时被IndentationError阻断，尚未执行行为用例。另发现第76行把总时限传给max_model_turns，且漏传total_timeout_seconds。助手未修改核心，给出72—78行逐行注释替换段，修正后再验收，暂不进入下一段。
+
+**D13-D Harness.resume 修正与验收（2026-10-26）：**用户授权代修后，仅修正return缩进、max_model_turns错误绑定及漏传total_timeout_seconds。实际运行恢复9项、新任务8项、bootstrap4项和旧恢复/门禁/预算14项，共35项全部通过，0失败/错误/跳过，RuntimeWarning按错误处理。证明ready通过共享Agent且预排队可见、真实读取/旧记录前缀不变/增量追加、新run_id门禁、非ready零副作用、忙碌先拒绝、本次预算与超时清理；未请求真实云模型，未提交推送。
+
+**D13-D 可替换请求上下文入口准备（2026-10-26）：**沿用本章已核对的固定基线sdk.ts new Agent的convertToLlm/transformContext及existingSession.messages分工。Mini-Pi选择在Provider外包装ContextProvider，这是自己的接线位置，不声称Pi使用同名包装器。每次请求对历史做深拷贝后await builder.build，再交实际Provider；原始history/JSONL不被组装器改写。默认FullHistoryContext原样保留顺序及工具配对，筛选/裁剪留D15—D17。异步接口让将来的组装等待能沿既有调用链传播取消，仍不承诺同步CPU工作硬截止。
+
+助手准备context.py导入/协议/三个方法占位和tests/test_context.py五项反例，覆盖默认工具配对与定义、每轮调用及嵌套对象修改隔离、构造零启动、错误透传、组装中取消清理。实际基线五项均因构造NotImplementedError未通过；核心待用户手敲，尚未接入Harness，因此不改变已验收的两入口。下一次先验包装器，再将可替换builder配置接入共享Agent构造，补两入口模型请求与JSONL差异反例。未修改memory工作区或专题优先级。
+
+**D13-D Context 手敲核对（2026-10-26）：**FullHistoryContext、依赖保存和深拷贝/await组装已敲入；context.py第37行误用未定义的message，应为上一行的messages。实际五项专项三项通过、两项NameError错误，尚未接入Harness。另只读发现harness.py恢复末尾已回到修正前内容：max_model_turns接总时限、漏传总时限、return多缩进；恢复专项实际在第78行IndentationError阻断，原因尚未确定，不能沿用上一轮通过结果声称当前文件通过。助手未修改核心，提供两处精确修正；本轮不做全库扫描或哈希，不推进接线。
+
+**D13-D 两处代修与Context验收（2026-10-26）：**用户授权后将context.py的message改为messages，并修复Harness.resume的return缩进与两个预算参数。实际执行context5项加原35项相关回归，共40项全部通过，0失败/错误/跳过。未请求真实云模型。此前文件回到旧内容原因尚未确定，本轮未再做全库哈希或常规重复扫描。
+
+**D13-D Harness上下文接入准备（2026-10-26）：**助手添加ContextBuilder/ContextProvider/FullHistoryContext导入与可选context_builder签名参数，未写入构造核心接线。准备tests/test_harness_context.py六项反例，覆盖两入口每次请求均组装/真实读取与原始JSONL不变（包括falsey但有效组装器）、构造零启动、非ready零组装/零追加、组装等待时abort收尾、总时限覆盖异步组装等待、组装错误向外传播且释放Agent。实际只运行首项两入口对照，新任务与恢复均因组装调用0次而失败，证明当前参数尚未生效；没有把已有40项通过当作新接线通过。下一段用户在构造中显式选择默认或注入builder，以ContextProvider包装原provider再交共享Agent；run/resume核心不变。D13-D进行中，未提交推送，memory工作区未改动。
+
+**D13-D Harness上下文接入核对与验收（2026-10-26）：**学习者已正确选择builder、创建ContextProvider并交给共享Agent。磁盘同时再次出现旧版辅助导入/参数缺失及已授权修正的旧变量名/预算/return缩进，首轮测试在导入harness.py第82行阻断。助手按前轮同范围代修授权恢复这几处，未改学习者接线，回退原因未确定。实际运行接入六项加原四十项，共46项全部通过，0失败/错误/跳过。两入口真实读取/每轮组装、falsey有效builder不被替换、JSONL原始内容/旧前缀不变、非ready零组装、组装中abort与超时清理、错误透传并释放Agent均验证。未请求真实云模型。
+
+**D13-D CLI分流准备（2026-10-26）：**先做CLI接收已解析输入后的run_command，不开放可执行终端入口；调用方传入已组装Harness、文本、路径和显式resume标记，函数创建新SessionStore使恢复拥有新run_id。新任务走run，恢复走resume，CommandResult统一承载真实状态、绝对会话路径和可选RunResult；blocked恢复保留needs_review等状态，不伪装成功。助手准备cli.py导入/容器/签名占位及六项分流反例，实际基线六项均NotImplementedError，核心待手敲。参数解析、模型/工具配置、终端输出及Ctrl-C请求abort并等待idle仍待后续，不声称完整CLI已可用；本段不得用等待者取消代替Agent取消。未提交推送，memory工作区未改动。
+
+**D13-D CLI分流手敲验收（2026-10-26）：**run_command分流、状态和CommandResult返回正确。harness.py再次缺失上下文导入/参数且恢复末尾回退，初次测试在导入时因第82行IndentationError阻断；助手按此前授权恢复同范围修正，未更改分流核心，回退原因仍未确定，已提示重新从磁盘加载编辑缓冲。实际分流六项加原四十六项，共52项全部通过；真实读取、ready旧前缀/新run_id、blocked零模型/零追加、已有路径拒绝、预算状态与缺失路径均验证。
+
+**D13-D 参数与中断收尾准备（2026-10-26）：**助手准备纯解析parse_command_args，文本位置参数、必填--session（Path）、显式--resume，不组装模型/工具、不执行任务。两项参数测试通过。新增run_command_safely及_wait_for_command_idle签名占位，实际中断逻辑待用户手敲：await既有run_command，捕获CancelledError后调用agent.abort，稳定等待当前idle，再重新抛出原取消；内部idle waiter使用shield并吞掉收尾期间重复取消，不能提前对外报告已停止。准备两入口慢模型+延迟结束hook反例、重复取消、忙碌拒绝不误abort、正常完成不abort；占位基线尚未通过，忙碌断言已限定具体错误文本以免NotImplementedError冒充重入拒绝。终端可执行main、模型/工具配置、SIGINT桥接与输出/退出码仍待后续，不把异步任务取消测试称作真实终端Ctrl-C验收。未请求真实云模型、未提交推送，memory工作区未改动。
+
+**D13-D CLI重新定位与继续准备（2026-10-26）：**按用户要求先核对实际磁盘，本轮harness/context修正均保留，run_command正确；无需代修核心，分流六项加相关四十六项共52项全部通过。cli.py此前辅助解析与收尾签名确已不在磁盘，助手恢复argparse/asyncio/Sequence导入、纯参数解析及两个收尾签名占位；参数两项实际通过。中断核心仍待手敲，未以签名准备当作取消验收通过。
+
+为解决连续手敲行号移动，改为run_command_safely在上、_wait_for_command_idle在下，按从下到上替换占位；每处同时给已读磁盘行号、函数名、原占位文本。下方展开不会改变上方待改行号。明确本段是异步取消接线，终端main/真实SIGINT/输出退出码仍后续，不请求真实云模型、未提交推送，memory工作区未改动。
+
+**D13-D 中断手敲验收与可执行入口准备（2026-10-26）：**学习者已正确实现run_command_safely捕获取消→abort→稳定等idle→重抛，以及shield保护idle waiter/重复取消继续等待。实际参数/中断五项加原五十二项，共57项全部通过；两入口模型被取消、延迟结束hook未放行时入口仍等待、二次取消不提前退出、busy拒绝不误abort与正常完成均验证。
+
+助手扩展纯参数解析（workdir、允许文件列表、固定命令JSON数组、显式mock/qwen、轮数与时限），准备已有bootstrap/Harness组装辅助、JSON状态/绝对路径/task_passed输出辅助、__main__.py转交SystemExit(main())，main和command_exit_code核心仍占位。默认mock无云调用；qwen必须显式选择，未读取或打印实际密钥，未执行付费请求。默认固定命令为当前Python的unittest discover -s tests，只交给run_tests工具，不在构造时执行；空编辑允许清单默认不允许编辑。终端CLI配置属于Mini-Pi工程设计，不声称Pi退出码相同。
+
+终端信号辅助_run_in_terminal在主线程安装临时SIGINT处理器，通过事件循环取消入口task，重复信号仍经过同一收尾链，finally恢复旧处理器；避免asyncio.run默认二次SIGINT直接中断收尾。新增反例用signal.raise_signal实际触发两次Python SIGINT，证明等待模型/结束hook/恢复handler及JSONL cancelled，专项1项通过，参数旧2项亦通过；不把该结果称为用户物理Ctrl-C按键或完整main验收。主入口退出码准备为finished0、任务验收明确失败/error1、参数/文件配置2、budget3、恢复阻止4、timeout124、cancel130；finished且task_passed为null不宣称业务通过。新main测试覆盖真实python -m mini_pi进程、默认mock与ready恢复、blocked无追加、缺key零请求、help/非法参数零构造和状态映射，选取2方法基线均因占位未通过（含映射子场景共9错误）。下一段按下方main→上方映射顺序手敲，防止行号偏移；未提交推送，memory工作区未改动。
+
+**D13-D main与退出码首次核对（2026-10-26）：**main解析/组装/asyncio运行/输出/异常退出与映射分支均已敲入；第92行codes赋值只缩进两格，和函数体四格不一致。实际运行入口与相关回归命令，在导入cli.py时被IndentationError阻断，尚未执行行为用例或真实子进程验收。助手未静默代改本段核心，给出已核对第92行的单行缩进修正，修正后重验。
+
+**D13-D 退出码代修与入口验收（2026-10-26）：**用户授权修正缩进，但重新读取时command_exit_code已回到旧占位。助手恢复上一轮已敲的完整映射并统一四格缩进，保留main。首轮65项中64通过，缺key专项因测试解释器无httpx导入阻断。按requirements.txt将httpx==0.28.1及依赖安装到忽略的local-learning/evidence/d13-cli-test-deps，以本次子进程PYTHONPATH加载，未改全局解释器或项目依赖声明。补齐后同65项全部通过，0失败/错误/跳过。验证实际python -m mini_pi子进程退出0/JSON finished/JSONL一致、mock新任务和ready恢复、blocked退出4且旧记录不变、已有路径退出2且不追加、无key退出2且零请求、帮助/非法参数零构造、所有状态退出码、两次Python SIGINT等待hook且恢复原handler。未发送真实云模型请求，未宣称物理终端按键验收或业务任务通过。
+
+本轮恢复映射非新设计；文件多次回到旧内容原因仍待确认，不声称已解决覆盖。D13-D仍需整体联动验收与有指导理解复盘，不能仅由65项通过判完整D13或D14真实修复任务完成。未提交推送，memory工作区未改动。
+
+**D13-D 整体回归与复盘开始（2026-10-26）：**用户同意整体复盘后，首次全量使用此前入口专项所用捆绑Python3.12，396项中391通过、3目录扫描测试失败、2跳过。只读定位Path.iterdir在3.12用os.listdir，而既有测试按项目原Python3.14.5的os.scandir插桩；不是凭测试名判实现回退。查得原解释器C:\Users\hyf\AppData\Local\Python\pythoncore-3.14-64\python.exe及原httpx0.28.1均可用，未修改实现或测试，改用原解释器全量重跑396项，394通过、0失败/错误、2旧Windows符号链接权限跳过。此后本项目优先显式使用已核对的3.14.5解释器，不能将捆绑3.12结果与原项目环境无说明混用；未承诺3.12全套测试兼容。
+
+D13-D已选首版技术联动验收通过：bootstrap/共享Agent/Harness新任务与恢复/可替换请求上下文/CLI参数、状态与记录路径、退出码、SIGINT取消收尾均有专项和全量证据。仍区别技术通过与理解通过，接下来逐题有指导复盘，不提前更新D13总完成数；真实付费修复任务仍属D14验收。本轮没有云请求、未提交推送，memory工作区未改动。
+
+**D13-D 有提示理解复盘与D13收口（2026-10-26）：**围绕四个场景复盘。第一题学习者先误认为缺编辑结果恢复会追加，提示后明确询问人工介入并接受needs_review停止自动恢复的解释；当前只返回门禁，未实现人工确认后修复记录/重试流程。第二题模型10行/原始历史100行答对，deepcopy在提示后补齐。第三题正确回答is_running=True、等待当前Agent收尾、不能跳过；进一步纠正shield保护的是idle waiter而不是取消请求。第四题明确不能凭finished和task_passed为空确认验收通过，澄清finished是本次运行正常结束、字段为null表示尚无验收结论而非字段未记录。按有指导复盘完成，不宣称独立闭卷掌握。结合Python3.14.5全量396项（394通过、2旧权限跳过），将D13-D及D13已选首版范围标完成，计数13/30；D14待开始，未发真实付费修复请求，C/D未提交推送。记忆专题当前学习线和下一步字段保持。

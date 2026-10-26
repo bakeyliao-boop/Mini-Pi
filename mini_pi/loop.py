@@ -2,9 +2,10 @@
 
 import asyncio
 import math
+from collections.abc import Callable
 
 from mini_pi.executor import ToolExecutor
-from mini_pi.models import ConversationItem, RunResult, ToolDefinition, ToolResult
+from mini_pi.models import ConversationItem, Message, RunResult, ToolDefinition, ToolResult
 from mini_pi.provider import ModelProvider
 from mini_pi.run_deadline import RunDeadlineExceeded, await_before_deadline
 from mini_pi.run_finish import finish_run
@@ -20,6 +21,8 @@ async def run_loop(
     already_saved: int = 0,
     max_model_turns: int | None = None,
     total_timeout_seconds: float | None = None,
+    get_steering_messages: Callable[[], list[Message]] | None = None,
+    get_follow_up_messages: Callable[[], list[Message]] | None = None,
 ) -> RunResult:
     history = list(initial_messages)
     # D12 助手准备：配置校验先于模型请求、工具执行与会话追加。
@@ -49,6 +52,17 @@ async def run_loop(
         for item in history[already_saved:]:
             session_store.append_item(item)
 
+    skip_steering_once = False  # 本次运行独立的一次性标记
+
+    async def request_model() -> Message:  # 内部协程，复用本次运行的历史和队列入口
+        nonlocal skip_steering_once  # 与自然停止分支共享同一标记
+        if not skip_steering_once and get_steering_messages is not None:  # 已选好消息则跳过一次取队列
+            for queued in get_steering_messages():  # 统一使用queued变量保存取出的消息
+                history.append(queued)  # 加入即将发送给模型的历史
+                if session_store is not None:  # 开启保存时同步记录
+                    session_store.append_item(queued)  # 保留实际递送顺序
+        skip_steering_once = False  # 标记只生效一次
+        return await provider.generate(history, tools)  # 使用更新后的历史请求模型
 
     model_turns = 0
     while True:
@@ -69,7 +83,8 @@ async def run_loop(
         model_turns += 1
         try:
             message = await await_before_deadline(
-                lambda:provider.generate(history,tools),
+                # lambda:provider.generate(history,tools),
+                request_model,  # 参数之间保留逗号
                 deadline,
                 )
         except RunDeadlineExceeded as error:
@@ -100,6 +115,20 @@ async def run_loop(
 
         tool_calls = message.tool_calls
         if not tool_calls:
+            pending = []
+            if get_steering_messages is not None:  # 使用与签名一致的复数参数名
+                pending = get_steering_messages()
+            if not pending and get_follow_up_messages is not None:
+                pending = get_follow_up_messages()
+
+            if pending:
+                for queued in pending:
+                    history.append(queued)
+                    if session_store is not None:
+                        session_store.append_item(queued)
+                skip_steering_once = True
+                continue
+
             run_result = RunResult(status="finished", messages=history)
             return await finish_run(run_result,session_store)
             # if session_store is not None:
