@@ -435,6 +435,22 @@ D12-01 在上述实际连接边界内修复，保留上一条记录中的初始�
 
 D13-A 先补齐循环反馈与终态，D13-B 才管理其生命周期，D13-C 在此基础上加入运行中的输入，最后 D13-D 统一入口。D16 再实现实际上下文筛选和压缩。
 
+#### D13 完整流转复盘
+
+对照[完整流程图](../pic/day13-agent-harness-flow.png)，从任务入口到收尾的顺序如下：
+
+1. **`main` 解析参数并组装依赖**，把任务文本、会话路径、预算等交给命令入口。
+2. **CLI 根据 `resume` 选择 `Harness.run` 或 `Harness.resume`**。两者都先检查共享 Agent 是否忙碌；恢复还要加载旧历史，通过 `ready` 门禁才能继续。`resume` 是入口选择，不是占用检查。
+3. **`Agent.prompt` 调用 `_reserve_run` 占位**，调度 `_run`，由 `_run` 调用 `run_loop`。循环使用已经占位的这次运行；`initial_messages` 和会话、预算等配置一起传下去。
+4. **每次请求模型前**，`ContextProvider.generate(history, tools)` 深拷贝历史，调用 `builder.build(snapshot)` 得到本次请求的 `messages`，再交给实际 `provider.generate(messages, tools)`。原始历史和 JSONL 保留完整记录，组装器修改副本。
+5. **Provider 将响应转换成统一 `Message`，循环根据内容和 `stop_reason` 判断**：正常工具调用则执行；截断且有调用则整批不执行、逐 ID 反馈配对错误；错误或取消则结束。没有工具调用通常是正常回答，不是异常。
+6. **工具结果追加到 `history` 和 JSONL，再请求下一轮模型**。steering 在请求入口按约定边界递送，不插入同批工具之间；准备自然停止时先取 steering，再取 follow-up，都没有才结束。选中消息后继续的是同一个 run，写入历史不等于模型已看到。
+7. **约定终态生成 `RunResult`**，`finish_run(result, session_store)` 保存 `run_end`；随后 `_run` 的 `finally` 等待 `on_run_end(result, error)`、释放 `_active_run`，再调用 `run.idle.set()`。进入 `finally` 表示开始收尾，这些动作完成才算收尾完成。
+8. **CLI 输出状态、记录路径和验收字段，返回退出码**。`finished` 表示本次运行正常结束；`task_passed=null` 表示尚无验收结论，不能据此认定业务任务成功。
+
+补充边界：内部程序错误继续向外抛出，不保证先形成 `RunResult` 或写入 `run_end`，但 `_run` 的 `finally` 仍执行。入口等待被取消不等于 Agent 自动取消；`run_command_safely` 显式调用 `agent.abort()`，通过 `_wait_for_command_idle` 等待收尾后再向外抛出取消。`shield(waiter)` 保护的是 idle 等待任务。
+
+
 **完成指标：**同一个 `Agent` 不能重入；`steer`、`followUp` 在各自边界进入模型请求；请求取消后须等待运行与已纳入收尾范围的事件处理完成才能视为空闲。截断工具零执行、每个调用有配对错误结果，模型可用完整参数再次请求；普通模型错误或中止有明确结束状态，保留历史与运行结束记录。原有模拟/真实模型都可通过同一接口使用；CLI 接收工作目录与任务，输出运行状态及记录位置，不让循环依赖 CLI 显示方式。
 
 **保留证据：**生命周期/队列时序、截断后重试及错误终态的反例测试与记录，`mini_pi/agent.py`、`bootstrap.py`、`harness.py` 的实际代码，CLI 用法和一次运行命令。手敲继续按 [AGENTS.md](../AGENTS.md) 分段进行；不要求学习者自行设计整套实现。
