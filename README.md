@@ -226,3 +226,7 @@ python -X utf8 -m mini_pi --help
 ## D15 上下文管理学习复盘
 
 [五单元复盘、摘要字段清单与证据边界](local-learning/d15-acceptance-summary.md)。学习顺序固定为：准备记忆材料→上下文构建→最终预算检查→实际模型。D15阅读学习完成，自动筛选、摘要与统一token空间检查仍待D16/D17实现。
+
+![D15上下文管理回顾](pic/day15-context-review-20261027.png)
+
+[回顾图生成提示词](pic/day15-context-review-20261027.prompt.txt)。图中虚线部分是D16/D17计划，非已实现能力。
