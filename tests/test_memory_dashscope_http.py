@@ -7,9 +7,12 @@
 import asyncio
 from contextlib import suppress
 import json
+import time
 import unittest
 from unittest.mock import patch
 from urllib.parse import urlsplit
+
+import httpx
 
 from mini_pi.memory.dashscope_embedding import DashScopeEmbedder
 from tests.http_test_server import LocalHttpsServer
@@ -148,15 +151,33 @@ class DashScopeBatchHttpTests(unittest.IsolatedAsyncioTestCase):
         self.assert_closed()
         self.assert_record(embedder, "cancelled", texts)
 
-    async def test_short_read_timeout_disconnects_and_does_not_retry(self):
+    async def _assert_short_body_read_timeout_disconnects(self):
         self.server.mode = "hang_body"
         texts = ["本地HTTPS超时边界原文"]
         embedder = self.embedder(timeout=0.1)
-        with self.assertRaisesRegex(RuntimeError, "连接失败或超时"):
-            await embedder._embed_batch(texts, "document")
+
+        def body_timeout_client(timeout):
+            client = self.server.make_client(timeout)
+            # 本用例只测试短响应体读取超时；建连、发送和连接池不共用100ms时限。
+            client.timeout = httpx.Timeout(timeout, connect=2.0, write=2.0, pool=2.0)
+            return client
+
+        with patch("mini_pi.async_http_transport._make_client", side_effect=body_timeout_client):
+            with self.assertRaisesRegex(RuntimeError, "连接失败或超时"):
+                await embedder._embed_batch(texts, "document")
+        self.assertTrue(self.server.response_seen.is_set(), "尚未收到响应头，不能认定验证了响应体读取超时")
         await asyncio.wait_for(self.server.disconnected.wait(), 1)
         self.assert_closed()
         self.assert_record(embedder, "error", texts)
+
+    async def test_short_read_timeout_disconnects_and_does_not_retry(self):
+        await self._assert_short_body_read_timeout_disconnects()
+
+    async def test_short_read_timeout_still_reaches_body_after_slow_tls_handshake(self):
+        def slow_handshake(ssl_object, server_name, ssl_context):
+            time.sleep(0.2)  # 受控慢握手：超过读取时限，仍小于独立的建连时限。
+        self.server.server_context.set_servername_callback(slow_handshake)
+        await self._assert_short_body_read_timeout_disconnects()
 
 
 class DashScopeQueryHttpTests(unittest.IsolatedAsyncioTestCase):

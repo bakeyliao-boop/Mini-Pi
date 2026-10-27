@@ -2,12 +2,15 @@
 
 import asyncio
 from dataclasses import dataclass
+from collections.abc import Callable, Sequence
 
 from mini_pi.agent import Agent, RunEndHook
 from mini_pi.bootstrap import ToolBundle
-from mini_pi.context import ContextBuilder, ContextProvider, FullHistoryContext
+from mini_pi.context import ContextBuilder, ContextProvider, FullHistoryContext, ReadOutputContext
+from mini_pi.context_budget import ContextWindowBudget
+from mini_pi.context_size import InputSizeEstimate
 from mini_pi.loop import PrepareMessages
-from mini_pi.models import Message, RunResult
+from mini_pi.models import ConversationItem, Message, RunResult, ToolDefinition
 from mini_pi.provider import ModelProvider
 from mini_pi.recovery_policy import plan_recovery
 from mini_pi.session_recovery import find_pending_calls
@@ -33,15 +36,31 @@ class Harness:
         on_run_end: RunEndHook | None = None,
         context_builder: ContextBuilder | None = None,
         prepare_messages: PrepareMessages | None = None,
+        input_estimator: Callable[[Sequence[ConversationItem], Sequence[ToolDefinition]], InputSizeEstimate] | None = None,  # 输入大小估算器
+        window_budget: ContextWindowBudget | None = None,  # 单次请求窗口预算，与轮数和总时限分开
     ):
         """只保存配置并组装一个共享Agent，不启动模型或工具。"""
         if prepare_messages is not None and context_builder is not None:
-            raise ValueError("首版记忆准备与自定义context_builder不能同时配置；须先确定最终消息预算与变换顺序")
+            if type(context_builder) is not ReadOutputContext:
+                raise ValueError("记忆准备与其他构建器不能同时配置；当前只支持ReadOutputContext")
+            if input_estimator is None or window_budget is None:
+                raise ValueError("联合接线必须配置估算器和窗口预算")
         self._tools = tools
         self._prepare_messages = prepare_messages  # 两入口共享明确配置，默认关闭
         self._budget = budget if budget is not None else RunBudget()
         builder = context_builder if context_builder is not None else FullHistoryContext()
-        context_provider = ContextProvider(provider,builder)
+        if window_budget is not None:  # 已配置窗口预算时，核对适配器暴露的实际输出上限
+            output_limit = getattr(provider, "max_completion_tokens", None)  # 当前Qwen适配器提供这个属性
+            if output_limit is not None:  # 未暴露上限的适配器，由调用方保证配置一致
+                if type(output_limit) is not int or output_limit <= 0:
+                    raise ValueError("模型输出上限必须是正整数")
+                if output_limit > window_budget.reserved_output_tokens:  # 实际输出上限不能超过预留
+                    raise ValueError("输出预留不能小于模型配置的输出上限")
+        context_provider = ContextProvider(
+            provider, builder,
+            input_estimator=input_estimator,
+            window_budget=window_budget,
+        )
         self.agent = Agent(
             context_provider,
             tools.executor,

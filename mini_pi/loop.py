@@ -5,7 +5,10 @@ import math
 from collections.abc import Awaitable, Callable
 from copy import deepcopy
 
+from mini_pi.context import ContextProvider
+from mini_pi.context_budget import ContextBudgetError
 from mini_pi.executor import ToolExecutor
+from mini_pi.memory.errors import MemoryContextError
 from mini_pi.models import ConversationItem, Message, RunResult, ToolDefinition, ToolResult
 from mini_pi.provider import ModelProvider
 from mini_pi.run_deadline import RunDeadlineExceeded, await_before_deadline
@@ -65,6 +68,13 @@ async def run_loop(
 
     skip_steering_once = False  # 本次运行独立的一次性标记
 
+    async def call_provider(items: list[ConversationItem]) -> Message:  # 统一调用已配置的Provider
+        if isinstance(provider, ContextProvider):  # Harness创建的是这层上下文包装器
+            return await provider.generate(
+                items, tools, deadline=deadline,  # 传递本次运行已有的截止时间
+            )
+        return await provider.generate(items, tools)  # 普通适配器维持原接口
+
     async def request_model() -> Message:  # 内部协程，复用本次运行的历史和队列入口
         nonlocal skip_steering_once  # 与自然停止分支共享同一标记
         if not skip_steering_once and get_steering_messages is not None:  # 已选好消息则跳过一次取队列
@@ -74,7 +84,7 @@ async def run_loop(
                     session_store.append_item(queued)  # 保留实际递送顺序
         skip_steering_once = False  # 标记只生效一次
         if prepare_messages is None:  # 未配置时保留主线原路径，不启动任何记忆能力
-            return await provider.generate(history, tools)
+            return await call_provider(history)
         try:  # 只有显式请求准备的错误转换为可记录的准备失败
             request_messages = await await_before_deadline(
                 lambda: prepare_messages(deepcopy(history)),  # 队列已递送，注入只改深拷贝
@@ -85,7 +95,7 @@ async def run_loop(
         except Exception as error:  # 只包围准备阶段，模型普通异常不在这里
             raise RequestPreparationError(str(error)) from error
         return await await_before_deadline(  # 准备结束后再次检查取消及截止，才真正进入Provider
-            lambda: provider.generate(request_messages, tools),
+            lambda: call_provider(request_messages),
             deadline,
         )
 
@@ -97,14 +107,6 @@ async def run_loop(
                 messages=history,
                 )
             return await finish_run(run_result,session_store)
-            # if session_store is not None:
-            #     session_store.append_entry(
-            #         "run_end",
-            #         {"status":run_result.status,
-            #         "task_passed":run_result.task_passed,
-            #         "error":run_result.error,
-            #         })
-            # return run_result
         model_turns += 1
         try:
             message = await await_before_deadline(
@@ -125,8 +127,23 @@ async def run_loop(
                 messages=history,
             )
             return await finish_run(run_result, session_store)
-        except RequestPreparationError as error:  # 准备失败才归error；默认builder/Provider错误仍向外抛
-            return await finish_run(RunResult(status="error", messages=history, error=str(error)), session_store)
+        except ContextBudgetError as error:  # 明确的窗口预算失败，保留原历史和错误依据。
+            run_result = RunResult(
+                status="budget_exhausted",
+                messages=history,
+                error=str(error),
+            )
+            return await finish_run(run_result, session_store)
+
+        except (RequestPreparationError, MemoryContextError) as error:  # 统一接住明确的准备或消息校验失败
+            run_result = RunResult(
+                status="error",  # 校验失败不是预算耗尽，也不是任务验收失败
+                messages=history,  # 保留原始历史，不写入整理后的请求副本
+                error=str(error),  # 保存具体失败原因
+            )
+            return await finish_run(run_result, session_store)  # 记录run_end并结束本次运行
+        # except RequestPreparationError as error:  # 准备失败才归error；默认builder/Provider错误仍向外抛
+        #     return await finish_run(RunResult(status="error", messages=history, error=str(error)), session_store)
         # message = await provider.generate(history, tools)
         history.append(message)
         if session_store is not None:
@@ -158,12 +175,6 @@ async def run_loop(
 
             run_result = RunResult(status="finished", messages=history)
             return await finish_run(run_result,session_store)
-            # if session_store is not None:
-            #     session_store.append_entry("run_end",
-            #     {"status":run_result.status,
-            #       "task_passed":run_result.task_passed,
-            #       "error":run_result.error,})
-            # return run_result
 
         if message.stop_reason == "length":
             for call in tool_calls:
@@ -196,13 +207,6 @@ async def run_loop(
                     status="cancelled",
                     messages=history,
                 )
-                # if session_store is not None:
-                #     session_store.append_entry("run_end", {
-                #         "status": run_result.status,
-                #         "task_passed": run_result.task_passed,
-                #         "error": run_result.error,
-                #     })
-                # return run_result
                 return await finish_run(run_result,session_store)
             # result = await executor.execute(call)
             history.append(result)

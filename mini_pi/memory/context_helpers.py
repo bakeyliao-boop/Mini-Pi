@@ -23,11 +23,11 @@ def checked_context_inputs(hits, task_material, recent_messages, max_context_cha
     if any(not isinstance(item, MemoryCandidate) for item in task_material):
         raise MemoryContextError("任务材料必须复用带来源的MemoryCandidate")
     recent = deepcopy(list(recent_messages))  # 包括Message、ToolCall和嵌套arguments；不只复制列表。
-    _check_complete_recent(recent)
+    check_complete_messages(recent)
     return tuple(hits), tuple(task_material), recent
 
 
-def _check_complete_recent(recent):
+def check_complete_messages(recent):
     """仅检查传入完整消息的结构；不裁剪、补造工具结果或判断任务归属。"""
     pending = {}
     past_system_prefix = False
