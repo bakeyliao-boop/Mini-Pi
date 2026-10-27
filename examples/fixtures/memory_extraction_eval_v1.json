@@ -1,0 +1,124 @@
+{
+  "version": "memw-extraction-pilot-v1",
+  "status": "planned_not_executed",
+  "data_origin": "全部为合成消息；S4是合成工具观察，不是本轮实际业务测试结果",
+  "scope": {"user_id": "pilot-user-a", "project_id": "mini-pi-pilot"},
+  "run_config": {
+    "model": "qwen3.8-flash",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "region": "华北2（北京）",
+    "max_requests": 6,
+    "max_completion_tokens": 1536,
+    "timeout_seconds": 30,
+    "enable_thinking": false,
+    "stream": false,
+    "serial": true,
+    "automatic_retries": 0,
+    "extra_judge_api_calls": 0
+  },
+  "grading_policy": {
+    "method": "逐条对照语义标注，不做正文逐字匹配，不调用额外评审API",
+    "split_or_merge": "同用途单元可拆分或合并，需保留每个单元的限定；跨用途混为同一候选不能覆盖正确分流",
+    "required_content": "否定、条件、时间、强度和猜测状态必须保留在content；reason或Source不能补救content丢失限定",
+    "extra_candidates": "额外但确有原文支持且去向合理的建议单列，不直接记作误记；冗余重复只计一次覆盖并单列重复数",
+    "technical_failure": "失败、截断、取消或错误JSON不是空结果，不评分为无记忆正确，停止后续真实请求",
+    "semantic_failure": "保留错误，按原定顺序继续剩余样本；不边跑边改提示或重试"
+  },
+  "cases": [
+    {
+      "case_id": "S1",
+      "topic": "普通聊天中的用户事实和偏好",
+      "source": {
+        "source_id": "memw-pilot-source-s1",
+        "role": "user",
+        "recorded_at": "2026-10-23T09:00:00+08:00",
+        "text": "顺便说一句，我主要用 Python 开发；后续讲解请尽量用 Python 举例。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "S1-U1", "meaning": "用户自述主要使用Python开发", "allowed_routes": ["long_term"], "must_preserve": ["主要使用，不是只会Python", "保留用户自述性质"]},
+        {"id": "S1-U2", "meaning": "用户希望后续讲解尽量使用Python示例", "allowed_routes": ["long_term"], "must_preserve": ["后续讲解范围", "尽量而非必须或只能"]}
+      ],
+      "forbidden_inferences": ["仅因普通聊天就跳过两项信息", "用户只会Python", "所有场景都必须使用Python", "已由外部工具验证用户技能"]
+    },
+    {
+      "case_id": "S2",
+      "topic": "条件并存与未来生效时间",
+      "source": {
+        "source_id": "memw-pilot-source-s2",
+        "role": "user",
+        "recorded_at": "2026-10-23T09:01:00+08:00",
+        "text": "从2026年11月1日起，工作日我只能早上学习，周末更喜欢晚上学习。周末的偏好不要套到工作日。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "S2-U1", "meaning": "从2026年11月1日起，工作日只能早上学习", "allowed_routes": ["long_term"], "must_preserve": ["2026年11月1日起", "工作日", "只能早上"]},
+        {"id": "S2-U2", "meaning": "从2026年11月1日起，周末更喜欢晚上学习", "allowed_routes": ["long_term"], "must_preserve": ["2026年11月1日起", "周末", "更喜欢而非只能晚上"]}
+      ],
+      "forbidden_inferences": ["每天都在晚上学习", "周末只能晚上学习", "从记录时间2026年10月23日就已生效", "后一条件覆盖前一条件"]
+    },
+    {
+      "case_id": "S3",
+      "topic": "原任务约束、猜测和缺少前文",
+      "source": {
+        "source_id": "memw-pilot-source-s3",
+        "role": "user",
+        "recorded_at": "2026-10-23T09:02:00+08:00",
+        "text": "这次修复必须保留原测试断言，不要改测试掩盖问题。我猜v2测试应该通过了，但还没有运行。部署还是按之前那个方案来。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "S3-U1", "meaning": "本次修复必须保留原测试断言，不能改测试掩盖问题", "allowed_routes": ["task_constraint"], "must_preserve": ["仅本次修复", "保留原测试断言", "不能修改测试掩盖问题"]},
+        {"id": "S3-U2", "meaning": "v2测试通过只是用户猜测，实际尚未运行", "allowed_routes": ["needs_review"], "must_preserve": ["v2", "猜测而非实际通过", "尚未运行"]},
+        {"id": "S3-U3", "meaning": "用户希望部署沿用先前方案，但本条材料未提供其具体内容", "allowed_routes": ["needs_review", "task_constraint"], "must_preserve": ["未给出方案细节，不能补齐", "若作为任务约束，必须明确待核对的指代"]}
+      ],
+      "forbidden_inferences": ["v2测试实际通过或修复已验收", "所有未来任务都禁止修改任何测试", "之前的部署方案是Docker或Kubernetes", "reason说未验证而content宣称测试已通过"]
+    },
+    {
+      "case_id": "S4",
+      "topic": "合成工具观察的版本、范围和失败数值",
+      "source": {
+        "source_id": "memw-pilot-source-s4",
+        "role": "tool",
+        "recorded_at": "2026-10-23T09:03:00+08:00",
+        "text": "{\"tool_call_id\":\"pilot-call-s4\",\"project\":\"mini-pi-pilot\",\"version\":\"v2\",\"command\":\"python -m unittest tests.test_discount\",\"exit_code\":1,\"output\":\"Ran 3 tests; FAILED (failures=1)\"}"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "S4-U1", "meaning": "当前项目v2的discount测试本次运行3项，其中1项失败", "allowed_routes": ["long_term", "needs_review"], "must_preserve": ["v2", "discount测试范围", "3项测试、1项失败", "仅本次观察；项目和原始调用通过同一Source保留"], "later_kind_constraint": "如后续拟长期写入，只能按工具观察的episodic政策核对，当前不生成kind或写入"}
+      ],
+      "forbidden_inferences": ["v1结果", "全项目测试均通过或本次修复验收通过", "通用修复技能已验证", "所有金额错误都用同一方法修好"],
+      "review_route_note": "needs_review可以安全保留此观察，但不能据此说已形成可长期写入的候选或否认给定工具输出"
+    },
+    {
+      "case_id": "S5",
+      "topic": "明确撤回意图，不复活旧偏好",
+      "source": {
+        "source_id": "memw-pilot-source-s5",
+        "role": "user",
+        "recorded_at": "2026-10-23T09:04:00+08:00",
+        "text": "请撤回我之前‘后续示例必须用Java’的偏好。这句话是在撤回旧偏好，不是在重新设置Java偏好。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "S5-U1", "meaning": "用户明确要求撤回先前的Java示例偏好", "allowed_routes": ["withdrawal", "needs_review"], "must_preserve": ["撤回意图", "旧Java示例偏好是目标描述", "尚未执行撤回，也未读取实际目标系列"]}
+      ],
+      "forbidden_inferences": ["新增或恢复Java长期偏好", "自动改成Python或其他相反偏好", "声称已经撤回成功", "声称已经查询到目标记忆编号或版本"],
+      "review_route_note": "withdrawal是直接意图分流；needs_review仅在保留明确撤回含义并说明目标需核对时允许，单列为保守分流"
+    },
+    {
+      "case_id": "S6",
+      "topic": "纯寒暄的正常无记忆结果",
+      "source": {
+        "source_id": "memw-pilot-source-s6",
+        "role": "user",
+        "recorded_at": "2026-10-23T09:05:00+08:00",
+        "text": "你好，谢谢！"
+      },
+      "empty_result_allowed": true,
+      "required_units": [],
+      "allowed_optional_routes": ["ignore"],
+      "forbidden_inferences": ["用户长期偏好礼貌或热情", "用户固定问候习惯", "把错误、拒答或解析失败当作本案正常空结果"]
+    }
+  ]
+}

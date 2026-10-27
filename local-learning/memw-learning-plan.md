@@ -1,5 +1,15 @@
 # MEM-W 写入选择与候选提取：学习入口
 
+> 当前（2026-10-27）：[MEM-04首版技术验收](mem04-acceptance.md)完成，74项正式复验全过；已串联本页所述的固定提取、明确计划写入、检索、Context及每轮请求。固定响应不证明真实语义泛化，旧试点失败成绩保留；本页“下一步接Session/MEM-04”均为历史，当前接续见memory-resume.md。
+
+> 2026-10-26当前：extract_session学习者核心已核对，5专项全过；保存Session→Source→五组→明确字段计划→临时SQLite写入/重试/新Store读回实际通过，见[接线验收](memw-session-integration-acceptance.md)。固定响应不证明语义泛化；首版字段及动作由可信调用方明确提供，不新增自动元字段模块。现在进入[MEM-04整体框架](mem04-context-plan.md)，核心尚未开始，先说明完整输入输出。下列“下一步Session”均为历史。
+
+> 最新：用户要求few-shot并确认2次后，[v2.2定向小试](memw-reference-v22-results.md)完成，正文/路由2/2，本次通过；两次额度用完。只加一组对照示例，旧6/7等证据不改，不扩字段/出口/核心。下一步可独立继续Session接线，先核对用户已敲代码，不用固定响应替代语义证据。以下v2.1记录保留历史。
+
+> 2026-10-26最新接续：用户确认6次后[v2.1真实复验](memw-overlap-v21-results.md)已完成，技术6/6、正文/路由/严格语义6/7，H4缺参数指代漏判，整体未通过。剩余问题交原侧任务做依据审查，不以反复调参阻塞主对话，不追加第7次。H5部分重叠按冻结允许拆合只计一次。保持3字段5出口、不接开关；旧S3真实4/5与v2离线8/9不改，Session接线独立后续。
+
+> 当前进度（2026-10-23）：第15小段已授权执行6次真实提取、无重试，技术6/6，语义整轮未通过；严格内容+分流6/9，S3未知指代与S4观察分流有明确问题，S1归因为边界。此前代码/辅助测试保留各自口径，MEM-W保持进行中。6次预算已用完，新真实复验另行安排；接续以memory-resume.md为准，未提交推送，不做例行hash。
+
 2026-10-22，MEM-03已按[首版范围技术收口](mem03-acceptance.md)。用户已确认采用[红熊源码核对](memw-memorybear-write-review.md)中的“规范化正文与完整原来源分离”思路。当前进入新候选接口第1小段：助手调整数据容器、格式辅助和测试，新版来源核验已由学习者敲入，13项测试通过；旧quote契约9项验收保留为历史，不作为新接口已通过的证据。独立正文存储/读取及兼容已通过219项记忆测试（203旧回归＋16新增正文用例），Entry.text已由学习者手敲验收；按建议去向归组已验收，旧占位已删除；store.latest及首次新增计划已验收，238项记忆测试全部通过；同候选重试已修复验收，244项记忆测试全部通过；重试/新增整合入口已验收，248项记忆测试全部通过；首次显式更新计划已恢复；首次明确撤回计划已验收，284项记忆测试全部通过，遗留不可达旧占位为非阻塞清理项；完整写入计划及真实提取尚未接线。
 
 ## 在现有链路中的位置
@@ -170,3 +180,141 @@ plan_replace明确只负责首次请求规划，不是重复调用的恢复入�
 第8小段准备结果：助手准备RetractPlan、normalize_retract_request及plan_retract占位（planning.py:144），用户只手敲范围/角色/head判断和完整计划返回。恢复先前已授权的更新拼写后，275项旧记忆回归及3项撤回格式测试全部通过，无失败/错误/跳过；6项撤回核心反例未运行。证据local-learning/evidence/memw-retract-plan-prepare/。输入来源仍须由上层确认意图，固定句子测试不充当通用授权识别；本段尚未验收，也未提交推送。
 
 第8小段验收：学习者已敲入plan_retract，实际284项记忆测试全部通过，无失败/错误/跳过，含3项辅助＋6项核心。源码测试期间未变；只读计划、Scope/user、future head、整系列撤回及原计划回执重试/CAS边界符合契约。第169行旧占位不可达，未代改核心。证据local-learning/evidence/memw-retract-plan-acceptance/；本段技术验收通过，下一单元为统一写入执行入口及单次变更边界，不宣称自动意图提取或完整MEM-W完成。
+
+## 当前第9小段：统一执行与一次变更边界（2026-10-23）
+
+`execution.execute_plans(store, scope, items)`接在已确认的规划结果之后。输入为可信Scope及已有MemoryEntry/RememberPlan/ReplacePlan/RetractPlan列表或元组；输出按原顺序排列的MemoryEntry元组。已有Entry原样返回，只是先前读取的结果快照，不承诺执行时最新或读取可用。
+
+执行分两步：先完整核对全部成员类型、与当前Scope一致及变更计划总数不超过1，再调用对应Store方法。Entry不算变更计划；两个计划即使是相同对象或可能命中回执，也保守整批拒绝且零Store变更调用。一次变更指最多一个Store操作，单个撤回仍可在该事务内修改整个系列多行；不宣称实现了任意多操作的批事务。
+
+RememberPlan交给remember；ReplacePlan和RetractPlan携原expected_version、operation_id及完整字段交给replace/retract。不重新latest或重新规划，不刷新版本吞掉CAS冲突，不从withdrawal标签授予意图；执行异常向上传播，不把异常自动解释为零写入或成功。同一原计划的事务回执重试仍由原Store保证；丢计划恢复尚未交付。
+
+助手准备`execution.py`导入、类型别名、批次外壳/tuple快照辅助和测试；用户分段手敲同一execute_plans中的完整预检与执行分派。第一段先完成整批预检，正常路径保留执行未实现占位；未敲完和实际执行反例前，本段保持进行中，不记为已验收。固定Pi基准7f9e119的SessionManager.appendMessage/appendContextEdit与请求前transformContext已重读；长期记忆计划执行是Mini-Pi新增能力。未来确需支持多变更时另行实现批事务并验证后项失败回滚，不以循环调用独立事务代替。
+
+准备检查：execution.py与标准test_memory_write_execution.py语法检查通过，4项ExecutionBatchShapeTests实际全部通过；8项WriteExecutionTests已准备但尚未运行。旧284项记忆验收保持历史原口径，不把本轮辅助通过冒称为核心或完整MEM-W通过。本轮无真实模型调用、业务库写入或提交推送。
+
+第9小段整批预检验收：用户手敲execution.py:37–49，实际读盘确认先快照、完整检查四种类型与当前Scope、仅统计非Entry计划，并在循环后拒绝超过一个计划。实际运行2项标准预检核心测试全部通过：非法尾项/混Scope，以及两个计划/重复同计划均在首个Store调用前拒绝。另以既有合成夹具受控探测空批次、仅Entry、Entry夹一个RememberPlan、单ReplacePlan、单RetractPlan共5组合法输入，均允许到达当前未实现的执行分派占位；Store调用为0，未创建数据库目录。
+
+本轮只验收整批预检，合法路径的NotImplementedError是已知分段占位，不是完整执行成功；其余6项执行核心测试未运行，未重复旧全量回归。核心由用户敲入，助手未代改；结果见local-learning/evidence/memw-execution-precheck-review/verification.json。下一段替换第51行占位为执行分派，保留前置检查；未新增模型调用、业务数据写入或提交推送。
+
+执行分派手敲安排：先以示例语言的新增/同候选重试/更新/撤回四种请求说明完整映射，再分两段敲入。首段将第51行占位替换为结果列表、逐项Entry原快照透传或RememberPlan委派remember、末尾返回tuple；ReplacePlan/RetractPlan暂在else明确抛未实现，不吞成成功。前置整批最多一个计划保证首段遇到未实现的更新/撤回前不会先执行其它写入。首段拟验空批次/Entry快照、实际单新增及异常传播三项既有核心反例；本轮仅提供代码，尚未敲入或执行，不能预记通过。
+
+第二段再补两个elif，完整透传ReplacePlan的scope/source/draft/expected_version/operation_id及RetractPlan的scope/source/key/conditions/expected_version/operation_id，保持原Store回执优先与CAS语义。仍由学习者敲核心，助手不改已验预检或Store；辅助测试已准备，无需重复旧验收或新增模型调用。
+
+执行分派首段验收：用户已敲入execution.py:51–64，Entry原对象透传、RememberPlan完整委派remember、结果按序append且循环外返回tuple。实际运行3项分派核心测试与2项预检回归共5项全部通过，0失败/错误/跳过；观察空批次返回空tuple、Entry原快照/顺序/状态保留且零Store调用，合成临时SQLite中实际新增并读回正文/来源，Store同一异常对象向上传播且仅调用一次，以及尾项非法/混Scope/多计划仍在任何变更前拒绝。
+
+第61行空NotImplementedError仍阻止尚未实现的更新/撤回，仅影响诊断清晰度；第66行旧占位在return之后不可达，作为非阻塞清理项告知用户，助手未代改。本段技术验收通过，剩余3项更新/撤回/并发CAS执行反例未运行，不记为完整execute_plans通过。日志与verification.json见local-learning/evidence/memw-execution-remember-dispatch-review/；未新增模型请求、业务数据写入、提交或推送。
+
+更新/撤回分派讲解准备：用户已清理两处，实际读盘确认else消息明确、return后旧占位已删除，原已验分派判断未变。以v1 Python→更新U1→v2 TypeScript→撤回R1为同一系列例子：更新原计划expected_version=1、operation_id=U1，重试仍带同一完整请求；Store先查回执，命中则返回本操作v2的当前状态，未命中才做最新版本CAS。若首次执行前被其它操作抢先更新，旧计划冲突，不能刷新版本强行重试。撤回v2的原计划使用expected_version=2及独立R1，撤回不新增版本，同请求重试仍优先回执。
+
+本轮先提供ReplacePlan的elif供用户手敲：完整传scope/source/draft及原expected_version、operation_id给Store.replace，保留统一append/tuple返回和前置预检；else暂明确撤回未实现。下一段再接RetractPlan。辅助测试按更新/撤回拆分并发CAS场景，便于各分支独立验收；本轮不执行尚未实现的分派核心，也不提前记通过，不新增模型调用或提交推送。
+
+辅助准备检查：原合并CAS测试已拆为for_replace/for_retract两个独立方法，私有辅助复用原实际SQLite交错场景；版本冲突、零覆盖及禁止重规划断言保留，其它测试未改。AST与测试发现通过，当前模块4项辅助＋9项核心共13项；仅发现未执行，不将发现数量当验收结果。
+
+ReplacePlan分派验收：用户已敲入execution.py:60–65，实际确认完整透传scope/source/draft及原expected_version、operation_id给Store.replace，不重新latest/规划、不吞异常。实际运行2项更新核心与2项预检回归共4项全部通过，0失败/错误/跳过；在合成临时SQLite实际生成v2，后续独立操作生成v3后原计划仍按回执返回superseded v2且无新增写入。另验证首次执行前被其它操作抢先更新时抛MemoryConflict，原有版本/库内容不变；非法尾项/混Scope/多个计划仍在任何变更前拒绝。
+
+本段更新分派、原计划重试和版本冲突技术验收通过，助手未修改核心。撤回仍在第66–67行明确占位，剩余2项撤回执行反例未运行，完整execute_plans保持进行中。证据local-learning/evidence/memw-execution-replace-dispatch-review/含实际tests.log及verification.json；下一段手敲RetractPlan分派，未新增模型请求、业务库写入、提交或推送。
+
+最后撤回分派手敲准备：当前整批预检已限定四类、前三种分支已处理，因此保留第66行else作为剩余RetractPlan，替换未实现占位为Store.retract调用；完整传scope/source/key、conditions、原expected_version和operation_id，保留统一append与tuple返回。撤回没有新Draft，不能误传draft或遗漏条件；示例按周末条件撤回v2，只将该条件系列所有版本标retracted，返回版本仍2，工作日系列保持；同一完整计划重试优先操作回执，不重新规划。
+
+助手准备必要的非空conditions隔离反例，弥补已有撤回执行测试仅用空条件时无法揭露漏传conditions的缺口；核心仍由用户手敲，本轮不运行未实现撤回测试，也不提前宣称完整执行入口通过。敲入后先验撤回/回执重试/CAS/条件隔离，再验完整执行入口与记忆回归；无新模型调用授权，不提交推送。
+
+新增标准反例test_retract_forwards_conditions_and_withdraws_only_target_series_all_versions：非空周末系列和空条件默认系列都推进到v2，再撤回周末系列，必须仅修改目标全部版本、保留其它系列及原事实Source；两系列相同head版本可揭露漏传conditions造成误撤，避免仅因版本不等而侥幸拒绝。AST及仅发现检查通过，模块当前4辅助＋10核心共14项，未执行新增核心。撤回待验反例现为3项：原计划回执重试、首次并发CAS、非空条件隔离。
+
+最后撤回分派首次核对未通过：用户已敲入，但execution.py:71将item.operation_id误写为item_operation_id，第73行调用后仍有旧NotImplementedError。只实际运行1项原计划撤回/回执测试，1项NameError错误、0失败/跳过，发生在参数求值阶段，尚未调用Store.retract。第二处由源码确定且被首个错误遮蔽：仅修拼写后可能先完成撤回事务再抛未实现异常，不能将此报错理解为零写入。
+
+指导用户将第71行改为operation_id=item.operation_id并删除第73行旧占位，保留其后统一append/return；助手未修改核心。其它2项撤回专项、完整14项入口及记忆回归暂未运行，保持待修/待验，不预记通过。首次实际日志与verification.json在local-learning/evidence/memw-execution-retract-dispatch-review/；无凭据读取、模型请求、业务数据写入或提交推送。
+
+最后撤回分派修复与完整验收：用户明确授权“帮我调整好”后，助手仅将item_operation_id改为item.operation_id并删除调用后的旧NotImplementedError，文本比较确认除此两处外与修复前一致，未改规划或Store。一次标准记忆套件按撤回3项→其余入口11项→其余记忆284项顺序执行，298项全部通过，0失败/错误/跳过；入口14项包含撤回3项，均为298项子集，不重复相加。实际覆盖整系列撤回与事实Source保留、原计划回执重试、非空周末条件不影响默认系列、并发CAS拒绝，以及完整入口的批次准入/Scope/最多一计划/四类分派/顺序快照/异常传播。
+
+本段受控计划执行入口技术验收通过，学习者理解确认仍另记；核心由用户手敲，助手按明确授权修复两处。执行期间源码保持不变，证据local-learning/evidence/memw-execution-final-acceptance/含修复前后单文件、实际tests.log及verification.json。未运行无关全项目测试，不把历史491项全量当本轮结果；未新增真实模型调用、业务库写入或提交推送。整个MEM-W仍进行中：下一步讲清候选→Draft字段依据及五出口，用固定候选接通规划/执行，再安排真实提取与保真评测，之后MEM-04。
+
+## 当前第10小段：候选到Draft，再接已有规划/执行（2026-10-23）
+
+整体链路为可信Scope与完整Source→固定候选→route_candidates归组→上层核对长期适用性、正文及字段依据→draft_from_candidate装配Draft→收齐只读计划→一次execute_plans。长期出口才进入本装配入口；任务约束留给当前任务/MEM-04，忽略和待核对不写长期库；withdrawal建议不能自行产生控制权限，明确撤回另用plan_retract，不经过Draft。所有候选先转换/规划后统一执行，不能边转换边写，继续保留最多一个变更计划的门禁。
+
+完整例子：原Source记录于2026-10-23、上海时区，原文“从2026年11月1日起，周末学习用Python举例。今天这题只解释，不改文件。我猜测试应该通过了。谢谢。”。四个固定候选分别进入long_term/task_constraint/needs_review/ignore。本例上层确认长期候选正文仅为周末学习示例偏好，明确key=example_language（属性名称）、kind=semantic（持续偏好）、conditions=((period,weekend),)（原文周末条件）、valid_from=2026-11-01T00:00:00+08:00（原文明确生效日期），不自动用记录时间替代生效时间。
+
+装配函数新增在selection.py，签名draft_from_candidate(scope,candidate,*,key,kind,conditions,valid_from)->MemoryDraft，四字段必须显式提供，不新增DTO或approved布尔。核心由用户手敲：复用validate_candidate_source、要求long_term去向、构造完整Source定位start=0/end=len(source.text)且content=candidate.content、复用validate_draft、返回Draft。完整原Source不改写，生成正文无需是原文子串；规范化继续由既有规划函数承担。标签/格式/来源准入不证明语义保真，字段若无依据应留待核对而不是补默认值。工具来源的kind仍由原policy限制为episodic。
+
+空目标系列接plan_remember_or_retry得到RememberPlan，execute_plans实际保存v1；同候选重试由原入口返回已有Entry，有系列但不是同候选时停止新增，不自动覆盖，明确更新再走plan_replace。key/conditions必须维持同一系列含义，不能改名绕过更新或撤回；跨来源语义去重尚未交付。本段先完成单候选装配，下一段接批次规划；真实提取及保真评测另行安排。
+
+助手仅准备导入、函数签名/说明/占位及标准反例。固定Pi 7f9e119的SessionManager.appendMessage（会话追加）和agent-loop请求前transformContext已重新定位；此候选装配与计划接线是Mini-Pi新增能力，延续已核对MemoryBear a2960b3的正文/来源分离思路。语法与AST对照确认原selection类/函数未改，核心仍占位，不预记验收通过；无真实模型调用、业务库写入或提交推送。
+
+准备检查：tests/test_memory_candidate_draft.py新增6项核心反例，覆盖完整来源/允许规范化正文/显式未来时间且零SQL或模型I/O、四个非长期出口拒绝、来源Scope/角色拒绝、tool仅episodic、非法或缺失显式字段，以及固定四出口→一个Draft→RememberPlan→显式执行→同候选重试的合成闭环。语法及仅发现检查通过，发现6项、加载错误0、实际执行0；本段尚未敲入，不沿用之前298项结果冒称新增行为通过。
+
+第10小段首次手敲核对：用户保存的来源检查、long_term门禁和Draft字段对应与本段设计一致，但selection.py:135–136的validate_draft和return多缩进4空格。第134行关闭括号处于参数列表内，其缩进本身不阻塞，建议134–136一起左移4空格与第126行draft赋值对齐。实际AST检查在第135行触发IndentationError: unexpected indent；6项行为测试均未运行，不能记为通过。
+
+助手未修改核心，指导用户修正这三行缩进，并按用户本轮新版规则在所展示Python行尾使用#注释对应解释。失败源码及syntax-check.json保存在local-learning/evidence/memw-candidate-draft-review/；修正后再验本段，未新增模型请求、业务库写入或提交推送。
+
+第10小段缩进修复验收：用户明确授权后，助手仅将134–136三行左移4空格，文本比较确认其它内容未变，语法检查通过。实际运行test_memory_candidate_draft.CandidateDraftTests六项全部通过，0失败/错误/跳过；验证完整来源保留、规范化正文及显式未来字段、非长期四出口/错误Scope或角色拒绝、工具仅episodic、非法/缺失字段拒绝，以及固定四出口→单长期Draft→只读规划→显式SQLite保存v1→同候选重试仅读回/透传。
+
+本段单候选装配及固定单例闭环技术验收通过，核心由用户手敲，助手按授权仅修缩进；不由此推导语义提取质量、完整批次接线或整个MEM-W已完成。证据local-learning/evidence/memw-candidate-draft-fix-acceptance/含修复前后单文件、实际tests.log及verification.json，测试期间源码未变。按用户本次范围仅运行六项，不重复此前298项或全仓验收，也不将六项加总后伪称全回归已运行；无真实模型调用、业务库变更、提交或推送。下一步先讲清候选到只读写入计划的接线，再分段手敲；Python讲解继续在对应行尾加#注释。
+
+## 当前第11小段：按明确动作形成只读计划（2026-10-23）
+
+开始核对发现execution.py完全等于此前修复前快照，仅恢复了item_operation_id误写及撤回后可达占位两处旧问题。按此前明确修复授权恢复同两处，并实际运行入口模块14项全部通过，0失败/错误/跳过；恢复后与此前已验源码相同，未确认外部回退原因。定向差异及准备记录在local-learning/evidence/memw-planning-connection-prepare/，没有进行全库哈希或定时反复检查。
+
+本段只新增薄入口planning.plan_candidate(store,scope,candidate,*,action,key,kind,conditions,valid_from,operation_id=None)，不再包装route_candidates或execute_plans，不新增DTO/回调。四个元字段及action由可信调用方根据来源明确提供；先拒绝未知action、remember多余编号和replace缺失/空编号，再复用draft_from_candidate。remember委派plan_remember_or_retry，输出既有Entry或RememberPlan；replace只做首次明确更新，委派plan_replace并传原operation_id，输出ReplacePlan。异常原样传播，规划不写库。更新重试直接复用原计划执行，不重新进入plan_candidate；丢计划恢复仍未交付。
+
+完整例子：同一用户/项目的周末示例语言系列已有v1=Java，新Source明确“2026年11月1日起周末改用Python举例”，还包含“本题只解释”“猜测测试通过”“谢谢”。route_candidates保留五组；只把long_term候选及明确字段交新入口，调用方依据更新意图传action=replace、operation_id=U1。Draft装配后plan_replace读取v1生成expected_version=1的ReplacePlan，此时数据库不变；收齐计划后execute_plans才产生v2。若把同一新来源选为remember，已有系列会阻止新增，不能自动转更新；任务约束、待核对、忽略和撤回建议均保留各自出口，明确撤回独立走plan_retract。若拟变更多于一个，统一执行入口整体拒绝，不能逐项规划后立即执行。
+
+助手准备导入、带行尾注释的签名/说明/占位及7项反例，用户本段手敲完整单候选准入→Draft→规划分派约二十行；按完整行为交付，不再将同函数拆成两轮占位。固定Pi 7f9e119会话追加与请求前Context转换已重新定位，新入口仍是Mini-Pi长期记忆扩展。AST对照确认既有planning类/函数未变，新测试语法及仅发现通过（7项、0加载错误、0实际执行），核心尚占位，不预记通过。反例覆盖新建只读、旧状态重试、禁止隐式更新、动作/编号早拒绝、更新原计划重放、来源门禁、五出口保留及两计划执行前拒绝。无真实模型请求、业务库写入或提交推送。
+
+第11小段首次手敲核对未通过：用户已实现动作/编号准入、Draft装配及两个规划分支，但planning.py:205将candidate.source误写为cnadidate.source。实际按要求运行全部7项，3项通过、4项方法报错，含旧候选superseded/retracted两个子场景共5条错误记录，0断言失败/跳过；不能用错误记录数倒算通过方法数。通过项为明确更新及v3后原计划回执重放、非法动作/编号在查询前拒绝、来源/去向/字段门禁；remember相关路径均被NameError阻断。
+
+第211行旧NotImplementedError位于无条件return之后不可达，仅为非阻塞清理项。指导用户第205行改为candidate.source并删除第211行旧占位，代码说明使用对应行尾#注释；助手未修改核心。实际日志、用户源码及verification.json在local-learning/evidence/memw-candidate-planning-review/。执行器仍与此前已验源码一致，未再次回退；未重复其它回归，无真实模型请求、业务库变更、提交或推送。
+
+第11小段修复验收：用户明确授权修正拼写、删除不可达占位并要求仅跑7项、停止不必要hash校验。助手只修这两处，实际运行CandidatePlanningTests七项全部通过，0失败/错误/跳过。本段明确动作准入、只读新增/更新规划、旧状态候选重试、不隐式覆盖、原更新计划重放，以及五出口保留/两计划执行前整体拒绝均符合预期。
+
+受控候选到只读计划接线技术验收通过，核心由用户手敲、助手按授权修两处；实际tests.log及verification.json在local-learning/evidence/memw-candidate-planning-fix-acceptance/。未做文件hash或快照对比，未重跑旧全量、调用真实模型、写业务库、提交或推送。下一步先设计真实候选提取协议与保真评测，不由固定案例通过推导整个MEM-W已完成。
+
+## 当前第12小段：模型候选协议与Source绑定（2026-10-23）
+
+按新版AGENTS要求，实际核对上游当时main=936e5f40aede9327b9142b63506ed2b68bc6b4ac，固定基准与上游checkout仍7f9e119；相关函数、差异和章节门禁见[memw-extraction-plan.md](memw-extraction-plan.md)，不是仅用旧快照对齐。当前小段只处理已解码模型数组→程序绑定完整Source的候选，不发模型请求或写库。模型字段仅content/proposed_route/reason，Scope和Source不能由模型自报，现有四元字段及显式action不由本小段生成；合法空数组与提取失败分开。
+
+助手准备extraction.py格式/快照辅助和parse_candidate_items签名/说明/占位，用户手敲来源Scope/角色准入、逐项构造并核验候选、整批tuple返回；6项反例仅语法/发现通过，行为尚未运行。保真评测另验否定/尽量/条件/时间/猜测，不把格式或来源合格当语义证明，后续再接带完整终态与取消/预算的真实适配器。
+
+本轮先解决新的保存回退：planning.py又含此前拼写错误及旧占位，用户确认关闭两个旧标签后，按原授权恢复并实际7专项全部通过。覆盖原因未确定，未做hash或定时复查；不将新协议进度掩盖旧缺陷。新核心未代写，无真实模型请求、业务库变更、提交或推送。
+
+第12小段手敲验收：parse_candidate_items保存内容正确，助手未修改核心；实际运行CandidateExtractionTests共6项全部通过，0失败/错误/跳过。覆盖同一完整Source/顺序重复、合法空结果仍准入、非法容器与身份字段、坏后项整批拒绝、Scope/角色及五类建议接入route_candidates；解析函数自身不分组、不改写正文、不做IO或写入。格式与来源合格不证明语义保真，原消息关联也不授予写入许可。
+
+实际日志和verification.json在local-learning/evidence/memw-extraction-candidate-acceptance/。下一步讲解并接入请求终态与JSON解码，区分正常空结果与失败/截断/错误JSON；真实模型调用另行安排。本轮未重跑其它回归，无真实模型调用、业务库写入、提交或推送，D主线仍12/30。
+
+## 当前第13小段：模型响应结束检查与JSON解码
+
+接在已验parse_candidate_items之前：parse_extraction_response接收非流式原始响应，只在唯一结果、stop结束、assistant纯正文且无工具/拒绝时解码JSON，再交已有解析函数。正常[]可返回空tuple，截断时即使正文[]也必须抛错；JSON错误、重复字段、非标准常量不修补或吞为空。助手准备外壳/正文格式辅助及两个严格JSON hook，学习者敲入上述准入和接线核心，7项离线反例待行为验收。沿用当前提取章节最新main核对，原Provider不变；尚未接入异步发送/预算/取消收尾或真实效果评测，完整MEM-W继续进行中。详见memw-extraction-plan.md。
+
+第13小段手敲验收：保存代码符合契约，助手未修改核心。首次实际7项中6个方法通过，1个方法有2条失败记录；原因是辅助测试假设1050层JSON在当前Python必然抛RecursionError，但本机3.14.5实际成功解码，不能据此要求核心增加深度限制。助手将此反例改为可控解码器RecursionError传播检查，并补嵌套数组走既有候选结构拒绝；随后仍为7项专项，全部通过，0失败/错误/跳过。
+
+本段正常/空结果、失败或截断不进入候选解析、工具/拒答阻断、严格JSON、来源政策与原异常传播均通过离线技术验收。初次日志和修正后日志/verification.json保存在local-learning/evidence/memw-extraction-response-acceptance/，不以测试通过填写理解确认。下一步设计提取请求组装与异步发送、预算/取消收尾；未新增真实模型调用、业务库写入、全量回归、hash、提交或推送，D主线仍12/30。
+
+## 当前第14小段：提取请求组装与异步发送
+
+按用户此前关于quote、范围、哪些值得记、失败与无候选、输出如何接线的疑问，明确模型仍只提出content/proposed_route/reason；完整Source和身份由程序保留，候选tuple归组后再按出口处理，长期写入仍需有依据的四元字段及明确动作。模型建议标签不授予写入/撤回权限，结构与来源合格不证明语义保真。输出接线表见memw-request-plan.md。
+
+本段已重新核对最新main=42cb822f（API与ls-remote一致），实际读取专用摘要请求/取消/重试及Agent请求源码，固定7f9e119 checkout不变。Pi摘要显式拒error/length/toolCall，不可等同于本项目严格stop及JSON候选协议；后者是Mini-Pi扩展。新建extraction_client.py提示/输入辅助及两个占位，核心由学习者手敲；轻量子类复用原Provider的配置/_send/HTTP收尾与实例次数，未复制网络层，未修改已验解析或原Provider。
+
+9项合成/本地HTTPS专项准备，核心待敲，准备不计行为通过。单条完整Source、无工具、无跨消息指代；请求次数包含失败/取消或解析失败，不重试；原request_records只在内存保留请求正文，不默认打印/落盘，received仅表示收到响应。真实提取效果、实际Session及MEM-04仍待实现。无凭据读取、真实模型调用、业务库写入、hash或提交推送，D13-B及12/30不变。
+
+第14小段首次手敲核对：组装第74行误写record_at键及source.record_at属性，第81行误写messgaes。实际仅运行ExtractionRequestTests的1项，user/tool两个子场景均在前一属性处AttributeError，合计2条错误记录、0断言失败/跳过；后一未定义变量仅源码发现，未实际触发。其余组装流程未见实质问题；extract第97–100行四步已敲入、源码顺序正确，8项异步行为未运行，不能据源码收口。
+
+助手只指出两处精确修改位置，未代改核心；日志/verification.json在local-learning/evidence/memw-extraction-request-review/。当前先修组装，再验整段，不要求重复敲extract；不做hash、其它回归、真实模型调用、业务库写入或提交推送。
+
+第14小段授权修复验收：用户明确要求调整后，仅将record_at键/属性改为recorded_at、messgaes改为messages；保留用户已敲的其余组装和extract实现。实际运行test_memory_extraction_client全部9项（组装1＋异步8），全部通过，0失败/错误/跳过；正常/错误来源、原始响应解析、错误不吞、次数预算与已到达取消零发送均符合契约。
+
+3项真实本地HTTPS同时验证成功请求及关闭、超时实际断开且无重试、重复取消在close门闩释放前不报告结束，释放后响应/客户端关闭并上抛取消。本段请求与异步接线技术验收通过，未调用外部模型或写入业务库；实际日志及verification.json在local-learning/evidence/memw-extraction-client-fix-acceptance/。下一步设计真实提取的标注与调用计划，语义保真、实际Session和完整MEM-W仍待验，不以测试替学习者确认理解。未做hash、其它回归或提交推送，D13-B及12/30不变。
+
+## 当前第15小段：真实提取小样本与调用计划
+
+6条合成Source涵盖普通聊天事实/偏好、未来日期和条件并存、原任务约束/猜测/未知前文、带版本范围与数值的合成工具观察、撤回旧偏好、纯寒暄。9个必需语义单元按含义核对，允许改写与同用途拆合，限定须在content中保留；合理保守needs_review和可用长期候选分开报告。固定数据examples/fixtures/memory_extraction_eval_v1.json及完整门禁/调用计划见memw-extraction-evaluation-plan.md，gold不发模型。
+
+计划固定qwen3.8-flash北京，最多6次串行，每条一次、输出上限1536/次、无自动重试或额外judge API；技术错误停后续，语义错误保留继续原案例，不改提示重跑。官方价已查，按每条输入预留4k粗估整轮约0.044元，非硬金额上限，usage缺失记未知，费用以实际计价/核账为准。本轮仅准备样本/计划/离线预览，真实调用0次；下一步先准备运行辅助和预览，实际执行需明确授权。
+
+开始读盘发现旧拼写再次恢复，用户确认关闭extraction_client.py后按既有授权恢复两处，实际9项再次通过，未猜测覆盖原因。随后实际组装6条请求，确认材料仅role/recorded_at/text、无gold或tools，最大消息2347 UTF-8字节（不等同tokens）；证据分别在memw-extraction-client-restore-before-pilot及memw-extraction-pilot-prepare。无凭据读取、真实模型/业务库调用、hash、其它回归或提交推送，D13-B及12/30不变，不把语义计划当实际通过。
+
+第15小段授权执行结果：新增默认预览的examples/memory_extraction_eval.py记录辅助，不改已有核心提取/Store；6项离线门禁实际全通过后，唯一live进程按S1–S6串行真实执行6次，全部stop/解析/Source绑定通过。发送前ledger与6个原始响应逐一核对，无重试/额外judge/gold泄露，未写长期记忆库；所有输入是合成样本。
+
+逐案语义核对未通过：S3未知先前方案写成“之前确定的方案”，缺未知限定且加强确定性；S4工具测试观察错分task_constraint，正文项目/v2/范围/3项1失败正确；S1用户事实未显式保留自述归因，按冻结标准保守记边界，不等同虚构事实。完整内容7/9、内容及有效分流6/9；3案全过、2案明确错、1案边界。S2额外约束有原文支持、S6 ignore正确，不因输出数量或非逐字改写判错。
+
+实际输入3126＋输出692＝3818 tokens，缓存0，调用采集进程约18.797秒，按北京标准价估算0.0043692元、账单未核对；辅助开发/标注/评阅耗时未计量，不当作0或完整系统总成本。可携带报告memw-extraction-pilot-results.md，真实原始/语义/综合验收证据local-learning/evidence/memw-extraction-live-20261023-01/。6次授权已用完，不改提示/标注重跑；下一步先澄清归因口径并离线改进未知指代和工具观察分流，新真实复验另定预算。MEM-W仍进行中，D13-B/12/30不变，未提交推送或全库hash。

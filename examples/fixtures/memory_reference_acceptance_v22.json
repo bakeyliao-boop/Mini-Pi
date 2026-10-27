@@ -1,0 +1,37 @@
+{
+  "version": "reference-acceptance-v2.2",
+  "status": "prepared_not_called",
+  "data_origin": "两条合成Source。R1只复用原H4正文作回归，使用新SourceID及合成记录时间；R2为明确文件指针和取值顺序的独立正例。均不代表真实配置存在或已经执行。",
+  "scope": {"user_id": "reference-review-user", "project_id": "mini-pi-reference"},
+  "execution": {"real_model_calls": 0, "new_live_authorization": null},
+  "grading_policy": {
+    "method": "正文和路由分别人工核对，不按固定词、路径外观或逐字句式评分，不调用额外judge。",
+    "reference_boundary": "本次是否能辨认目标或明确取值规则，与用户意图是否明确、外部工件是否存在或已经读取，是不同问题。",
+    "required_content": "缺少定位内容时正文保留已知沿用意图及本条无法定位的缺口；有明确取值对象时保留指针和先后顺序，不能假设已经读取或取得执行许可。",
+    "source_binding": "Scope由可信调用方提供，Source仍为程序绑定的完整原文。三字段五出口不变，不据同项目证明当前任务归属。",
+    "gold_visibility": "本地required_units及forbidden_inferences不发送模型；user材料仅role/recorded_at/text。",
+    "budget": "当前只是准备材料。原6次已用完，拟最多2次必须单独获得新授权，不自动重试或复用旧额度。"
+  },
+  "cases": [
+    {
+      "case_id": "R1",
+      "topic": "原H4未解析外部配置引用回归",
+      "source": {"source_id": "memw-reference-v22-r1-20261026", "role": "user", "recorded_at": "2026-10-26T15:00:00+08:00", "text": "预发环境的限流参数继续沿用会议里那一版。"},
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "R1-U1", "meaning": "用户要求预发环境沿用会议中的限流配置，但仅凭本条材料无法定位具体参数或配置版本，需要核对", "allowed_routes": ["needs_review"], "must_preserve": ["预发环境", "沿用会议中那版限流配置的意图", "本条没有足以定位具体配置/参数的内容，需要核对"]}
+      ],
+      "forbidden_inferences": ["省略信息缺口仅复述沿用意图", "编造参数、文件路径或版号", "断言会议从未确定配置或外部不存在方案", "只在reason保留缺口而content表现为已知具体配置", "改为直接执行或声称配置已完成"]
+    },
+    {
+      "case_id": "R2",
+      "topic": "明确文件指针和取值顺序，未展开参数值",
+      "source": {"source_id": "memw-reference-v22-r2-20261026", "role": "user", "recorded_at": "2026-10-26T15:01:00+08:00", "text": "本次限流调整先读取config/staging/limits.yaml中的burst-v3项，再按该项的值配置预发环境；不要改动其他环境。"},
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "R2-U1", "meaning": "本次预发限流调整先读config/staging/limits.yaml的burst-v3项，再按其值配置，其他环境保持不动", "allowed_routes": ["task_constraint"], "must_preserve": ["限本次预发调整", "config/staging/limits.yaml及burst-v3项", "先读取该项再按值配置的顺序", "不得改动其他环境"]}
+      ],
+      "forbidden_inferences": ["仅因消息没展开参数值就needs_review", "宣称文件或条目已经存在、已读取成功或已配置", "编造实际阈值", "省略指针/取值顺序/其他环境不变的限制", "根据文件路径自行执行读取或修改"]
+    }
+  ]
+}

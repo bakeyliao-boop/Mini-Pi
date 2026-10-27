@@ -1,11 +1,13 @@
 """MEM-W：从已核对的来源和字段形成计划；规划不执行持久变更。"""
 
 from dataclasses import dataclass
+from typing import Literal
 
 from mini_pi.memory.codec import candidate_id, normalize_draft, normalize_source
 from mini_pi.memory.errors import MemoryConflict, MemoryPolicyError
-from mini_pi.memory.models import Conditions, MemoryDraft, MemoryEntry, MemoryScope, MemorySource
+from mini_pi.memory.models import Conditions, MemoryDraft, MemoryEntry, MemoryKind, MemoryScope, MemorySource
 from mini_pi.memory.policy import validate_draft
+from mini_pi.memory.selection import MemoryCandidate, draft_from_candidate
 from mini_pi.memory.store import MemoryStore
 from mini_pi.memory.validation_helpers import normalize_conditions, require_text
 
@@ -165,4 +167,44 @@ def plan_retract(
 
     return RetractPlan(
         scope,source,key,conditions,latest.version,operation_id,
+        )
+
+
+def plan_candidate(
+    store: MemoryStore,  # 本入口只读已有记忆，不执行持久变更
+    scope: MemoryScope,  # 可信调用方提供当前用户与项目范围
+    candidate: MemoryCandidate,  # 已绑定完整Source并核对正文依据的长期候选
+    *,  # 以下参数都必须按名字传入
+    action: Literal["remember", "replace"],  # 调用方明确选择新增/候选重试或首次更新
+    key: str,  # 已确认的记忆属性名，与既有系列含义一致
+    kind: MemoryKind,  # 已确认的记忆类型，工具来源仍受episodic门禁约束
+    conditions: Conditions,  # 已确认的适用条件，不在本函数中猜测
+    valid_from: str,  # 有依据且带时区的生效时间
+    operation_id: str | None = None,  # 首次更新需要固定编号，新增分支不接收编号
+) -> MemoryEntry | RememberPlan | ReplacePlan:  # 既有结果，或尚未执行的具体计划
+    """装配一个长期候选并按明确动作只读规划；不路由整批或执行写入。
+
+    调用前须核对正文、字段和更新意图，action不是模型建议标签的授权。
+    更新重试复用原ReplacePlan交给execute_plans，不重新进入本入口；
+    明确撤回独立走plan_retract，其他四个候选出口由调用方保留。
+    """
+    if action not in ("remember","replace"):    #1.检查请求是否合理
+        raise MemoryPolicyError("不支持的候选操作")
+    if action == "remember" and operation_id is not None:
+        raise MemoryPolicyError("新增或候选重试不接受operation_id")
+    if action == "replace":
+        require_text(operation_id,"operation_id")
+
+    draft = draft_from_candidate(    #2.形成初稿
+        scope,candidate,
+        key=key,kind=kind,
+        conditions=conditions,valid_from=valid_from,
+        )
+    if action == "remember":    #3.根据动作形成计划
+        return plan_remember_or_retry(
+            store,scope,candidate.source,draft,
+            )
+    return plan_replace(
+        store,scope,candidate.source,draft,
+        operation_id=operation_id,
         )

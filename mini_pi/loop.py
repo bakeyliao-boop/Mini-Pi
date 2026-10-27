@@ -2,6 +2,8 @@
 
 import asyncio
 import math
+from collections.abc import Awaitable, Callable
+from copy import deepcopy
 
 from mini_pi.executor import ToolExecutor
 from mini_pi.models import ConversationItem, RunResult, ToolDefinition
@@ -9,6 +11,9 @@ from mini_pi.provider import ModelProvider
 from mini_pi.run_deadline import RunDeadlineExceeded, await_before_deadline
 from mini_pi.run_finish import finish_run
 from mini_pi.session_store import SessionStore
+
+
+PrepareMessages = Callable[[list[ConversationItem]], Awaitable[list[ConversationItem]]]
 
 
 async def run_loop(
@@ -20,8 +25,12 @@ async def run_loop(
     already_saved: int = 0,
     max_model_turns: int | None = None,
     total_timeout_seconds: float | None = None,
+    prepare_messages: PrepareMessages | None = None,
 ) -> RunResult:
     history = list(initial_messages)
+    # 助手准备：可选请求准备入口的格式检查；实际调用和失败结算由学习者接线。
+    if prepare_messages is not None and not callable(prepare_messages):
+        raise ValueError("prepare_messages 必须是可调用的异步入口或 None")
     # D12 助手准备：配置校验先于模型请求、工具执行与会话追加。
     if max_model_turns is not None and (
         type(max_model_turns) is not int or max_model_turns <= 0
@@ -67,11 +76,24 @@ async def run_loop(
             #         })
             # return run_result
         model_turns += 1
+        preparing_context = prepare_messages is not None
         try:
+            request_messages = history
+            if prepare_messages is not None:
+                request_messages = await await_before_deadline(
+                    lambda:prepare_messages(deepcopy(history)),
+                    deadline,
+                    )
+            preparing_context = False
             message = await await_before_deadline(
-                lambda:provider.generate(history,tools),
+                lambda:provider.generate(request_messages,tools),
                 deadline,
                 )
+        # try:
+        #     message = await await_before_deadline(
+        #         lambda:provider.generate(history,tools),
+        #         deadline,
+        #         )
         except RunDeadlineExceeded as error:
             run_result = RunResult(
                 status="timeout",
@@ -86,6 +108,15 @@ async def run_loop(
             )
             return await finish_run(run_result, session_store)
         # message = await provider.generate(history, tools)
+        except Exception as error:
+            if not preparing_context:
+                raise
+            run_result = RunResult(
+                status='error',
+                messages=history,
+                error=str(error),
+                )
+            return await finish_run(run_result,session_store)
         history.append(message)
         if session_store is not None:
             session_store.append_item(message)

@@ -1,5 +1,11 @@
 # Mini-Pi 记忆模块实现
 
+> 当前（2026-10-27）：[MEM-04首版技术验收](mem04-acceptance.md)通过，正式复验74项全部通过。保存Session到受控SQLite写入、每轮检索/组装、两轮请求和真实文件工具已串联；本地HTTPS进一步验证实际embedding/chat JSON和取消关闭。核心由学习者手敲，助手准备辅助及按明确授权修错。真实云端语义效果仍未验证，旧MEM-W真实成绩不改；下方为累计历史记录。D13原现场及12/30不变，本轮未提交推送。
+
+> 当前（2026-10-26）：已核对学习者extract_session四行核心并实际通过5项专项；助手扩展合成示例，选定首版的保存会话→提取/五组→可信调用方明确字段→只读计划→临时SQLite明确写入/重试/新Store读回已通过，原Session不变、未来生效前不可用，见[验收记录](memw-session-integration-acceptance.md)。这不是通用提取语义验收；真实v2.2仅两例定向通过、旧失败证据保留。现在进入[MEM-04整体框架](mem04-context-plan.md)，尚未新增Context核心或接入run_loop；下方为累计历史记录。D13原现场及12/30不变，无本轮提交推送。
+
+> 最新验收（2026-10-23，本地未提交）：plan_candidate两处已按明确授权修复，7项专项全部通过；此前各段保留原验收口径，本轮未重跑全量或做hash校验。核心由学习者手敲，助手仅按授权修复。下面累计记录保留历史口径，当前接续见memory-resume.md；真实提取与保真评测仍待完成，整个MEM-W未收口。
+
 ## 当前目标与工作区
 
 - 当前目标：按已确认的 MEM-03 向量检索 → MEM-W → MEM-04 顺序，完成可运行、可验收的记忆链路；原面试安排保留为历史，不据此压缩理解或验收。
@@ -580,3 +586,165 @@ AST及记忆源码测试哈希前后一致，store.py SHA-256为e8c8a7a298b60554
 当前接续为统一写入执行入口与单次变更边界；新增/重试、首次显式更新与首次明确撤回已分段验收，真实提取/保真评测和MEM-04未完成。原D13-B现场与12/30不变。准备54个明确文件，范围见memory-sync-manifest.md、验收见memory-sync-checks.md、另一电脑操作见memory-resume.md。此刻仅准备暂存快照，按AGENTS请求具体确认后才提交推送；不提前记已推送。
 
 2026-10-23 提交推送完成：用户明确确认所展示54文件范围后，以“归档MEM-03与MEM-W写入规划并补齐跨设备接续”提交为 `b02a7d1b211c8db9e9ac4d4e2bb7c1405c04ccb0`，成功推送 `origin/codex/agent-memory`；随后独立查询远端分支确认提交一致，工作区干净。真实凭据、业务数据、原始evidence及原目录D13代码均未进入提交。随后仅在既定范围4份文档补记完成状态，代码验收仍对应上述提交；接续统一写入执行入口。
+
+2026-10-23 统一写入执行入口准备：用户要求继续学习，实际从ead7db9读取接续页、规则及已验规划/Store；再次定位固定Pi 7f9e119的appendMessage、appendContextEdit与请求前transformContext，区分原Session行为与Mini-Pi新增长期记忆执行层。新增execution.py辅助导入/类型别名/checked_execution_batch外壳快照及execute_plans核心占位；原planning与Store不改。
+
+契约为可信Scope与四类输入先整批预检，Entry作为原快照透传，三个Plan合计最多一个；多计划、非法尾项或混Scope均须在首个Store调用前拒绝。实际变更委派已有remember/replace/retract，更新撤回携原expected_version和operation_id直交Store，不重查latest/重新规划或吞CAS冲突。助手准备4项格式辅助及8项核心反例；辅助4项实际全部通过，核心尚未敲入也未运行，本单元保持进行中。执行骨架AST检查通过，不用语法或辅助通过代替核心验收；本轮未新增模型调用、业务库变更、提交或推送。下一步用户先手敲execute_plans整批预检，再接执行分派。
+
+2026-10-23 execute_plans整批预检验收：用户保存的第37–49行符合完整预检、Scope一致及非Entry计划计数契约，助手未修改核心。实际运行2项标准核心预检测试全部通过，拒绝非法尾项/混Scope及多个或重复计划，均零Store调用且缺库无创建。另做5组合法输入受控探测，覆盖空批次、仅Entry、Entry夹单新增、单更新和单撤回，全部到达未实现的分派占位；不把该NotImplementedError当实际执行通过。结果记录local-learning/evidence/memw-execution-precheck-review/verification.json。
+
+本段整批预检技术验收通过，完整execute_plans仍进行中；剩余6项实际执行核心测试未运行，旧284项记忆及491项全量不在本轮重复执行。下一步手敲第51行之后的执行分派，Entry原快照透传、单Plan委派已有Store、异常不吞掉；无凭据读取、模型请求、业务库变更或提交推送。
+
+2026-10-23 execute_plans首段分派验收：实际读盘确认用户第51–64行实现正确，保留全批预检，Entry原样透传、RememberPlan完整调用remember、统一按序收集并在循环外返回tuple，无异常捕获或自动重试。实际运行3项本段核心测试＋2项预检回归共5项全部通过，0失败/错误/跳过。验证了空批次/Entry原快照与零调用、真实合成临时SQLite新增后读回正文和来源、原异常对象上抛且仅一次Store调用，以及尾项非法/混Scope/多计划继续零变更拒绝。
+
+第61行更新/撤回未实现异常消息为空，第66行return后遗留旧占位不可达；均作为非阻塞清理项说明，助手未修改核心。仅本段Entry/RememberPlan分派及异常传播技术验收通过，更新/撤回分派及其剩余3项执行测试仍待完成，完整execute_plans与MEM-W继续进行中。证据local-learning/evidence/memw-execution-remember-dispatch-review/含实际tests.log和verification.json；本轮未读取凭据、调用模型、写入业务库或提交推送。
+
+2026-10-23 更新/撤回分派准备：用户已完成两处清理，读盘确认旧占位删除、else异常说明补齐，原预检及Entry/RememberPlan分派逻辑不变；未重复已验测试。讲解固定原计划expected_version与operation_id、同完整请求重试先查回执、未命中才CAS，以及原更新结果可能已被后续版本取代或撤回。本轮先提供ReplacePlan分支供手敲，RetractPlan留到下一段，不代写核心。
+
+助手仅将test_memory_write_execution.py中合并的更新/撤回CAS测试拆成两项，用私有辅助复用原真实临时SQLite交错场景，断言不变；实际语法与测试发现通过，4辅助＋9核心共13项，仅发现、未运行。待执行更新与撤回各2项核心反例；不将测试拆分视为新增能力验收，完整execute_plans保持进行中。无凭据读取、模型请求、业务数据变更或提交推送。
+
+2026-10-23 ReplacePlan分派验收：用户保存第60–65行与契约一致，完整传Scope/Source/Draft、原expected_version及operation_id，未查latest或重新规划，异常向上传播。实际2项更新测试＋2项预检回归共4项全部通过，0失败/错误/跳过。合成临时SQLite首次执行产生v2，另操作产生v3后复用原计划按回执返回superseded v2且库内容不变；首次执行前发生竞争更新则原计划MemoryConflict，不能刷新版本覆盖；整批拒绝继续在首个变更前发生。
+
+本段更新执行/原计划重试/版本冲突技术验收通过，助手未改核心。RetractPlan仍明确占位，其2项执行测试未运行，整个execute_plans及MEM-W仍进行中；下一段完成撤回分派。实际日志与verification.json在local-learning/evidence/memw-execution-replace-dispatch-review/；未重复旧记忆/全量验收，无凭据读取、模型调用、业务数据写入或提交推送。
+
+2026-10-23 最后撤回分派准备：用户确认继续。现有完整预检限定四种类型、前三类已处理，故当前else可以直接处理RetractPlan，计划提供完整Store.retract(scope,source,key,conditions=...,expected_version=...,operation_id=...)供用户手敲，保留统一结果收集；不新增重复类型判定，也不改Store。说明撤回不传Draft、不新增版本，重试复用原计划，版本冲突不刷新重试。
+
+助手新增1项必要条件隔离反例：周末非空条件系列及默认空条件系列均已有v1/v2，撤回必须只改周末全系列并保留默认系列和原事实Source，能够揭露漏传conditions。测试语法与仅发现检查通过，当前模块14项（4辅助＋10核心），未执行未实现分支。撤回待验3项含原计划回执重试、CAS及条件隔离，完成后再验完整执行入口与记忆回归；核心未代写，无凭据读取、模型调用、业务库变更或提交推送。
+
+2026-10-23 最后撤回分派首次核对失败：用户保存代码有两处阻塞，第71行operation_id=item_operation_id未定义，第73行调用后仍保留可达NotImplementedError。实际只跑1项撤回原计划/回执测试，1项NameError错误，0失败/跳过；其它撤回专项、完整入口与记忆回归未运行。实际错误发生在Store.retract调用前；后续可达占位的“提交后仍报错”影响为源码判断，尚被首错遮蔽，不能伪称实际观察到撤回提交。
+
+助手仅指出两处并给出精确修改位置，未代改核心；指导改为item.operation_id、删除旧占位、保留append和return。完整execute_plans仍待修/待验，不因此前三类分派通过而收口。首次实际日志及verification.json保留local-learning/evidence/memw-execution-retract-dispatch-review/；未重复已知失败下的全量测试，无凭据读取、模型请求、业务库变更或提交推送。
+
+2026-10-23 用户明确授权修复后完整验收：助手仅修operation_id属性拼写及删除撤回后的可达占位。以修复前单文件作比较基线，实际确认仅这两处变化；原规划和Store未改。一次运行全部标准test_memory*.py，并将3项撤回、入口其余11项先执行，再跑其它284项；实际共298项全部通过，0失败/错误/跳过。入口14项（含撤回3项）是298项子集，不另行累加或伪称分别重跑。
+
+实际观察撤回保持原版本与事实来源、原计划回执重试不重复变更、周末/默认两系列同为v2时条件正确隔离、竞争更新使旧撤回计划CAS冲突；全入口同时满足整批拒绝零调用、Entry快照透传、新增/更新/撤回完整委派、顺序返回及异常传播。源码测试期间未变，受控计划执行入口技术验收通过。修复前后源文件、实际日志与verification.json在local-learning/evidence/memw-execution-final-acceptance/，首次失败记录另保留；本轮无真实模型调用、业务库写入或提交推送。
+
+下一学习点：候选到Draft及受控写入计划的接线设计，需说明key/kind/conditions/valid_from依据和五出口，先固定候选验流程，再安排真实提取及保真评测；不由执行器通过推导长期价值判断、提取语义保真或完整MEM-W已完成。D13-B继续暂停，D主线仍12/30。
+
+2026-10-23 候选到Draft接线第1段准备：用户要求先完整例子讲清与route_candidates/execute_plans关系，再分段手敲。新增selection.draft_from_candidate(scope,candidate,*,key,kind,conditions,valid_from)签名、导入和核心占位；复用来源核验和Draft policy，不新增DTO/approved布尔或关键词猜字段。上层须先核对长期适用性、正文及四字段依据，只有long_term通道装配；完整Source定位与规范化content分开，时间/条件规范化仍由原规划层执行。其它四出口分开保留，明确撤回不经Draft；所有只读计划收齐后才统一执行，不边构造边写。
+
+固定Pi 7f9e119的appendMessage与transformContext已重新定位，新增接线属Mini-Pi扩展；原selection类/函数AST与HEAD逐项相同，仅新增导入/说明/占位。助手新增test_memory_candidate_draft.py共6项核心反例，覆盖来源和字段政策及单长期候选经过归组/装配/只读规划/显式执行/幂等重试的合成闭环；语法和仅发现检查通过，6项发现、0加载错误、0实际执行。核心由用户下一步敲入，未伪记通过，既有298项保持此前验收口径；无真实模型调用、业务库变更、提交或推送。
+
+2026-10-23 候选到Draft首次手敲核对未通过：来源准入、长期出口检查及Draft字段装配正确，但第135–136行校验/return在无新代码块时多缩进4空格；第134行右括号可一并左移对齐。实际AST语法检查出现第135行IndentationError unexpected indent，6项行为测试未运行，不把装配逻辑正确写成实现验收通过。
+
+助手仅给出134–136行左移4空格的精确指导，未代改核心；遵守用户新提供的Python行尾#注释讲解规则。原失败源码与syntax-check.json保留local-learning/evidence/memw-candidate-draft-review/，修好后再验。无凭据读取、模型请求、业务库变更或提交推送。
+
+2026-10-23 用户明确授权修复并要求六项验收：助手仅左移draft_from_candidate末尾134–136三行4空格；以修复前单文件比较确认未改变其它字符或判断，语法恢复。实际运行CandidateDraftTests共6项全部通过，0失败/错误/跳过；字段/来源/去向政策及固定候选到Draft、RememberPlan、显式执行、同候选重试的单例闭环符合本段契约。只在显式执行时写入合成临时SQLite，构造与规划无数据库创建，重试无新持久变更。
+
+本段技术验收通过，核心由用户手敲、助手按授权仅修缩进；新真实LLM提取、语义保真或完整MEM-W均未据此收口。修复前后源码与实际日志/verification.json在local-learning/evidence/memw-candidate-draft-fix-acceptance/，源码测试期间未变。本轮仅执行要求的6项，未重复此前298项记忆回归或全仓测试，无凭据读取、真实模型调用、业务库变更、提交或推送；下一步为候选到只读写入计划的接线设计，代码讲解按新版规则使用行尾#注释。
+
+2026-10-23 候选到只读计划接线准备：读盘发现execution.py再次完全回到此前两处修复前快照；定向差异仅operation_id拼写及可达旧占位。按既有明确授权恢复这两处后，实际入口14项全部通过，0失败/错误/跳过，当前执行源码与此前已验版本一致；覆盖原因未确认，未猜测具体编辑器行为。原回退源码和准备verification.json在local-learning/evidence/memw-planning-connection-prepare/，未进行全库哈希。
+
+新增planning.plan_candidate签名/导入/说明/占位，核心留给用户手敲。它只复用已验Draft装配及两个已有规划入口，以显式remember/replace和固定更新编号约束动作，不能因long_term标签或新正文自行覆盖。其它四出口仍由原route结果保留，明确撤回单独控制；所有只读结果收齐后统一execute，更新重试则直接复用旧计划，不重新规划。没有新增整批包装器、DTO、回调或存储状态。
+
+助手准备tests/test_memory_candidate_planning.py共7项核心反例，AST及仅发现通过，7发现、0加载错误、0实际执行。新函数约二十行完整行为由用户一次小段敲入，所有展示Python行对应加#解释；既有planning类/函数与HEAD的AST保持相同。本段尚未实现或验收，未重复旧记忆/全仓测试，无凭据读取、真实模型请求、业务数据变更、提交或推送。
+
+2026-10-23 plan_candidate首次手敲核对：语法与其余流程正确，但remember分支第205行cnadidate.source拼写错误，合法新增/候选重试路径在调用原规划函数前NameError。实际运行用户要求的7项专项，3项通过、4项方法报错；因其中一个方法含superseded/retracted两个子测试，合计5条错误记录，0断言失败/跳过。明确更新及v3后原计划重放、非法动作/编号早拒绝、来源/去向/字段门禁3项实际通过，不能据此收口remember路径。
+
+第211行return后的旧占位不可达，作为非阻塞清理项提示；助手仅指导第205行改为candidate.source并删除旧占位，未修改新核心。实际tests.log、planning-reviewed.py及verification.json保留local-learning/evidence/memw-candidate-planning-review/，测试期间源码未变；当前execution仍与此前已验版本相同。第11段保持待修/待验，无全库重复验证、真实模型请求、业务库变更、提交或推送。
+
+2026-10-23 用户明确授权后修复验收：仅将cnadidate.source修为candidate.source并删除return后的不可达旧占位；实际运行用户指定7项专项全部通过，0失败/错误/跳过。本段只读新增/更新规划、已有候选旧状态重试、明确动作/编号/来源准入、禁止隐式覆盖、原计划重放及批次边界技术验收通过；核心由用户手敲，助手仅按授权修复。
+
+实际日志及verification.json在local-learning/evidence/memw-candidate-planning-fix-acceptance/。按本轮要求未做文件hash或快照比对，不重跑其它回归，不新增真实模型请求、业务数据变更、提交或推送。后续常规学习按需读代码和跑专项，不做例行hash校验；下一步为真实候选提取协议与保真评测设计，完整MEM-W仍进行中。
+
+2026-10-23 重新读AGENTS后推进：新增规则要求每章审阅最新main，已实际ls-remote/fetch核对936e5f40aede9327b9142b63506ed2b68bc6b4ac，读取Session追加/压缩、请求Context转换和摘要失败/工具调用门禁，并比较固定7f9e119；固定checkout不变。上游请求identity及摘要输出预算/附加指令差异明确记录，新候选协议属于Mini-Pi扩展，完整对照见memw-extraction-plan.md。
+
+本轮planning.py再次出现原拼写及不可达占位，用户确认关闭planning/execution旧标签后按此前授权恢复，实际7专项再次全部通过；未猜测覆盖原因、未做文件hash。随后仅准备extraction.py辅助/签名/占位及6项反例，语法和仅发现通过，6发现、0加载错误、0实际执行；核心留给用户手敲。小段只将已解码三字段数组绑定可信完整Source，空数组合法但仍做来源准入，失败整批抛错；不生成四元字段/动作，不请求模型或授予写权限。真实提取、终态/取消/预算及保真评测另验，D主线仍12/30，未提交推送。
+
+2026-10-23 parse_candidate_items手敲验收：当前保存代码正确，助手未修改核心；实际运行CandidateExtractionTests共6项全部通过，0失败/错误/跳过。验证模型三字段建议与同一完整原消息关联，保留顺序/重复/原正文，空结果仍做Scope和角色准入，错误后项整批抛错，额外身份字段拒绝，五建议能交既有route_candidates归组且零写入；本函数自身不分组、不请求模型或写库。
+
+本段仅格式/来源及候选输出技术验收通过，不证明提取语义保真或整个MEM-W完成；已向用户说明统一候选结构与后续归组的区别，不替学习者填写理解确认。日志及verification.json在local-learning/evidence/memw-extraction-candidate-acceptance/。下一步为提取请求终态和JSON解码接入，真实调用另行安排；未重跑其它回归，未做hash，无凭据读取、真实模型调用、业务库写入、提交或推送。D13-B继续暂停，主线12/30不变。
+
+2026-10-23 模型响应结束检查/解码准备：继续已核对最新main的提取章节，重新定位Pi摘要的error/length与工具调用拒绝；Mini-Pi新函数parse_extraction_response接收原始响应，以保留现有generate返回Message时丢失的finish_reason。助手只准备外壳检查、两个JSON hook、核心签名/占位和7项离线反例；核心正常结束/角色/工具及拒绝准入、JSON解码/抛错与parse_candidate_items接线由学习者手敲。辅助不隐藏终态决策，不改原Provider、Store或候选解析。
+
+本段以正常候选、正常[]及length+[]对比：只有完整正常纯JSON才能进入候选解析，失败/截断/工具或拒绝/JSON错误不能解释为无记忆。严格拒绝重复字段和非标准常量，数组及候选/来源政策继续复用已验函数。尚未行为验收，未接网络、真实Session、请求预算/取消收尾或语义保真评测；未做hash、重复回归、真实模型调用、业务库写入、提交推送，D13-B及12/30不变。
+
+本轮骨架新增后未保留在磁盘，原parse_candidate_items完整；用户确认关闭extraction.py标签后仅恢复新增辅助和核心占位，不推断覆盖原因。读盘/AST通过，parse_extraction_response占位位于114行；测试AST及仅发现7项、0加载错误通过，实际执行0项。准备阶段不记行为验收，不再做定时复查或hash；待学习者敲入后验7项。
+
+2026-10-23 parse_extraction_response手敲验收：第114–136行保存代码正确，助手未改核心。首次实际7项有6个方法通过，1个方法产生2条失败记录；辅助测试错误假设递归限制1000的Python必定无法解码1050层JSON，本机3.14.5独立探测显示可成功解码。仅将该测试改为可控解码器RecursionError的转换/cause保留，并补实际嵌套数组由下游结构政策拒绝，不新增核心深度限制。
+
+修正后仍为7项专项，全部通过，0失败/错误/跳过：正常和空结果、终态/角色、工具和拒答、响应外壳、严格JSON及下游政策/异常原样传播均符合契约，解析零IO或Store写入。本段离线技术验收通过，真实提取效果和完整MEM-W不据此收口；首次及最终日志/verification.json在local-learning/evidence/memw-extraction-response-acceptance/。下一步提取请求组装与异步发送设计，预算/取消收尾另验，真实调用另行安排。本轮无hash、其它回归、凭据读取、真实模型调用、业务库写入、提交推送；D13-B暂停及12/30不变。
+
+2026-10-23 提取请求/异步发送准备：最新上游main实际核对42cb822f1c5d3153069dd0661bfd297424666cf1（API与ls-remote一致），读取精确raw并与固定7f9e119比较，未切换checkout。专用system/user上下文、signal/重试链及失败/工具拒绝映射到本段，明确Pi摘要未实现本项目严格stop和三字段五出口协议。源码行号/差异与完整输入输出接线见memw-request-plan.md。
+
+助手新增extraction_client.py的提取提示、格式辅助、导入/签名与两处核心占位；用户手敲范围为Source的Scope/角色准入、完整原消息JSON与system提示分离、无工具请求组装，以及首个取消检查点→await原_send→已验parse_extraction_response。轻量继承原QwenProvider，不复制配置/HTTP、不改generate或旧核心。输出三字段建议经现有解析绑定Source后由route_candidates分组；长期候选仍须确认四元字段/动作，明确撤回另走plan_retract，其他出口不伪装成已接入Context或审核队列。
+
+准备9项离线/真实本地HTTPS反例，核心未实现，未记行为通过；单实例次数/输出限制、无自动重试及取消收尾纳入同一验收，内存request_records正文/received语义明确记录。无真实模型/业务库调用、凭据读取、hash、重复回归或提交推送；原D13-B与12/30不变。
+
+本段准备结果：extraction_client.py源AST通过，两个占位当前分别在65/81行；新测试AST和仅发现通过，9项（同步1＋异步8），0加载错误、0实际执行。主线程已读取专项源码，未提前运行占位核心，未将提示词或静态检查当实际语义提取通过。
+
+2026-10-23 build_extraction_request首次手敲核对：当前第74行record_at键/属性拼写错误、第81行messgaes变量拼写错误。实际仅运行1项组装专项，两来源user/tool子场景均在source.record_at处AttributeError，2条错误记录、0断言失败/跳过；后续NameError仅静态发现，不能说已执行观察到。其余组装逻辑未见实质问题，助手未代改核心，仅指导两行修改。
+
+同时发现MemoryExtractor.extract第97–100行已由用户敲入，取消检查点→组装→await_send→已验解析顺序正确，保留其代码，不要求再次手敲。完整9项及8项异步未运行，组装/发送仍待修/待验；证据local-learning/evidence/memw-extraction-request-review/。无hash、重复回归、凭据读取、真实模型调用、业务库写入、提交推送，D13-B及12/30不变。
+
+2026-10-23 用户授权调整后，助手仅修extraction_client.py第74行record_at键/属性及81行messgaes变量，分别为recorded_at/messages，保留其余手敲代码。实际完整9项专项全部通过，0失败/错误/跳过；组装/Scope角色准入、原响应进入候选、错误/截断不重试、次数与已到达取消门禁均符合契约。
+
+3项真实本地HTTPS覆盖成功及关闭、响应头超时断开无重试、正文等待时取消实际断开，并以客户端close门闩/重复cancel验证收尾前不报告结束。本段请求组装/异步发送技术验收通过，外部模型请求0次，SQLite/Store/业务库写入0次；实际日志及verification.json在local-learning/evidence/memw-extraction-client-fix-acceptance/，此前失败记录保留。未将合成响应当提取语义效果，不替学习者填写理解确认；下一步真实提取标注与调用计划，Session/元字段动作/完整写入链路和MEM-04仍待完成。无hash、其它回归、提交或推送，D13-B及12/30不变。
+
+2026-10-23 真实提取试点计划准备：API核对最新main仍42cb822f，重新读取精确SHA摘要独立上下文/失败与usage返回，固定基准不变。实际读盘发现extraction_client.py再次回到此前两处旧拼写，用户确认关闭旧标签后按既有授权恢复，9项专项再次全部通过、0失败/错误/跳过；不据旧通过记录直接进行付费调用，不猜覆盖原因或做hash。恢复证据local-learning/evidence/memw-extraction-client-restore-before-pilot/。
+
+助手准备6条合成Source和9个必需语义单元，实际离线组装6条请求成功，材料仅role/recorded_at/text，无tools/gold，最大消息2347字节不冒充token计量。固定样本examples/fixtures/memory_extraction_eval_v1.json、准则及调用预算local-learning/memw-extraction-evaluation-plan.md；预览/verification在local-learning/evidence/memw-extraction-pilot-prepare/。允许保真改写/同用途拆合和事先列明的保守分流，不以reason补救content的条件或猜测丢失，纯寒暄[]/ignore均可，合成工具观察不称真实业务结果。
+
+计划固定qwen3.8-flash北京、最多6次串行、1536输出/次、无自动重试/额外judge；按已核对官方输入0.8/输出2.7元每百万及每条4k输入预留估算约0.044元，非硬金额上限。技术故障停止剩余请求，语义错保留且不调提示重跑。当前仅计划与预览、真实模型请求0次，未读取凭据或写业务库；运行辅助需先准备/预览，实际调用另行授权。语义保真、实际Session/元字段动作和完整MEM-W仍未验收，D13-B及12/30不变，无提交推送或全量重复验证。
+
+2026-10-23 用户明确确认按固定计划最多6次真实提取后执行：助手新增examples/memory_extraction_eval.py记录辅助，默认preview不读配置，live须指定全新目录；继承已验发送并加观察/六次上限，不改原提取/Store核心。tests/test_memory_extraction_eval.py六项离线门禁实际全过（上限、技术停止、gold隔离、原响应、脱敏、旧目录拒绝与缺usage不记0）。安全预检仅输出存在/匹配状态，随后唯一live进程按S1–S6串行完成6次正常stop，所有model为qwen3.8-flash、无重试；原Source/请求字段/预算ledger及原始usage独立核对。
+
+真实语义试点未通过：S3-U3正文“部署沿用之前确定的方案”缺未知指代且增强确定性，S4-U1忠实工具观察却分task_constraint，不满足预标注；S1-U1自述归因按冻结要求保守记边界，未描述成虚构Python事实。完整内容7/9、内容及有效分流6/9，3案全过、2案明确失败、1案边界；S2有来源支持的额外元约束和S6 ignore按原标准允许。若放行S1边界也不能令S3/S4通过，没有事后改标注、改提示或继续调用。
+
+实际6次3126输入＋692输出＝3818 tokens，缓存0；本次采集进程总18.796538秒，阿里标准价估算0.0043692元（账单未核对）。辅助开发/标注/离线测试/事后评阅与Codex对话成本不在该计量内，未计量不能当0。可携带报告local-learning/memw-extraction-pilot-results.md，原始事件/result、semantic-review及acceptance在local-learning/evidence/memw-extraction-live-20261023-01/，技术完成不代表语义通过。
+
+预算6次已用完，下一步仅离线分析未知指代/工具观察分流及归因口径，再提出最小提示改进与新复验预算。实际Session/元字段动作/写入链路及MEM-04仍未完成；未调用plan/execute/Store或写入长期记忆，无真实业务数据使用、全库hash、提交推送，D13-B及12/30不变。
+
+## 2026-10-26：五出口v2确认与完整Session接线准备
+
+用户独立质疑S4后，实际冻结请求/结果与Scope核对确认：样本属于设定的mini-pi-pilot项目，正文忠实，旧task_constraint只写“原任务要求”。用户确认首版按用途分五组已足够，将task_constraint扩为原任务相关材料（要求/进度/执行观察），不要求拆task_state；同组不代表同为强制指令，当前任务/版本适用性仍须消费时核对。
+
+按明确授权更新修复方案、学习入口/接续/路线、请求说明和EXTRACTION_PROMPT；新增v2独立标注，不改v1样本、六次原始输出/semantic-review/acceptance或旧分数。S1接受正常第三人称，S3仍要求正文保留本次材料缺少旧方案细节，S4可task_constraint。旧输出人工离线8/9必需单元、5/6整案通过，S3-U3仍失败；新提示真实效果未验证。
+
+撤下动态retain_project_events接线及拟新增的episodic布尔门禁；已手敲build_retention_instruction和旧3项通过记录保留且明确未用，不更改现有remember/replace/retract或原工具episodic政策。既有请求/候选/响应专项实际运行22项全部通过（2.377秒），含本地合成HTTPS，外部模型请求0次，不能据此称语义已修复。
+
+再次核对Pi官方main仍d5b3de22d0e24a3e9c38a9410d3329b099717283，相关Session/compaction原文与当日缓存未变；固定7f9e119不切换。新学习单元复用已有read_memory_source、extract、parse、route及只读plan_candidate，整体为“真实保存的合成JSONL→完整Source→固定响应经已验提取器→五组→已核对唯一长期候选的只读计划”。固定示例不是实际业务测试或新模型结果，旧Session没有认证字段，Scope许可由可信调用方明确。
+
+助手准备examples/memory_session_v2_demo.py、5项tests/test_memory_session_extraction.py和MemoryExtractor.extract_session签名/占位；用户将手敲取消检查点→读取Source→await已有extract→归组返回四步接线，不重复已验核心，不新增独立业务模块。两个新辅助文件AST通过、仅发现5项、0加载错误、核心行为0次；辅助JSONL确有5条有效记录及工具配对并能由旧reader完整读取。完整示例及测试需在用户敲入后实际验收，不用代写核心或临时替换实现计通过。
+
+本轮只调整辅助/提示/记录和准备骨架，未执行新Session入口或其run_demo，未读取真实Session/凭据、运行历史工具或写业务库，无新模型调用、例行hash、提交推送；D13-B暂停、D主线12/30不变。接续详见memw-retention-v2-learning.md。
+
+## 2026-10-26：先验收S3，不以Session接线代替语义修复
+
+用户指出四行Session接线不能纠正S3正文口径后，教学退回S3定向验收。先冻结A原S3正文回归、B缺前文迁移变体、C同条给出迁移流程，3案5单元。明确缺口/猜测优先needs_review，正文与路由分别核对，已有流程的顺序/按租户分批/每批验证后继续必须保留；不做逐字quote或关键词裁判。新增样本/预览/验收计划，已验证wire隔离gold、零凭据读取/网络/开库。实际重放旧request-03响应，仍能解析但缺方案细节未知，证明技术通过不能代替语义修复。
+
+用户随后明确确认本轮最多3次真实调用。助手准备只记录父发送路径的examples/memory_s3_run.py，先用合成凭据校验默认零调用、三次上限、准备请求一致、截断即停、脱敏、旧证据目录拒绝与gold隔离；不改核心。唯一真实进程按A/B/C串行各一次，全部qwen3.8-flash/stop，输入2592、输出320、总2912 tokens，缓存0，无重试/judge/长期写入。请求耗时合8.268614秒、执行8.277340秒、进程墙钟8.296358秒；此前准备和后续人工评阅未计量。API原价估算0.0029376元，账单未知，不能记成实际扣费或完整系统成本。
+
+人工逐单元验收：正文5/5、路由及严格语义4/5，整轮未通过。A-U3/B-U1/C-U1的指代缺口或已给流程均保留；A-U2正文保留“猜测/尚未运行”，但路由task_constraint，违反事先needs_review优先级。B“之前确定”的措辞略强但正文仍明确细节缺失且待核对，未据单词机械判失败，非阻塞边界单列。未因技术3/3或指代部分改善就宣称S3全部通过，未在看结果后改gold/提示或追加调用。
+
+原始技术结果及raw request/response在local-learning/evidence/memw-s3-v2-live-20261026-01/，人工结论另存semantic-review.json与acceptance.json，采集result.json的semantic pending保留。当前新3次和原6次额度均用完；下一步仅澄清宽任务信息与待核对优先级，再决定修正规则。Session接线保留为独立后续单元，未运行；D13-B/12比30不变，无提交推送或例行hash。完整结果见memw-s3-acceptance-results.md。
+
+## 2026-10-26：用户采纳三层联合修复，v2.1提示与独立变体准备
+
+用户要求先独立四仓调研与subagent交叉审查，侧任务在research/memory-overlap-20261026/给出公开源码证据/边界和局部规则。用户随后明确同意“原则规则＋少量few-shot＋独立变体验收”。助手按授权只修改EXTRACTION_PROMPT：route表示首要后续处理，明确条件式要求/实际观察可原任务材料，未验证结果或缺所指内容需先核对，不设置全局needs_review优先级，不按关键词或tool角色直接分类；混合消息按独立意思拆，撤回不被未核实背景覆盖。加入3组教学例，未新增核心函数/运行时语义裁判，三字段五出口保持。
+
+新增6案7单元独立措辞/场景变体与只预览脚本。subagent发现H6“未拿清单→不是用户亲自核验”超出原文，已在冻结准备前修正，保留第三方归因及本次缺证据，不否认同事实际核对；旧Source和gold不改。主线程复核全部样本及提示，AST/三组示例JSON/计数/唯一Source/全文未直接复制到提示均通过，实际请求预览的发送/HTTP/凭据/数据库拦截均零调用，wire原材料仅role/recorded_at/text、无本地gold/tools。准备目录evidence/memw-overlap-v21-prepare/。
+
+本轮既有提取22项技术专项全部通过（1.238秒），仅合成/本地HTTPS，无外部模型；旧S3运行辅助因提示版本变化在准备检查中拒绝，不会拿旧计划执行新提示。没有把这些检查当语义成功：旧S3真实4/5及所有旧证据不改，新提示效果待真实复验。拟H1→H6最多6次/768输出/30秒/无重试judge只是提案，当前无新调用授权。Session接线独立后置，未代写或运行核心，D13-B/12比30不变，无例行hash、提交推送。接续见memw-overlap-v21-plan.md。
+
+## 2026-10-26：v2.1六次真实复验与H4旁路跟进
+
+用户随后明确确认最多6次。助手准备独立版本的examples/memory_overlap_run.py，复用已验MemoryExtractor/HTTP层，只增加六次上限、准备payload一致与原响应观察。合成预检验证默认零调用、最多6次、第7次拒绝、截断即停、旧目录拒绝及脱敏；不读真实凭据或写库。唯一真实进程按H1→H6串行执行6次，全部qwen3.8-flash/stop、768输出上限、无重试/judge/长期写入或历史工具执行。实际payload等于准备版本、dataset快照等于冻结fixture、Source绑定一致，未发gold/tools；原文中的项目字段可正常保留，不与额外Scope身份注入混淆。
+
+严格语义6/7、正文6/7、路由6/7，整案5/6，整体仍未通过。H1猜测、H2条件要求、H3失败观察、H5有内容的指代及H6混合消息均通过；H4只复述“用户要求预发环境的限流参数继续沿用会议里的那一版”，没有本次缺少具体参数，task_constraint也不符冻结needs_review。H5两条同用途部分重叠候选共同覆盖条件，只计一次，另记1条重叠，不直接记误记。主线程逐原文核对、另有subagent独立语义复核；不因一致意见代替实际响应。
+
+输入7909、输出470、总8379 tokens，缓存命中5120。按官方0.8普通输入/0.1缓存输入/2.7输出元每百万估算0.0040122元，账单未知；原技术结果沿用不扣缓存估算0.0075962原样保留，另记缓存调整口径。请求合14.427751秒、执行14.447193秒、进程墙钟14.460657秒；开发/准备/事后评阅未计量，不能记0。证据evidence/memw-overlap-v21-live-20261026-01/含原始attempts/request/result、evidence-check及后续semantic-review/acceptance。采集semantic pending不覆盖；人工结论是not_passed。
+
+六次预算已用完，未改提示/gold凑通过或追加第7次。按用户“冲突转side、不阻塞主对话”的持续要求，已把H4真实反例发给原四仓侧任务01a176dd-f40d-7600-b1fe-5e78c1155913，要求复用源码依据并用subagent审查，不修改主线或调用API。新6/7与旧4/5/离线8/9数据集不同，不能比较提升率，也没原样重跑旧A-U2。Session接线独立后续，MEM-W保持进行中，D13-B/12比30不变，无例行hash、提交推送。完整报告memw-overlap-v21-results.md。
+
+## 2026-10-26：按用户要求新增一组指代few-shot，定向两次通过
+
+用户要求“构造一个few-shot来修复试试”，结合H4侧审的最小边界，仅新增示例4a/4b及解释，不改原原则、三字段/五出口或核心实现。4a保留已评审方案的沿用意图，同时说明仅凭本条无法定位配置；4b给明确配置项和先读后配置要求，虽未展开所有值仍可task_constraint，不假定条目存在/读取成功。子agent独立核对边界，避免会议/评审关键词规则或没列参数就一律待核对。
+
+新增R1原H4正文回归和R2明确文件取值指针正例，两条正文未放进few-shot；提示5条示例输出JSON/AST与请求隔离均过，1项组装专项过（0.019秒），不重复旧全量。准备时真实0次。用户随后明确确认最多2次，助手新增只记录父发送路径的memory_reference_run.py，合成预检验证默认零调用、两次上限/第三次拒绝、截断即停、脱敏及旧目录拒绝，然后唯一真实进程R1→R2各调用一次。
+
+真实技术/正文/路由均2/2，本次定向小试通过。R1正文明确仅凭本条无法定位具体版本或参数并needs_review，旧H4在新提示下本次回归符合预期；“会议中确定”略强但未消除缺口，作非阻塞措辞边界，不按词机械判错。R2完整保留config/staging/limits.yaml/burst-v3/先读后配置/其他环境不动，task_constraint，未声称已执行或实际访问该路径。主线程及subagent分别对原响应和冻结标准核对，不用一致意见替代证据。
+
+输入3093、输出147、总3240 tokens，缓存1024；含缓存按官方费率估算0.0021545元，原不扣缓存估算0.0028713保留，账单未知。请求合4.249031秒、执行4.254058秒、进程墙钟4.266622秒，开发/准备/人工评阅未计量。证据evidence/memw-reference-v22-live-20261026-01/保留原始采集result及后续semantic-review/acceptance/evidence-check；旧6/7和4/5不倒改，两例不证明泛化或few-shot单一因果效果。
+
+两次预算已用完，无重试/judge/写长期库或第三次调用，无例行hash/提交推送。H4这一小步可记本次回归通过，MEM-W整体仍进行中，后续Session接线需按完整行为先核对已敲代码再验5专项；D13-B/12比30不变。完整说明见memw-reference-v22-results.md。

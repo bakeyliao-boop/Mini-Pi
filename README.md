@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前学习分支为 `codex/agent-memory`，请从[跨电脑记忆接续页](local-learning/memory-resume.md)继续。MEM-01/02、MEM-03及MEM-W新增/重试、首次更新与首次明确撤回计划已完成分段验收；下一课是统一写入执行入口与单次持久变更边界，随后补齐真实提取与MEM-04。主线仍为12/30，原目录D13-B保持暂停。当前同步检查见[检查记录](local-learning/memory-sync-checks.md)，详细历史见[实现记录](local-learning/agent-memory-implementation.md)。
+当前学习分支为 `codex/agent-memory`，请从[跨电脑记忆接续页](local-learning/memory-resume.md)继续。2026-10-27 [MEM-04首版技术验收](local-learning/mem04-acceptance.md)通过，正式复验74项全过，覆盖保存Session、固定提取、明确写入、每轮检索/组装、真实文件与本地HTTPS请求/取消；真实云端整链语义效果未据此宣称通过。主线仍为12/30，原目录D13-B保持暂停；本次[67文件归档范围](local-learning/memw-mem04-submit-manifest.md)已获提交推送授权，实际同步状态以当前Git记录及远端分支核对为准，详细历史见[实现记录](local-learning/agent-memory-implementation.md)。
 
 ## 本地验证 D05
 

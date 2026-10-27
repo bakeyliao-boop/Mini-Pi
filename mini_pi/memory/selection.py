@@ -1,4 +1,4 @@
-"""MEM-W：规范化候选、来源核对与建议去向归组；核心由学习者手敲。
+"""MEM-W：规范化候选、来源核对、建议归组与Draft装配；核心由学习者手敲。
 
 模型只提出 content/proposed_route/reason；可信调用方读取并绑定 Source。
 本文件不读 Session、不联网、不写库，不证明候选语义或授予写入许可。
@@ -8,7 +8,10 @@ from dataclasses import dataclass
 from typing import Literal
 
 from mini_pi.memory.errors import MemoryPolicyError
-from mini_pi.memory.models import MemoryScope, MemorySource
+from mini_pi.memory.models import (
+    Conditions, MemoryDraft, MemoryKind, MemoryScope, MemorySource,
+)
+from mini_pi.memory.policy import validate_draft
 from mini_pi.memory.validation_helpers import normalize_time, require_text
 
 
@@ -22,8 +25,9 @@ _ROUTES = ("long_term", "task_constraint", "ignore", "needs_review", "withdrawal
 class MemoryCandidate:
     """程序绑定的完整来源与模型建议；来源关联不等于语义支持。
 
-    source 不是模型输出。真实提取适配器尚未接线，当前由可信调用方
-    从已保存记录取得；content 允许必要规范化，不要求是原文子串。
+    source 不是模型输出，由可信调用方从已保存记录取得；content
+    允许必要规范化，不要求是原文子串。task_constraint在首版demo中
+    表示原任务相关材料，包含要求、进度和执行观察，不授予执行权限。
     """
 
     source: MemorySource
@@ -100,3 +104,34 @@ def route_candidates(
         route:tuple(items)
         for route,items in groups.items()
         }
+
+
+def draft_from_candidate(
+    scope: MemoryScope,
+    candidate: MemoryCandidate,
+    *,
+    key: str,
+    kind: MemoryKind,
+    conditions: Conditions,
+    valid_from: str,
+) -> MemoryDraft:
+    """装配上层已核对的长期候选与明确字段；不判断价值或写库。
+
+    调用前须确认长期适用性、正文支持及四个字段的依据；标签和格式
+    不证明语义正确。完整Source不改写，时间/条件规范化留给原规划层。
+    """
+    validate_candidate_source(scope,candidate)
+    if candidate.proposed_route != "long_term":
+        raise MemoryPolicyError("只有长期候选才能构造Draft")
+
+    draft = MemoryDraft(
+        key=key,
+        start=0,
+        end=len(candidate.source.text),
+        valid_from=valid_from,
+        kind=kind,
+        conditions=conditions,
+        content=candidate.content,
+    )
+    validate_draft(scope,candidate.source,draft)
+    return draft

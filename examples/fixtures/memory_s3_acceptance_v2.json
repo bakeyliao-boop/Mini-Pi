@@ -1,0 +1,79 @@
+{
+  "version": "s3-acceptance-v2",
+  "status": "acceptance_contract_prepared_not_called",
+  "data_origin": "三条合成Source。A复用首次S3的正文作回归，但使用新的来源编号和合成记录时间，不是同一原Source；B、C为独立的缺前文与同条已解析指代变体。当前只有标注和请求预览，没有新模型输出。",
+  "scope": {"user_id": "s3-review-user", "project_id": "mini-pi-s3-review"},
+  "execution": {"mode": "preview_only", "real_model_calls": 0, "new_live_authorization": null, "reuse_v1_authorization": false},
+  "proposed_run_config": {
+    "model": "qwen3.8-flash",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "region": "华北2（北京）",
+    "max_requests": 3,
+    "max_completion_tokens": 768,
+    "timeout_seconds": 30,
+    "enable_thinking": false,
+    "stream": false,
+    "serial": true,
+    "automatic_retries": 0,
+    "extra_judge_api_calls": 0
+  },
+  "grading_policy": {
+    "method": "逐单元人工核对含义与分流，不按关键词、固定句式或逐字quote判定；不调用judge API。",
+    "split_or_merge": "允许保真拆分或合并，同一必需单元只计一次；合并不能丢失限定或把不同去向混成一个标签。",
+    "content_support": "缺少所指细节、猜测以及未运行必须体现在content，reason或完整Source不能补救正文丢失限定。",
+    "route_priority": "存在猜测、证据缺口或无法解析指代时，needs_review优先于一般任务相关出口；同条已有明确流程时正常task_constraint，不因出现指代词就待核对。",
+    "scope": "三字段content/proposed_route/reason和现有五出口不变；本组只验收S3保真与分流，不接Session、Context、长期记忆写入或动态开关。",
+    "gold_visibility": "required_units、forbidden_inferences及本地评阅规则只留在fixture，不进入发送给模型的messages。",
+    "authorization": "当前无新增真实调用授权。最多三次只是拟定计划，不是可执行额度，不继承上轮六次授权。",
+    "failure": "截断、拒答、工具调用和错误JSON均非正常空结果；技术返回正常不证明语义通过，不在预览阶段预填验收结论。"
+  },
+  "cases": [
+    {
+      "case_id": "A",
+      "topic": "原S3正文回归：明确要求、未运行猜测与缺失方案并存",
+      "source": {
+        "source_id": "memw-s3-v2-a-regression-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T09:00:00+08:00",
+        "text": "这次修复必须保留原测试断言，不要改测试掩盖问题。我猜v2测试应该通过了，但还没有运行。部署还是按之前那个方案来。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "A-U1", "meaning": "本次修复必须保留原测试断言，不能改测试掩盖问题", "allowed_routes": ["task_constraint"], "must_preserve": ["限本次修复", "保留原测试断言", "禁止改测试掩盖问题"]},
+        {"id": "A-U2", "meaning": "v2测试通过只是用户猜测，实际尚未运行", "allowed_routes": ["needs_review"], "must_preserve": ["v2", "猜测而非已通过", "尚未运行"]},
+        {"id": "A-U3", "meaning": "用户希望部署沿用先前方案，但本条材料没有该方案的具体内容，需要核对", "allowed_routes": ["needs_review"], "must_preserve": ["沿用先前方案的意图", "本次材料缺少方案细节，不能补齐", "不推断用户从未确定方案"]}
+      ],
+      "forbidden_inferences": ["v2已实际通过或修复已验收", "所有后续任务都禁止修改测试", "补造部署方案的具体步骤", "缺少本次材料意味着用户从未确定方案", "只有reason保留缺口而content宣称方案具体已知或可直接执行"]
+    },
+    {
+      "case_id": "B",
+      "topic": "独立缺前文变体：迁移流程所指未知",
+      "source": {
+        "source_id": "memw-s3-v2-b-unresolved-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T09:01:00+08:00",
+        "text": "这次迁移还照之前那个流程做。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "B-U1", "meaning": "用户希望本次迁移沿用此前流程，但本条材料没有流程细节，需要核对所指内容", "allowed_routes": ["needs_review"], "must_preserve": ["本次迁移沿用此前流程的意图", "当前材料未提供流程细节，需要核对", "不能断言用户从未确定或不存在该流程"]}
+      ],
+      "forbidden_inferences": ["编造备份、分批等迁移步骤", "将流程细节未知写成已知可执行", "用户从未确定迁移流程", "仅因是原任务要求就忽略缺口并分到task_constraint"]
+    },
+    {
+      "case_id": "C",
+      "topic": "同条已解析指代：保留具体顺序和逐批继续条件",
+      "source": {
+        "source_id": "memw-s3-v2-c-resolved-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T09:02:00+08:00",
+        "text": "迁移流程是先备份数据，再按租户分批迁移，每批验证后再继续。此次迁移按这个流程执行。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "C-U1", "meaning": "本次迁移先备份数据，再按租户分批迁移，每批验证后再继续下一批", "allowed_routes": ["task_constraint"], "must_preserve": ["限本次迁移", "先备份数据，再迁移的顺序", "按租户分批迁移", "每批验证后才继续，不能丢失继续条件"]}
+      ],
+      "forbidden_inferences": ["仅因出现这个流程就认为缺前文并needs_review", "省略租户分批或每批验证后继续", "把步骤写成已经执行完成", "增添未给出的迁移或验收步骤", "推广为所有未来迁移的长期强制规则"]
+    }
+  ]
+}
