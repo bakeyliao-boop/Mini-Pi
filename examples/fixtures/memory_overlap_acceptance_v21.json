@@ -1,0 +1,117 @@
+{
+  "version": "overlap-acceptance-v2.1",
+  "status": "independent_variant_contract_prepared_not_called",
+  "data_origin": "全部为合成Source，记录时间也是合成字段，不代表实际执行。六案使用不同于提示内few-shot的任务、措辞和范围，作为分流边界的独立变体验收材料；当前没有新模型输出或语义评分，不代表泛化效果已通过。",
+  "scope": {"user_id": "overlap-review-user", "project_id": "mini-pi-overlap"},
+  "execution": {"mode": "preview_only", "real_model_calls": 0, "new_authorization": null},
+  "candidate_contract": {
+    "model_fields": ["content", "proposed_route", "reason"],
+    "routes": ["long_term", "task_constraint", "ignore", "needs_review", "withdrawal"],
+    "source_binding": "Scope、来源身份与角色由可信调用方提供并关联，不由模型输出。本文件的tool记录为合成观察，不是实际运行证明，也不证明当前任务归属。"
+  },
+  "grading_policy": {
+    "method": "正文保真与去向分别人工核对，按语义而非固定词、逐字quote或句式评分；reason、原Source或正确标签不能补救正文丢失限定。",
+    "unit_count": "六案共七个必需语义单元：H1至H5各一个，H6两个。",
+    "split_or_merge": "允许同用途信息保真拆分或合并，同一单元不重复计数。H6包含两种不同后续处理，必须分别保留明确要求与待核对结果，不能整条只给同一个去向。",
+    "local_overlap_resolution": "仅对正在判断的同一条独立信息选择首要后续处理。未核实结果、缺失依据或无法解析所指内容，需要先核对；明确条件式要求、已有依据的执行观察仍可属于原任务材料。不设needs_review全局覆盖整条消息中其他明确要求的优先级。",
+    "conditions_vs_uncertainty": "如果、只有、未满足时等条件用于规定怎么做，不自动表示事实不明；不因出现条件词或指代词就统一待核对。原文若已给出所指内容，必须使用该内容。",
+    "task_material_boundary": "task_constraint限原任务相关材料，包含要求和执行观察；正文仍区分两者，不把观察改成指令、不宣称已匹配当前任务或进入当前Context。标签不自动授权长期写入。",
+    "extra_candidates": "额外但有来源支持的候选单列核对；冗余不能增加覆盖，凭空增强、补齐条件或宣称外部验证均不接受。",
+    "gold_visibility": "本地标注、allowed_routes、must_preserve和forbidden_inferences不进入模型messages；模型材料仍只有role、recorded_at和text。",
+    "technical_boundary": "正常响应、完整JSON和来源关联只能证明技术链路；截断、拒答或格式失败不能当作正常空结果，更不能计为语义通过。",
+    "authorization": "本轮只准备材料，不提供新模型预算、型号或live调用路径，不继承任何旧额度。未来真实复验须另行确认调用计划和授权。"
+  },
+  "cases": [
+    {
+      "case_id": "H1",
+      "topic": "尚未核实的归档结果猜测",
+      "source": {
+        "source_id": "memw-overlap-v21-h1-archive-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T14:00:00+08:00",
+        "text": "我推测昨晚的归档任务已经完成，但还没查看执行日志，也没有核对归档产物。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "H1-U1", "meaning": "用户推测昨晚归档已完成，但尚未查看执行日志或核对产物，完成结果待核实", "allowed_routes": ["needs_review"], "must_preserve": ["昨晚的归档任务", "已完成只是推测", "尚未查看执行日志，也未核对归档产物"]}
+      ],
+      "forbidden_inferences": ["归档已实际完成或产物已验证", "断言归档任务从未执行或实际失败", "仅因与原任务相关就忽略待核实结果并分为task_constraint", "只在reason保留猜测或未核验限定"]
+    },
+    {
+      "case_id": "H2",
+      "topic": "明确的条件式回灌要求",
+      "source": {
+        "source_id": "memw-overlap-v21-h2-window-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T14:01:00+08:00",
+        "text": "这次回灌只能在业务窗口关闭后开始；开始前先保存只读快照。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "H2-U1", "meaning": "本次回灌须等业务窗口关闭后才能开始，并且开始前先保存只读快照", "allowed_routes": ["task_constraint"], "must_preserve": ["仅本次回灌", "业务窗口关闭后才允许开始", "回灌开始前保存只读快照"]}
+      ],
+      "forbidden_inferences": ["仅因包含只能或先后条件就判为未知并needs_review", "业务窗口已关闭或快照已经保存", "补造具体关闭时间", "推广为所有后续回灌的长期强制规则"]
+    },
+    {
+      "case_id": "H3",
+      "topic": "程序关联的缓存测试失败观察",
+      "source": {
+        "source_id": "memw-overlap-v21-h3-cache-20261026",
+        "role": "tool",
+        "recorded_at": "2026-10-26T14:02:00+08:00",
+        "text": "{\"tool_call_id\":\"synthetic-cache-h3\",\"tool_name\":\"run_tests\",\"project\":\"mini-pi-overlap\",\"version\":\"v5\",\"command\":\"python -m pytest tests/cache/test_expiry.py -q\",\"exit_code\":1,\"output\":\"7 tests collected; 5 passed, 2 failed\"}"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "H3-U1", "meaning": "mini-pi-overlap项目v5本次缓存过期测试共7项，5项通过、2项失败，退出码1，属于原任务的一次执行观察", "allowed_routes": ["task_constraint"], "must_preserve": ["mini-pi-overlap项目", "v5", "tests/cache/test_expiry.py的缓存过期测试范围", "共7项、5项通过、2项失败", "exit_code=1", "仅本次工具观察；完整原始调用身份通过Source保留，不改写成要求"]}
+      ],
+      "forbidden_inferences": ["缓存测试或全项目测试已全部通过", "混成其他项目或版本的结果", "用户要求测试必须失败", "仅因存在工具角色或失败结果就needs_review", "有版本或测试数值就必须长期保存", "已经核对该观察属于当前正在处理的任务", "宣称本轮实际执行了这条合成测试命令"]
+    },
+    {
+      "case_id": "H4",
+      "topic": "缺少所指限流配置",
+      "source": {
+        "source_id": "memw-overlap-v21-h4-rate-limit-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T14:03:00+08:00",
+        "text": "预发环境的限流参数继续沿用会议里那一版。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "H4-U1", "meaning": "用户希望预发环境沿用会议中的限流配置，但本条材料未提供该版本的具体参数，需要核对", "allowed_routes": ["needs_review"], "must_preserve": ["预发环境", "沿用会议里那版限流配置的意图", "当前材料未提供具体参数，需要核对所指内容"]}
+      ],
+      "forbidden_inferences": ["编造QPS、并发数、阈值或配置文件路径", "声称已经获得或核验具体配置", "当前缺少参数意味着会议从未确定过配置", "仅因是任务相关要求就无视信息缺口"]
+    },
+    {
+      "case_id": "H5",
+      "topic": "同条给出回填规则与停止条件",
+      "source": {
+        "source_id": "memw-overlap-v21-h5-backfill-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T14:04:00+08:00",
+        "text": "数据回填规则是先核对租户映射，再每次写入200条；发现重复ID就停止当前批次。这次回填照上述规则执行。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "H5-U1", "meaning": "本次数据回填先核对租户映射，再按每批200条写入，发现重复ID时停止当前批次", "allowed_routes": ["task_constraint"], "must_preserve": ["限本次回填", "先核对租户映射，再写入的顺序", "每批200条", "发现重复ID就停止当前批次"]}
+      ],
+      "forbidden_inferences": ["仅因出现上述规则就判定缺少前文", "映射已核对或回填已经完成", "丢失批大小或停止条件", "擅自增加回滚所有历史批次或继续跳过重复ID的步骤"]
+    },
+    {
+      "case_id": "H6",
+      "topic": "明确要求与第三方未核实结果并存",
+      "source": {
+        "source_id": "memw-overlap-v21-h6-audit-20261026",
+        "role": "user",
+        "recorded_at": "2026-10-26T14:05:00+08:00",
+        "text": "本次审计必须保留原始告警记录。外包同事说r4的对账已经核对无误，我还没拿到核对清单。"
+      },
+      "empty_result_allowed": false,
+      "required_units": [
+        {"id": "H6-U1", "meaning": "本次审计必须保留原始告警记录", "allowed_routes": ["task_constraint"], "must_preserve": ["限本次审计", "必须保留原始告警记录"]},
+        {"id": "H6-U2", "meaning": "外包同事声称r4对账已核对无误，但用户尚未拿到核对清单，该结果需要核实", "allowed_routes": ["needs_review"], "must_preserve": ["r4对账", "保留同事说法的归因，不据此声称用户或系统已独立核验", "用户尚未拿到核对清单", "不将无误写成已经验证的事实"]}
+      ],
+      "forbidden_inferences": ["把整条消息仅归入task_constraint而遗漏结果核验", "把整条消息仅归入needs_review而丢弃明确保留要求", "r4对账已被用户或本系统实际核验无误", "未拿到清单就断言用户或同事从未核验", "断言外包同事说谎或对账实际失败", "只在reason保留第三方归因或清单缺失"]
+    }
+  ]
+}

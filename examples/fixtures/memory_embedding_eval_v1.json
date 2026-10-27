@@ -1,0 +1,68 @@
+{
+  "version": "mem03-semantic-v1",
+  "top_k": 2,
+  "cases": [
+    {
+      "id": "C1",
+      "split": "calibration",
+      "query": "示例代码用什么语言更适合我？",
+      "memories": [
+        {"id": "A", "text": "我更容易读懂 Python 例子，讲解请优先用 Python。"},
+        {"id": "B", "text": "项目部署脚本使用 Bash。"}
+      ],
+      "expected_ids": ["A"]
+    },
+    {
+      "id": "C2",
+      "split": "calibration",
+      "query": "应安排在哪天、什么时段学习，提前多久提醒？",
+      "memories": [
+        {"id": "A", "text": "周六和周日晚间我能系统学习。"},
+        {"id": "B", "text": "学习开始前 30 分钟提醒我。"},
+        {"id": "C", "text": "团队在周五晚上开例会。"}
+      ],
+      "expected_ids": ["A", "B"]
+    },
+    {
+      "id": "C3",
+      "split": "calibration",
+      "query": "我明确说过喜欢哪种水果？",
+      "memories": [
+        {"id": "A", "text": "我正在读 PostgreSQL 索引课程。"},
+        {"id": "B", "text": "仓库里有一份 MySQL 迁移脚本。"}
+      ],
+      "expected_ids": []
+    },
+    {
+      "id": "H1",
+      "split": "heldout",
+      "query": "解释复杂流程时，用什么方式我更容易理解？",
+      "memories": [
+        {"id": "A", "text": "先画整体流程，再给一小段 Python 示例，我理解得更快。"},
+        {"id": "B", "text": "项目用 Mermaid 生成架构文档。"}
+      ],
+      "expected_ids": ["A"]
+    },
+    {
+      "id": "H2",
+      "split": "heldout",
+      "query": "编程练习应选哪天、在哪台设备操作？",
+      "memories": [
+        {"id": "A", "text": "我把周日下午留给编程练习。"},
+        {"id": "B", "text": "学习练习时只用家里的台式机。"},
+        {"id": "C", "text": "公司周二上午安排代码审查。"}
+      ],
+      "expected_ids": ["A", "B"]
+    },
+    {
+      "id": "H3",
+      "split": "heldout",
+      "query": "我家养的宠物叫什么名字？",
+      "memories": [
+        {"id": "A", "text": "我试用过 VS Code 的调试功能。"},
+        {"id": "B", "text": "我看过 Vim 快捷键文章。"}
+      ],
+      "expected_ids": []
+    }
+  ]
+}

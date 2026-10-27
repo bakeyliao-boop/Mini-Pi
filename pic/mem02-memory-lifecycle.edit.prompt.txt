@@ -1,0 +1,7 @@
+Edit this existing MEM-02 educational infographic with ONLY two small accuracy corrections in band 2, preserving everything else, all title/content/palette/positions/verification/pending statuses.
+1. On the main arrow from "事务内先查操作回执" to "核对最新版本与状态", add a clearly legible short label "无回执". This main route is only for first requests. Existing matching receipt branch "同一次请求／核对后返回当前结果" ends directly as a return and must NOT reconnect to version checking. Keep the conflicting same-ID branch.
+2. In the rightmost card "状态 + 来源 + 回执一起提交", replace body text containing "写入新版本状态" with these exact concise lines:
+"写入状态变更、原文来源"
+"和操作回执（同一事务内）"
+This avoids implying retract creates a new preference version. Preserve the top band showing both v1/v2 retracted and no v3, all other text and the bottom grey pending retrieval/context note.
+High-resolution landscape, crisp Simplified Chinese, same style.

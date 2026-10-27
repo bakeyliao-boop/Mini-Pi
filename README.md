@@ -213,3 +213,12 @@ python -X utf8 -m mini_pi --help
 ## D14 单 Agent 验收
 
 [验收范围、六轮真实轨迹、运行方式和证据边界](local-learning/d14-acceptance-summary.md)。默认准备和离线排演不调用云模型；显式live运行需要付费授权与进程级密钥配置。原始证据与凭证保持本地忽略。
+
+
+## 记忆模块与主线整合
+
+主线保持D14/M1完成、D15进行中的学习状态。记忆模块首版范围与边界见[MEM-04验收](local-learning/mem04-acceptance.md)和[记忆接续](local-learning/memory-resume.md)。长期记忆是Mini-Pi扩展，不能称为Pi原生能力；分支旧D13冻结记录作为历史保留，不回退当前主线。
+
+记忆准备需可信调用方显式配置prepare_messages，默认CLI不自动启用；材料不写回原history/Session，不自动提取、写库、摘要或调用云模型。
+
+整合的请求顺序、准备错误边界、字符预算及自定义builder互斥取舍见[整合说明](local-learning/memory-mainline-integration.md)。

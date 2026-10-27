@@ -1,0 +1,43 @@
+Use case: infographic-diagram.
+Create one polished Chinese educational architecture infographic, landscape 3:2, high resolution, white background, generous spacing, crisp dark navy Chinese sans-serif type, restrained teal/blue accents, flat diagram style, clear arrows. This is figure 2 of two coordinated learning diagrams comparing Pi with Mini-Pi. All text readable Simplified Chinese; no watermarks. Most important requirement: rigorously distinguish code already written from a suggested minimum retrieval contract and incomplete final integration. This is a proposal/status diagram, not a claim the full system works.
+
+Main title: "图二｜Mini-Pi：读取适用的结构化记忆"
+Subtitle: "MEM-03 最小方案建议｜尚未定稿，完整检索未接通"
+
+Top compact three-part legend:
+green solid = "已实现"
+amber dashed = "建议／待实现"
+gray separated = "已暂停的可选设计"
+
+Upper left storage card green solid:
+"MEM-01／MEM-02 已实现"
+"保存来源与事实版本"
+"显式更新／整系列撤回"
+"SQLite 主记录"
+A tiny evidence example in the card: "example_language：Python" and "保留 source_id、版本、适用时间".
+
+Main flow:
+Input card amber dashed: "本次查询" / "可信用户／项目" / "明确 key" / "场景条件 + 问题时间".
+Arrow to green solid card "只读加载候选" / "候选与来源一致性核验".
+Arrow to green solid card "适用性筛选已实现" / "范围一致" / "未撤回" / "条件满足" / "问题时间位于适用区间" / small identifier "is_usable".
+Beside this add a green solid filter tag "精确 key 筛选已写入".
+Arrow from filtering to amber dashed card "最小版拟返回" / "全部通过的完整 Entry" / "保留原文、来源、版本和时间" / clear status "最终返回仍待接通".
+Arrow to amber dashed final card "MEM-04 待实现" / "与当前任务、近期消息组装 Context" / "请求前按契约复核，再发给模型".
+
+Ensure input flows into candidate lookup and storage feeds lookup. No loop for writing triggered by search. No independent vector index.
+Small example strip:
+"查询：用户 A / Pi / example_language / 问题时间 T"
+arrow
+"选出适用的 Python 偏好"
+arrow
+"后续进入 Context".
+Show tiny rejected cards with cross icons "其他用户" "已撤回" "时间不适用" next to the filter, with arrows to exclusion only.
+
+Separate gray side/bottom note box, NOT in main path:
+"关键词／命中数计分／相关性排序：已暂停"
+"不是 Pi 源码要求；是否需要尚未确认"
+
+Small footnote: "MEM-W 自动选择与候选提取尚未实现；当前记忆由调用方显式提供候选。"
+Another brief boundary: "当前 search 仍停在筛选后占位；绿色部分不等于完整搜索已验收。"
+
+Accuracy constraints: do not imply the minimal exact-key-only interface is already accepted or implemented end-to-end. No semantic reranker, no vector store, no arbitrary top-k, no automatic preference extraction depicted as completed, no automatic cross-user identity inference. This diagram must explain the proposed useful additional capability relative to Pi, without adding new design decisions.

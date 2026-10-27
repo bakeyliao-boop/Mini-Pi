@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from mini_pi.agent import Agent, RunEndHook
 from mini_pi.bootstrap import ToolBundle
 from mini_pi.context import ContextBuilder, ContextProvider, FullHistoryContext
+from mini_pi.loop import PrepareMessages
 from mini_pi.models import Message, RunResult
 from mini_pi.provider import ModelProvider
 from mini_pi.recovery_policy import plan_recovery
@@ -31,9 +32,13 @@ class Harness:
         budget: RunBudget | None = None,
         on_run_end: RunEndHook | None = None,
         context_builder: ContextBuilder | None = None,
+        prepare_messages: PrepareMessages | None = None,
     ):
         """只保存配置并组装一个共享Agent，不启动模型或工具。"""
+        if prepare_messages is not None and context_builder is not None:
+            raise ValueError("首版记忆准备与自定义context_builder不能同时配置；须先确定最终消息预算与变换顺序")
         self._tools = tools
+        self._prepare_messages = prepare_messages  # 两入口共享明确配置，默认关闭
         self._budget = budget if budget is not None else RunBudget()
         builder = context_builder if context_builder is not None else FullHistoryContext()
         context_provider = ContextProvider(provider,builder)
@@ -57,6 +62,7 @@ class Harness:
             [Message("user",user_text)],
             session_store=session_store,
             max_model_turns=self._budget.max_model_turns,
+            prepare_messages=self._prepare_messages,  # 不旁路Agent或恢复ready门禁
             total_timeout_seconds=self._budget.total_timeout_seconds,
             )
 
@@ -80,6 +86,7 @@ class Harness:
             session_store=session_store,
             already_saved=len(loaded.history),
             max_model_turns=self._budget.max_model_turns,  # 本次模型请求次数上限
+            prepare_messages=self._prepare_messages,  # 不旁路Agent或恢复ready门禁
             total_timeout_seconds=self._budget.total_timeout_seconds,  # 本次循环总时限
         )
         return ResumeResult(plan=plan,run_result=run_result)  # 返回恢复判断和运行结果

@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 from mini_pi.executor import ToolExecutor
-from mini_pi.loop import run_loop
+from mini_pi.loop import PrepareMessages, run_loop
 from mini_pi.message_queue import PendingMessageQueue
 from mini_pi.models import ConversationItem, RunResult, ToolDefinition
 from mini_pi.provider import ModelProvider
@@ -70,6 +70,7 @@ class Agent:
         already_saved: int = 0,
         max_model_turns: int | None = None,
         total_timeout_seconds: float | None = None,
+        prepare_messages: PrepareMessages | None = None,
     ) -> asyncio.Future[RunResult]:
         """立即提交一次运行；占用与调度逻辑由学习者手敲。"""
         options = {
@@ -77,6 +78,7 @@ class Agent:
             "already_saved": already_saved,
             "max_model_turns": max_model_turns,
             "total_timeout_seconds": total_timeout_seconds,
+            "prepare_messages": prepare_messages,  # 本次显式配置，经options传给同一run_loop
         }
         loop = asyncio.get_running_loop()  #取得事件循环
         messages = list(initial_messages)  #复制本次输入消息列表

@@ -2,7 +2,8 @@
 
 import asyncio
 import math
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
+from copy import deepcopy
 
 from mini_pi.executor import ToolExecutor
 from mini_pi.models import ConversationItem, Message, RunResult, ToolDefinition, ToolResult
@@ -10,6 +11,13 @@ from mini_pi.provider import ModelProvider
 from mini_pi.run_deadline import RunDeadlineExceeded, await_before_deadline
 from mini_pi.run_finish import finish_run
 from mini_pi.session_store import SessionStore
+
+
+PrepareMessages = Callable[[list[ConversationItem]], Awaitable[list[ConversationItem]]]
+
+
+class RequestPreparationError(RuntimeError):
+    """仅标记显式prepare_messages阶段失败，不吞掉模型/普通builder错误。"""
 
 
 async def run_loop(
@@ -23,8 +31,11 @@ async def run_loop(
     total_timeout_seconds: float | None = None,
     get_steering_messages: Callable[[], list[Message]] | None = None,
     get_follow_up_messages: Callable[[], list[Message]] | None = None,
+    prepare_messages: PrepareMessages | None = None,
 ) -> RunResult:
     history = list(initial_messages)
+    if prepare_messages is not None and not callable(prepare_messages):  # 配置错误先于任何会话追加
+        raise ValueError("prepare_messages 必须是可调用的异步入口或 None")
     # D12 助手准备：配置校验先于模型请求、工具执行与会话追加。
     if max_model_turns is not None and (
         type(max_model_turns) is not int or max_model_turns <= 0
@@ -62,7 +73,21 @@ async def run_loop(
                 if session_store is not None:  # 开启保存时同步记录
                     session_store.append_item(queued)  # 保留实际递送顺序
         skip_steering_once = False  # 标记只生效一次
-        return await provider.generate(history, tools)  # 使用更新后的历史请求模型
+        if prepare_messages is None:  # 未配置时保留主线原路径，不启动任何记忆能力
+            return await provider.generate(history, tools)
+        try:  # 只有显式请求准备的错误转换为可记录的准备失败
+            request_messages = await await_before_deadline(
+                lambda: prepare_messages(deepcopy(history)),  # 队列已递送，注入只改深拷贝
+                deadline,  # 与本轮模型和工具使用同一截止时间
+            )
+        except (asyncio.CancelledError, RunDeadlineExceeded):  # 取消及总时限保持各自终态
+            raise
+        except Exception as error:  # 只包围准备阶段，模型普通异常不在这里
+            raise RequestPreparationError(str(error)) from error
+        return await await_before_deadline(  # 准备结束后再次检查取消及截止，才真正进入Provider
+            lambda: provider.generate(request_messages, tools),
+            deadline,
+        )
 
     model_turns = 0
     while True:
@@ -100,6 +125,8 @@ async def run_loop(
                 messages=history,
             )
             return await finish_run(run_result, session_store)
+        except RequestPreparationError as error:  # 准备失败才归error；默认builder/Provider错误仍向外抛
+            return await finish_run(RunResult(status="error", messages=history, error=str(error)), session_store)
         # message = await provider.generate(history, tools)
         history.append(message)
         if session_store is not None:

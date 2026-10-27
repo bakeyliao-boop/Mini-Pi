@@ -1,0 +1,66 @@
+Initial generation prompt:
+
+Use case: infographic-diagram / scientific-educational.
+Create ONE high-resolution Chinese teaching infographic, landscape about 2200×1550, in a matching series with a white/off-white background, large crisp simplified Chinese sans-serif type, rounded flat cards, clear spacious arrows and restrained line icons. This is a precise architecture lesson, not a promotional poster. Indigo/blue main flow, teal SQLite storage, amber task material, red failure lane. Keep the typography readable; choose a diagram layout instead of prose paragraphs. No decorative robots or invented UI. Use short exact labels and code identifiers.
+
+Title verbatim: “② MEM-04：让记忆进入每轮请求”
+Subtitle: “每轮重新检索与复核，生成独立 Context”
+
+TOP INPUT AREA, three clear cards:
+- “可信调用方” smaller “Scope / query / at / conditions” and “明确确认本任务材料”
+- cylinder “SQLite 长期记忆” smaller “来自 MEM-W 的受控写入”
+- cylinder “原始 history / Session” smaller “真实对话、调用与工具结果”
+Small note: “通过 prepare_messages 显式接入 run_loop”.
+
+MAIN REQUEST FLOW, very clear left-to-right:
+A “每轮 run_loop”
+→ B “prepare_context” with two visibly sequential inner stages:
+  “1  await search” / “范围、条件、问题时间过滤＋向量检索”
+  “2  build_context” / “重读主记录，核对来源、版本定义与当前适用性”
+A small callout near B: “已撤回、未生效或条件不符 → 排除”
+A small note: “历史问题可用当时有效版本，不一律取最新版”.
+SQLite input arrow goes to search; current trusted task material feeds build_context independently of vector search. Original history enters as a COPY, labeled “深复制，不改原记录”.
+
+→ C a LARGE stacked-message card titled “本次 request_messages”, showing three horizontal bands in EXACT order:
+1 “原 system 前缀”
+2 “user 参考资料” smaller “本任务材料＋适用记忆（来源／版本／时间）”
+3 “完整近期消息” smaller “工具调用与结果保持配对，最新问题保留”
+Visually label this stack “只用于本次模型请求”.
+Small budget label: “JSON 字符超限 → 明确报错，不静默裁剪”.
+→ D “provider.generate” / “模型收到组装后的消息”.
+
+LOWER SUCCESS LOOP:
+From provider success, arrow down to “模型返回”
+→ “工具执行（如有）”
+→ “真实消息与工具结果追加 history / Session”
+→ clear return arrow to “下一轮重新准备” and back to A.
+Show that the raw Session receives model returns/tool results, NOT the temporary user reference message. Do NOT draw a save arrow from the request_messages card to Session. Make this separation visually unmistakable.
+A subtle timing band spanning preparation, provider and tool stages: “共用同一 deadline；发送前再次检查取消与剩余时间”.
+
+FAILURE LANE from PREPARATION B/C ONLY, in red:
+“准备阶段停止” branches into “检索／组装错误 → error”, “取消 → cancelled”, “总时限 → timeout”
+→ “等待已启动请求清理”
+→ “finish_run 写入 run_end”
+Small statement “不再发送本轮模型请求；保留此前历史”.
+For ordinary preparation errors, the cleanup stage means settle any resources actually started; do not imply rollback of historical tool effects.
+From provider D add a small separate gray note “普通模型异常：按现有边界向外抛出”, NOT connected to the guaranteed preparation run_end lane.
+
+BOTTOM EXAMPLE STRIP, exact teaching scenario:
+“第一轮工具结果已保存 → 第二轮检索失败 → 保留工具结果＋error / run_end”
+Smaller note: “不重跑历史工具，不制造第二轮回答”.
+
+BOTTOM scope notes, no more than two short lines:
+“任务归属由调用方确认；同项目不等于同任务”
+“首版：单一问题时间、明确 query、完整近期消息；字符预算不等于 token 上限”
+
+Accuracy constraints:
+This is Mini-Pi's memory extension using Pi's request-time Context projection pattern. No auto summaries, no sliding-window truncation algorithm, no graph/vector database infrastructure, no automatic task matching. Rechecking storage and sending are not an atomic transaction. Do not imply that fixed response/local HTTPS tests established cloud LLM semantic correctness. Do not imply that all provider exceptions are converted into run_end. Keep the two stores and transient request visually distinct.
+
+Final targeted edit prompt:
+
+Edit this existing Chinese MEM-04 teaching infographic. Keep the entire overall design, title, colors, Chinese text, all other arrows and layout unchanged. Correct ONLY the lower-right SUCCESS LOOP timing to exactly match the code. There are currently three vertically connected cards below provider.generate: “模型返回”, “工具执行（如有）”, and a larger card about appending history / Session. Change these three success cards to:
+1. top small blue card: “模型返回” on first line, “先追加 history / Session” on second line.
+2. middle card remains exactly “工具执行（如有）”.
+3. bottom larger blue card: “工具结果再追加” on first line, “history / Session” on second line. Small explanatory note underneath: “只记录真实事件” and “不写入本次 user 参考资料”.
+Keep their arrows in this exact order: provider.generate → model return saved first → tool execution → tool result saved → next round.
+This correction matters: the assistant message and its tool call must be saved BEFORE executing the tool, not saved only after the tool returns. Do not alter the red preparation-error lane, deadline bar, source/context cards, ordinary model exception note or bottom example. Preserve crisp high-resolution legible simplified Chinese. No other conceptual edits.

@@ -1,0 +1,25 @@
+Use case: infographic-diagram.
+Create one polished Chinese educational architecture infographic, landscape 3:2, high resolution, white background, generous spacing, crisp dark navy Chinese sans-serif type, restrained teal/blue accents, flat diagram style, clear arrows and minimal small text. This is figure 1 of two coordinated learning diagrams, not a UI mockup. No watermarks. All visible text must be clean and readable Simplified Chinese with the exact English identifiers given. Distinguish verified source behavior from extensions.
+
+Main title: "图一｜Pi：从当前会话构造模型上下文"
+Subtitle: "源码基准：7f9e119｜已核对的内置行为"
+
+Main flow across the canvas, grouped into 5 numbered cards connected with solid arrows:
+1. "已保存的会话" with small label "JSONL：消息、工具结果、摘要、分支"
+2. "沿当前分支取路径" with function label "buildSessionPath" and tiny tree diagram whose active leaf path is teal and inactive branches light gray.
+3. "应用压缩边界" with function label "buildContextEntries" and clear three stacked pieces "最新压缩摘要" + "保留区间内的记录" + "压缩后的新记录". Caption "无压缩时，保留当前分支路径".
+4. "投影与编辑" with function label "buildSessionProjection" and caption "应用 context_edit，形成模型消息"
+5. "发给模型" with caption "可选 transformContext → 格式转换 → 请求"
+
+A small separated note card beneath the main flow: heading "另一条能力：会话选择器搜索"; text "帮助用户找到并选择历史会话"; smaller line "不是按当前问题自动召回跨会话事实". It should not connect directly to model request as an automatic retrieval pipeline.
+
+Bottom example strip labeled "同一个例子":
+"原会话里：请用 Python 举例"
+then arrow
+"偏好仍在保留消息或摘要中"
+then arrow
+"继续该会话时可进入模型请求".
+Bottom boundary statement, prominent but concise: "Pi 核心不会自动扫描其他会话，建立并检索用户偏好事实库。"
+Small footer: "这是会话上下文构造；不是 MEM-03 的长期记忆检索。"
+
+Accuracy constraints: no vector database, no embedding, no keyword-count scoring in main Pi pipeline, no automatic factual version selection, no native retract/versioned fact-memory subsystem. Do not imply all saved sessions are loaded into every request. Do not add features or invent implementation.
