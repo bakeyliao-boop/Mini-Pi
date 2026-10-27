@@ -4,7 +4,7 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前主线已完成 D01–D14（14/30），M1 单 Agent 可用首版通过：真实qwen3.8-flash在隔离副本完成折扣修复，固定测试及独立复验5项全通过；Python3.14.5全量400项中398通过、2项Windows符号链接权限跳过。详情见[D14验收摘要](local-learning/d14-acceptance-summary.md)。有指导复盘完成，不宣称任意项目可自动修复；上下文压缩、reviewer及v0.1完整交付尚未完成。
+当前主线已完成 D01–D15（15/30）；D15五单元有指导理解复盘通过，见[D15学习复盘](local-learning/d15-acceptance-summary.md)。D16待开始，M1 单 Agent 可用首版通过：真实qwen3.8-flash在隔离副本完成折扣修复，固定测试及独立复验5项全通过；Python3.14.5全量400项中398通过、2项Windows符号链接权限跳过。详情见[D14验收摘要](local-learning/d14-acceptance-summary.md)。有指导复盘完成，不宣称任意项目可自动修复；上下文压缩、reviewer及v0.1完整交付尚未完成。
 
 ## 本地验证 D05
 
@@ -222,3 +222,7 @@ python -X utf8 -m mini_pi --help
 记忆准备需可信调用方显式配置prepare_messages，默认CLI不自动启用；材料不写回原history/Session，不自动提取、写库、摘要或调用云模型。
 
 整合的请求顺序、准备错误边界、字符预算及自定义builder互斥取舍见[整合说明](local-learning/memory-mainline-integration.md)。
+
+## D15 上下文管理学习复盘
+
+[五单元复盘、摘要字段清单与证据边界](local-learning/d15-acceptance-summary.md)。学习顺序固定为：准备记忆材料→上下文构建→最终预算检查→实际模型。D15阅读学习完成，自动筛选、摘要与统一token空间检查仍待D16/D17实现。
