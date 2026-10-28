@@ -1,0 +1,64 @@
+Use case: scientific-educational / infographic-diagram.
+Generate ONE clear Chinese teaching infographic for a Python Mini-Pi learner starting D15. Goal: build a mental blueprint for stages D15-D17 BEFORE implementation. Portrait 4:5, approximately 2400x3000, white background, crisp large Simplified Chinese, navy text, blue=already implemented, green=future implementation, amber=invariants. Spacious flat diagram; no robot, no decoration, no cramped wall of code. Prefer simple diagrams with a few direct arrows.
+
+Exact title: “D15 心智蓝图：记录全部，按需带入”
+Subtitle: “完整历史保留过程；模型上下文服务下一步”
+A visible status badge at top: “当前尚未实现摘要压缩”
+
+TOP: a short three-stage roadmap, horizontally:
+“D15 理解边界” → “D16 组装请求” → “D17 摘要压缩”
+Under each short label: D15 “分清两份视图 / 工具配对”; D16 “选择消息 / 记录大小 / 预留空间”; D17 “摘要保真 / 失败处理 / 记录消耗”.
+Mark D15 as “现在学习”, D16 and D17 as “后续实现”.
+
+MIDDLE UPPER, blue framed panel titled “现在：已实现的请求链”.
+At left draw a storage cylinder labeled “完整 history / JSONL” and below it “保存用户消息、工具调用、工具结果和终态；原始记录可查”.
+But distinguish archive from runtime: short label “run_loop 维护 history，SessionStore 保存过程”.
+The blue EXECUTION PATH inside the panel is exact:
+“ContextProvider.generate(history, tools)”
+down arrow “snapshot = deepcopy(list(history))”
+down arrow “FullHistoryContext.build(snapshot)”
+down arrow “messages = 全部历史”
+down arrow “provider.generate(messages, tools)”
+Annotation: “当前仅隔离副本，默认仍全量发送”
+No arrow should imply reading JSONL from disk on every request; archive is the preserved record, history is runtime state.
+
+MIDDLE LOWER, green framed panel titled “接下来：请求视图怎样变小（D16-D17 计划）”.
+Left box “同一份完整历史（仍保留）” with simple list “较早消息 … 近期消息”.
+One arrow from that left box into a splitter labeled “选择安全留存边界”.
+Splitter outputs TWO branches:
+branch A “较早内容” → “生成摘要”
+branch B “近期消息” → “保留完整消息组”
+Both feed a JOIN box “下一次 messages = 摘要 + 近期完整消息”
+Then one arrow “交给实际 Provider”.
+A separate small badge connected to original-history box: “原始 JSONL 不被摘要覆盖”
+Small note above join “系统指令、工具定义也占输入空间；还要预留输出空间”
+Do not draw delete arrows, garbage bins, or overwritten history. Future panel is clearly labeled planned, NOT already working.
+
+BOTTOM: three amber principle cards:
+Card1 heading “1 工具调用与结果不能乱拆”
+Show a bracket around TWO rows:
+“assistant：call_id=t1，run_tests”
+“ToolResult：tool_call_id=t1”
+caption “同组保留，不能只留下结果”
+below “不直接截取最后 N 条消息”
+Card2 heading “2 摘要保留做事所需事实”
+“目标 / 约束 / 已改文件 / 验证结果 / 待办与未知”
+“失败仍是失败；未验证不能写成通过”
+small concrete anchor “D14：仅改 discount.py，固定测试不能改”
+Card3 heading “3 失败不能毁掉原记录”
+“摘要失败：保留历史，明确停止或回退”
+“空间估算须标明方法；不能假装精确 token”
+“摘要请求也要记录消耗与预算”
+
+Footer on two lines:
+“Pi 对照：prepareCompaction → compact → appendCompaction → buildSessionProjection”
+“本阶段整理同一会话；跨会话长期记忆属于独立专题”
+A final bold memorable sentence “省的是重复篇幅，保留的是任务状态和证据关系。”
+
+Constraints:
+Clear distinction between existing FullHistoryContext passthrough and future context selection/summarization.
+Tool identifiers exactly t1, not mismatched.
+Do not show summary outputs as newly verified facts.
+Do not label current Mini-Pi as implementing compaction or long-term memory.
+Avoid numeric token settings, which differ by source version.
+All Chinese legible; simplify prose instead of shrinking fonts.

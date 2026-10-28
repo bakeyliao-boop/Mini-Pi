@@ -3,21 +3,42 @@
 import asyncio
 from collections.abc import Callable, Sequence
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import Protocol
 
 from mini_pi.context_budget import ContextWindowBudget, check_estimated_window
 from mini_pi.context_output import shorten_read_result
 from mini_pi.context_size import InputSizeEstimate
-from mini_pi.memory.context_helpers import check_complete_messages
+from mini_pi.memory.context import add_reference_messages
+from mini_pi.memory.context_helpers import check_complete_messages, messages_char_count
+from mini_pi.memory.errors import MemoryContextError
 from mini_pi.models import ConversationItem, Message, ToolDefinition, ToolResult
 from mini_pi.provider import ModelProvider
 from mini_pi.run_deadline import await_before_deadline
 
 
+@dataclass
+class ContextParts:
+    history:list[ConversationItem]
+    references:list[Message]
+
 class ContextBuilder(Protocol):
     async def build(self, history: Sequence[ConversationItem]) -> list[ConversationItem]:
         """从历史副本组装本次请求消息；不得执行历史工具调用。"""
         ...
+
+
+async def build_separate_context(builder: ContextBuilder, parts: ContextParts):
+    snapshot = deepcopy(parts)  # 隔离历史和本轮资料
+    history_messages = await builder.build(snapshot.history)  # 构建器只接收历史
+    history_messages = deepcopy(list(history_messages))  # 隔离构建结果
+    return add_reference_messages(history_messages, snapshot.references)  # 最后加入资料
+
+def check_request_chars(messages,max_context_chars):
+    if type(max_context_chars) is not int or max_context_chars <= 0:
+        raise MemoryContextError("字符上限必须是正整数")
+    if messages_char_count(messages) > max_context_chars:
+        raise MemoryContextError("请求消息超过字符预算")
 
 
 class FullHistoryContext:

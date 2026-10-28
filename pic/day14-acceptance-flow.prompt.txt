@@ -1,0 +1,83 @@
+Use case: scientific-educational / infographic-diagram.
+Create ONE polished, exceptionally clear Chinese learning poster about Mini-Pi D14's ACTUAL single-agent repair acceptance. It should help a learner remember the logic without memorizing many parameters. Portrait 4:5, high-resolution about 2400x3000, ample white space, crisp large Simplified Chinese text and exact English code labels. Flat infographic, white background, dark navy typography; blue=model requests, amber=actual tool execution, green=verified evidence, purple=independent acceptance. No photos, no robots, no ornamental mind-map branches.
+
+Title verbatim: “D14：怎样证明 Agent 真的修好了？”
+Subtitle: “模型负责决定下一步，工具负责执行，证据决定验收”
+Small scope line: “一次真实 qwen3.8-flash 运行 · 隔离副本 · 原模板保留 bug”
+
+LAYOUT:
+Top band: three equal green checklist cards, large exact headings:
+“① 改动没越界”
+body “仅允许改 discount.py”
+“固定 test_discount.py 不变”
+“② 确实修了问题”
+body “核对真实文件 diff”
+“减免金额 → 实际应付金额”
+“③ 测试确实通过”
+body “先失败，后通过”
+“再独立复验一次”
+
+Middle main area: TWO clearly separated columns. Left is about 60% width, titled “真实模型的 6 轮请求”. A single vertical sequence of six numbered boxes with simple downward arrows ONLY. Each box should contain a blue model-decision line and amber tool-result line. Tool execution result goes into the NEXT numbered model request. Each step is one model request, not one tool call.
+Above step1 a narrow context bar:
+“Harness.run(TASK, store) → Agent.prompt → run_loop”
+“tools / history / session_store”
+Then six boxes, EXACT labels:
+1 “list_files”
+“查看隔离项目中的源码和测试”
+2 “read_file × 2”
+“path='discount.py' / 'test_discount.py'”
+“模型获得实际代码与测试内容”
+3 “run_tests({})”
+“程序执行固定命令，模型不能替换命令”
+“修复前：5 项测试，4 项失败”
+4 “edit_file”
+“path='discount.py'”
+“old_text: return price * rate”
+“new_text: return price * (1 - rate)”
+“真实文件只改这一行”
+5 “run_tests({})”
+“修复后：5 项测试全部通过”
+“ToolResult：outcome='tests_passed', exit_code=0”
+6 “模型最终回答，无工具调用”
+“依据第 5 轮反馈解释原因、改动和结果”
+“这一轮本身不运行测试”
+Between step5 and6 label the DOWNWARD arrow “测试反馈进入下一次模型请求”. Never imply the model's final speech executes tests.
+
+RIGHT middle column title “独立验收器：检查证据”.
+Use three stacked evidence cards with NO arrow from model speech to passing verdict:
+A “范围证据”
+“只改副本 discount.py”
+“固定测试未修改；无额外源码”
+B “改动证据”
+“change.diff”
+“price * rate → price * (1 - rate)”
+C “结果证据”
+“工具测试：5/5 通过”
+“验收器另行执行固定测试：5/5 通过”
+“通过反馈确实出现在第 6 次模型请求中”
+Connect an amber dashed arrow from actual edit step4 to evidence B labeled “读取磁盘 diff”.
+Connect an amber dashed arrow from step5 ToolResult to evidence C labeled “核对实际反馈”.
+The independent test is a separate action by the verifier; label “独立运行，不靠模型口头结论”. No arrow suggests that model summary produces test pass.
+Below evidence cards a purple decision box “三项证据同时满足 → 本次受控任务验收通过”.
+A red small rejected example card:
+“反例：放宽 test_discount.py 断言后通过”
+“越过权限和固定标准 → 不通过”
+Keep this rejection separate; no arrows making it part of the actual successful trace.
+
+Bottom band: TWO outcome cards, separated visually:
+Left “运行结果（程序）”
+“RunResult.status = 'finished'”
+“RunResult.task_passed = null”
+“表示正常结束；循环没有自动判断业务成功”
+Right “独立验收结论”
+“acceptance.rechecked.json：通过”
+“文件 diff + 固定测试 + 独立复验”
+Below both, a strong green line:
+“D14 与 M1 单 Agent 首版完成”
+“全量回归：400 项，398 通过，2 项权限跳过”
+Footer modest text:
+“真实调用 6 次，总用量 9723 token；未追加付费重试。一次受控任务通过，不代表任意项目都能自动修复。”
+Very bottom bold memorable sentence:
+“最终总结不能替代实际测试证据。”
+
+Prioritize a few readable labels, clear straight arrows, generous spacing. All function names and numeric facts above must be exact. Do not invent tests, do not show task_passed=true inside RunResult, do not imply modifying fixed tests is allowed, do not label the scripted offline rehearsal as the real run. The only arrows in the six-round sequence are downward; the side evidence links are few and clearly dashed. The independent-verdict card is connected from evidence cards, NOT from model final speech.

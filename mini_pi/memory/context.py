@@ -11,6 +11,25 @@ from mini_pi.memory.selection import MemoryCandidate, validate_candidate_source
 from mini_pi.memory.store import MemoryStore
 from mini_pi.models import ConversationItem, Message
 
+def make_reference_messages(at,task_material,usable):
+    if not task_material and not usable:
+        return []
+    material = encode_context_material(at,task_material,usable)
+    return [Message("user",material)]
+
+def add_reference_messages(history,reference_messages):
+    request_messages = list(history)
+    insert_at = 0
+
+    while(
+        insert_at < len(request_messages)
+        and isinstance(request_messages[insert_at],Message)
+        and request_messages[insert_at].role == "system"
+        ):
+        insert_at += 1
+
+    request_messages[insert_at:insert_at] = reference_messages
+    return request_messages
 
 def build_context(
     store: MemoryStore,
@@ -22,6 +41,7 @@ def build_context(
     at: str,
     conditions: Conditions = (),
     max_context_chars: int,
+    reference_only:bool = False,
 ) -> list[ConversationItem]:
     """完整近期消息加已确认同任务材料及适用记忆，输出独立请求快照。
 
@@ -60,17 +80,12 @@ def build_context(
             continue
         usable.append(current)
 
-    request_messages = recent_messages
-    if task_material or usable:  #“当前任务材料”或“可用长期记忆”是否有内容
-        material = Message("user",encode_context_material(at,task_material,usable))
-        insert_at = 0
-        while(
-            insert_at < len(request_messages)
-            and isinstance(request_messages[insert_at],Message)
-            and request_messages[insert_at].role == "system"
-            ):
-            insert_at += 1
-        request_messages.insert(insert_at, material)  # 在system之后插入资料，保留其余消息顺序
+    reference_messages = make_reference_messages(at, task_material, usable)  # 准备本轮资料
+
+    if reference_only:
+        return reference_messages
+
+    request_messages = add_reference_messages(recent_messages, reference_messages)  # 组装请求
 
     if messages_char_count(request_messages) > max_context_chars:
         raise MemoryContextError("请求消息超过字符预算")

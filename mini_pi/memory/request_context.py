@@ -24,6 +24,7 @@ async def prepare_context(
     top_k: int,
     min_score: float,
     max_context_chars: int,
+    reference_only:bool = False,
 ) -> list[ConversationItem]:
     """可信调用方给出本次query和适用背景，返回本次独立请求消息。
 
@@ -47,4 +48,5 @@ async def prepare_context(
         store, scope, hits, recent_messages,  # 使用检索结果与本次消息快照
         task_material=task_material, at=at, conditions=conditions,  # 任务材料和适用背景保持一致
         max_context_chars=max_context_chars,  # 超预算由组装层明确报错
+        reference_only=reference_only,
     )  # 返回独立请求消息，后续再接入run_loop

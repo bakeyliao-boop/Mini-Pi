@@ -74,6 +74,17 @@ class MemoryContextTests(unittest.TestCase):
         self.assertEqual([item.role for item in messages[:3]], ["system", "system", "user"])
         return json.loads(messages[2].content)
 
+    def test_reference_only_preserves_caller_history_and_returns_only_material(self):
+        history = self.recent()
+        original = deepcopy(history)
+        material = self.candidate("保留原测试断言。")
+        references = self.build(recent_messages=history, task_material=(material,), reference_only=True)
+        self.assertEqual(history, original)
+        self.assertEqual(len(references), 1)
+        self.assertEqual(json.loads(references[0].content)["task_material"][0]["content"], material.content)
+        self.assertNotIn(history[2].content, references[0].content)
+        self.assertEqual(self.build(recent_messages=history, reference_only=True), [])
+
     def test_material_sources_and_memory_are_preserved_without_polluting_history_or_session(self):
         entry = self.remember()
         history = self.recent()

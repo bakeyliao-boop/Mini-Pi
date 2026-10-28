@@ -1,0 +1,75 @@
+Mode: built-in image_gen.
+
+Generation prompt:
+Use case: infographic-diagram.
+Generate one clean Chinese educational diagram of Pi Agent lifecycle, replacing a Mermaid diagram in Day 4 learning notes. High-resolution wide landscape around 16:9, very readable Simplified Chinese and precise English code identifiers. Flat restrained professional infographic, light neutral background, generous spacing, large text. No characters, decorative illustrations, watermark, or code screenshot. This is a CONCEPTUAL state diagram derived from source, not actual enum names or a claim of executed tests.
+
+EXACT TITLE:
+"D04｜Agent 生命周期"
+Subtitle:
+"启动 → 执行 → 收尾 → 再次启动"
+
+LAYOUT:
+Four large numbered rounded rectangles in one clear left-to-right main row. Use calm, meaning-consistent colors. Connecting arrows must have unambiguous arrowheads and no crossing of text. A long clean return arrow from the fourth state back to the first, labeled "可以开始下一次运行". Put two small side branches on separate lanes so connectors do not overlap. Keep all text comfortably readable. Key distinctions in a short bottom strip.
+
+MAIN STATES, exact text:
+1.
+"空闲"
+"activeRun 不存在"
+"允许 prompt()"
+
+2.
+"运行中"
+"activeRun 存在"
+"isStreaming = true"
+
+3.
+"收尾中"
+"agent_end 已发出"
+"等待监听函数处理结束"
+
+4.
+"回到空闲"
+"finishRun() 完成"
+"activeRun 已清除"
+
+MAIN ARROWS:
+State 1 → State 2, label "prompt() 启动".
+State 2 → State 3, label "正常结束 / 错误退出".
+State 3 → State 4, label "finally → finishRun()".
+State 4 → State 1, label "可以开始下一次运行".
+
+SIDE BRANCH A — repeated start:
+State 2 → a small red-tinted callout with:
+"再次调用 prompt()"
+"拒绝重复启动"
+"原运行继续"
+A short return arrow goes back to State 2. Do not connect this rejection to cancellation or idle.
+
+SIDE BRANCH B — cancellation:
+State 2 → a small amber state with:
+"取消已请求"
+"abort() 仅发信号"
+"activeRun 仍可能存在"
+Incoming arrow label "abort()".
+That amber state → State 3, label "执行响应取消并结束".
+IMPORTANT: NEVER draw an arrow directly from abort()/cancellation to idle. Cancellation is cooperative and cleanup must still finish.
+
+BOTTOM STRIP, exact heading:
+"三条边界"
+Three short labels:
+"agent_end ≠ 完全空闲"
+"空闲 ≠ 消息队列为空"
+"运行结束 ≠ 任务成功"
+
+One final concise line:
+"取消后启动新任务：abort() → await waitForIdle() → prompt()"
+
+SEMANTIC REQUIREMENTS:
+A single Agent rejects a second prompt while activeRun exists. agent_end is a loop event, not immediate lifecycle idle. Awaited event listeners settle before finally calls finishRun; finishRun clears runtime state, resolves waiting, and clears activeRun. isStreaming stays true while processing/settling a run, not just while generating tokens. finishRun does not clear the steering or follow-up queues. Successful cleanup does not establish external task success. Render ONLY the specified labels, not these semantic instructions. All typography must be exact, particularly activeRun, isStreaming, agent_end, finishRun(), prompt(), abort(), and waitForIdle(). No tiny footer or arbitrary extra nodes.
+
+First localized correction:
+Make ONE localized text correction to the provided lifecycle diagram. In state 3 (the purple “收尾中” box), replace “agent_end 已退出” with EXACTLY “agent_end 已发出”. The Chinese characters must be 已 发 出, not 已 退 出. The line means an event has been emitted, not that the event exited. Keep every other text, code identifier, box, arrow, color, typography, placement and image dimensions unchanged. Do not redesign, add, remove or paraphrase any other element.
+
+Final localized correction:
+Edit the provided image. REQUIRED localized change: in the purple state-3 box, the row directly below “收尾中” currently says “agent_end 已退出”. Erase this ENTIRE row, including all Chinese characters, and typeset ONLY the exact English identifier “agent_end” centered in the same row. There must be NO Chinese characters after or before agent_end on this row. Keep the next row “等待监听函数处理结束” unchanged. Keep the heading “收尾中” unchanged. Preserve all other boxes, arrows, text, layout, colors and resolution. This row must visibly change; do not retain the erroneous old text.

@@ -54,6 +54,18 @@ class RequestContextTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(messages[2:], before[1:])
         self.assertEqual(self.history, before)
 
+    async def test_reference_only_returns_search_result_without_history(self):
+        entry = self.remember()
+        before = deepcopy(self.history)
+        references = await prepare_context(
+            self.store, self.scope, "解释修复时的语言偏好", self.history,
+            reference_only=True, **self.options,
+        )
+        self.assertEqual(len(references), 1)
+        self.assertEqual(json.loads(references[0].content)["memories"][0]["memory_id"], entry.memory_id)
+        self.assertEqual(self.history, before)
+        self.assertNotIn(self.history[1].content, references[0].content)
+
     async def test_empty_store_keeps_messages_without_embedding_or_database_creation(self):
         embedder = self.options["embedder"]
         with patch.object(embedder, "embed_query", new_callable=AsyncMock) as send:
