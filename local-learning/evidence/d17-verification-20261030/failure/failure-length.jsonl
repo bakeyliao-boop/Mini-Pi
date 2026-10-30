@@ -1,0 +1,6 @@
+{"type": "run_start", "run_id": "failure-length", "timestamp": "2026-10-30T08:03:27.635037+00:00", "data": {"status": "running"}}
+{"type": "message", "run_id": "failure-length", "timestamp": "2026-10-30T08:03:27.636037+00:00", "data": {"role": "user", "content": "修复登录", "tool_calls": [], "stop_reason": null, "error_message": null}}
+{"type": "message", "run_id": "failure-length", "timestamp": "2026-10-30T08:03:27.637039+00:00", "data": {"role": "assistant", "content": "test_login 失败", "tool_calls": [], "stop_reason": null, "error_message": null}}
+{"type": "message", "run_id": "failure-length", "timestamp": "2026-10-30T08:03:27.637039+00:00", "data": {"role": "user", "content": "继续", "tool_calls": [], "stop_reason": null, "error_message": null}}
+{"type": "session_identity", "run_id": "failure-length", "timestamp": "2026-10-30T08:03:27.652047+00:00", "data": {"session_id": "639520e7713f45fcac882db59f0d59d7"}}
+{"type": "run_end", "run_id": "failure-length", "timestamp": "2026-10-30T08:03:27.653045+00:00", "data": {"status": "error", "task_passed": null, "error": "摘要未正常完成"}}

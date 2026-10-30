@@ -1,0 +1,101 @@
+{
+  "model": "MockProvider（预设响应，不调用真实模型）",
+  "usage_explanation": "模型服务未调用，usage 不可用（null，不代表零）",
+  "scenarios": [
+    {
+      "scenario": "摘要length",
+      "status": "error",
+      "checks": {
+        "status_matches": true,
+        "raw_history_preserved": true,
+        "no_compaction_saved": true,
+        "answer_not_called": true,
+        "one_summary_call": true,
+        "run_end_matches": true
+      },
+      "summary_requests": 1,
+      "answer_requests": 0,
+      "summary_usage": null,
+      "answer_usage": null,
+      "session_file": "failure-length.jsonl"
+    },
+    {
+      "scenario": "摘要error",
+      "status": "error",
+      "checks": {
+        "status_matches": true,
+        "raw_history_preserved": true,
+        "no_compaction_saved": true,
+        "answer_not_called": true,
+        "one_summary_call": true,
+        "run_end_matches": true
+      },
+      "summary_requests": 1,
+      "answer_requests": 0,
+      "summary_usage": null,
+      "answer_usage": null,
+      "session_file": "failure-error.jsonl"
+    },
+    {
+      "scenario": "摘要aborted",
+      "status": "cancelled",
+      "checks": {
+        "status_matches": true,
+        "raw_history_preserved": true,
+        "no_compaction_saved": true,
+        "answer_not_called": true,
+        "one_summary_call": true,
+        "run_end_matches": true
+      },
+      "summary_requests": 1,
+      "answer_requests": 0,
+      "summary_usage": null,
+      "answer_usage": null,
+      "session_file": "failure-aborted.jsonl"
+    },
+    {
+      "scenario": "新增 steering 后完整回答请求超出窗口",
+      "status": "budget_exhausted",
+      "window_tokens": 1000,
+      "reserved_output_tokens": 100,
+      "checks": {
+        "budget_exhausted": true,
+        "answer_not_called": true,
+        "summary_saved": true,
+        "raw_history_preserved": true,
+        "new_steering_saved": true
+      },
+      "summary_requests": 1,
+      "answer_requests": 0,
+      "summary_usage": null,
+      "answer_usage": null,
+      "session_file": "window-after-new-steering.jsonl"
+    },
+    {
+      "scenario": "max_model_turns 为 1 的调用口径",
+      "status": "finished",
+      "max_model_turns": 1,
+      "summary_requests": 1,
+      "answer_requests": 1,
+      "checks": {
+        "finished": true,
+        "one_summary_call": true,
+        "one_answer_call": true
+      },
+      "summary_usage": null,
+      "answer_usage": null,
+      "session_file": "budget-separate.jsonl"
+    },
+    {
+      "scenario": "摘要调用上限阻止第二次",
+      "checks": {
+        "second_call_blocked": true,
+        "one_actual_call": true,
+        "one_budget_used": true
+      },
+      "summary_requests": 1,
+      "summary_usage": null
+    }
+  ],
+  "all_passed": true
+}

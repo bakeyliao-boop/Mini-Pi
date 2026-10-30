@@ -9,8 +9,11 @@ from tempfile import TemporaryDirectory
 import time
 from types import SimpleNamespace
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
+from mini_pi.context import ContextProvider, FullHistoryContext
+from mini_pi.context_budget import ContextWindowBudget
+from mini_pi.context_size import estimate_qwen_input
 from mini_pi.loop import run_loop
 from mini_pi.memory.models import MemoryDraft, MemoryScope, MemorySource
 from mini_pi.memory.request_context import prepare_context
@@ -37,6 +40,157 @@ class LoopMemoryContextTests(unittest.IsolatedAsyncioTestCase):
 
     def end_record(self):
         return self.session.load().records[-1]["data"]
+
+    async def test_invalid_separate_configuration_has_no_run_side_effects(self):
+        references = AsyncMock(return_value=[])
+        legacy = AsyncMock(return_value=[])
+        wrapped = ContextProvider(self.provider, FullHistoryContext(),
+                                  input_estimator=estimate_qwen_input,
+                                  window_budget=ContextWindowBudget(1000, 100))
+        no_budget = ContextProvider(self.provider, FullHistoryContext())
+        cases = [
+            (wrapped, {"prepare_references": references, "prepare_messages": legacy, "max_context_chars": 100}),
+            (wrapped, {"prepare_references": "invalid", "max_context_chars": 100}),
+            (no_budget, {"prepare_references": references, "max_context_chars": 100}),
+            (self.provider, {"prepare_references": references, "max_context_chars": 100}),
+            (wrapped, {"prepare_references": references, "max_context_chars": True}),
+            (wrapped, {"prepare_references": references}),
+            (wrapped, {"max_context_chars": 100}),
+            (wrapped, {"prepare_model_history": "invalid", "max_context_chars": 100}),
+            (wrapped, {"prepare_model_history": lambda history: history, "prepare_messages": legacy,
+                       "max_context_chars": 100}),
+            (no_budget, {"prepare_model_history": lambda history: history, "max_context_chars": 100}),
+            (wrapped, {"prepare_model_history": lambda history: history, "max_context_chars": True}),
+        ]
+        for provider, options in cases:
+            with self.subTest(options=options), self.assertRaises(ValueError):
+                await run_loop(provider, self.executor, self.initial, [], session_store=self.session, **options)
+            self.assertFalse(self.session.path.exists())
+            self.assertEqual(self.provider.requests, [])
+        references.assert_not_awaited()
+        legacy.assert_not_awaited()
+        self.executor.execute.assert_not_awaited()
+
+    async def test_new_entries_can_be_configured_together(self):
+        references = AsyncMock(return_value=[])
+        prepare_history = Mock(side_effect=lambda history: history)
+        provider = ContextProvider(self.provider, FullHistoryContext(), input_estimator=estimate_qwen_input,
+                                   window_budget=ContextWindowBudget(10000, 100))
+        result = await run_loop(provider, self.executor, self.initial, [], session_store=self.session,
+                                prepare_references=references, prepare_model_history=prepare_history,
+                                max_context_chars=10000)
+        self.assertEqual(result.status, "finished")
+        references.assert_awaited_once()
+        prepare_history.assert_called_once()
+
+    async def test_model_history_view_and_references_preserve_original_session(self):
+        references = AsyncMock(return_value=[Message("user", "临时资料")])
+        seen = []
+        def prepare_history(history):
+            seen.append(deepcopy(history))
+            return [Message("system", "编程助手"), Message("user", "旧过程摘要"), *history[2:]]
+        self.provider = MockProvider([
+            Message("assistant", "运行测试", [ToolCall("t1", "run_tests", {})]),
+            Message("assistant", "完成"),
+        ])
+        wrapped = ContextProvider(self.provider, FullHistoryContext(), input_estimator=estimate_qwen_input,
+                                  window_budget=ContextWindowBudget(10000, 100))
+        result = await run_loop(wrapped, self.executor, self.initial, [], session_store=self.session,
+                                prepare_references=references, prepare_model_history=prepare_history,
+                                max_context_chars=10000)
+        self.assertEqual(result.status, "finished")
+        self.assertEqual(references.await_count, 2)
+        self.assertEqual(len(seen), 2)
+        for raw in seen:
+            self.assertEqual(raw[:2], self.initial)
+            self.assertFalse(any(isinstance(item, Message) and item.content == "临时资料" for item in raw))
+        for request in self.provider.requests:
+            self.assertEqual([item.content for item in request[:3]], ["编程助手", "临时资料", "旧过程摘要"])
+        self.assertIsInstance(self.provider.requests[1][-1], ToolResult)
+        self.assertEqual(self.session.load().history, result.messages)
+        self.assertEqual(result.messages[:2], self.initial)
+        self.assertNotIn("旧过程摘要", self.session.path.read_text(encoding="utf-8"))
+        self.assertNotIn("临时资料", self.session.path.read_text(encoding="utf-8"))
+
+    async def test_history_view_alone_and_invalid_view(self):
+        for invalid in (False, True):
+            with self.subTest(invalid=invalid):
+                provider = MockProvider([Message("assistant", "完成")])
+                wrapped = ContextProvider(provider, FullHistoryContext(), input_estimator=estimate_qwen_input,
+                                          window_budget=ContextWindowBudget(10000, 100))
+                session = SessionStore(self.root / f"view-{invalid}.jsonl", run_id="view")
+                prepare = lambda history: "not-a-list" if invalid else [Message("user", "摘要视图")]
+                result = await run_loop(wrapped, self.executor, self.initial, [], session_store=session,
+                                        prepare_model_history=prepare, max_context_chars=10000)
+                self.assertEqual(result.status, "error" if invalid else "finished")
+                self.assertEqual(len(provider.requests), 0 if invalid else 1)
+                if not invalid:
+                    self.assertEqual(provider.requests[0], [Message("user", "摘要视图")])
+                self.assertEqual(session.load().history, result.messages)
+
+    def separate_provider(self):
+        return ContextProvider(self.provider, FullHistoryContext(),
+                               input_estimator=estimate_qwen_input,
+                               window_budget=ContextWindowBudget(10000, 100))
+
+    async def test_separate_references_reach_model_but_not_session_history(self):
+        original = deepcopy(self.initial)
+        async def references(history):
+            history[-1].content = "不应污染历史"
+            return [Message("user", "临时参考资料")]
+        result = await run_loop(self.separate_provider(), self.executor, self.initial, [],
+                                session_store=self.session, prepare_references=references,
+                                max_context_chars=10000)
+        self.assertEqual(result.status, "finished")
+        self.assertEqual(self.provider.requests[0], [original[0], Message("user", "临时参考资料"), original[1]])
+        self.assertEqual(result.messages, self.session.load().history)
+        self.assertEqual(result.messages[:2], original)
+        self.assertNotIn("临时参考资料", self.session.path.read_text(encoding="utf-8"))
+
+    async def test_separate_reference_preparation_failure_and_over_limit_stop_send(self):
+        for name, references, limit, expected in [
+            ("error", AsyncMock(side_effect=OSError("检索失败")), 10000, "error"),
+            ("invalid", AsyncMock(return_value=[Message("system", "资料")]), 10000, "error"),
+            ("limit", AsyncMock(return_value=[Message("user", "资料")]), 1, "error"),
+        ]:
+            with self.subTest(name=name):
+                session = SessionStore(self.root / f"{name}.jsonl", run_id=name)
+                result = await run_loop(self.separate_provider(), self.executor, self.initial, [],
+                                        session_store=session, prepare_references=references,
+                                        max_context_chars=limit)
+                self.assertEqual(result.status, expected)
+                self.assertEqual(session.load().history, self.initial)
+                self.assertEqual(session.load().records[-1]["data"]["status"], expected)
+                self.assertEqual(self.provider.requests, [])
+
+    async def test_cancel_reference_preparation_waits_for_cleanup(self):
+        started, closing, release = asyncio.Event(), asyncio.Event(), asyncio.Event()
+        async def references(history):
+            started.set()
+            try:
+                await asyncio.Event().wait()
+            finally:
+                closing.set()
+                await release.wait()
+        task = asyncio.create_task(run_loop(self.separate_provider(), self.executor, self.initial, [],
+                                            session_store=self.session, prepare_references=references,
+                                            max_context_chars=10000))
+        try:
+            await asyncio.wait_for(started.wait(), 1)
+            task.cancel()
+            await asyncio.wait_for(closing.wait(), 1)
+            self.assertFalse(task.done())
+            release.set()
+            result = await asyncio.wait_for(task, 1)
+            self.assertEqual(result.status, "cancelled")
+            self.assertEqual(self.session.load().history, self.initial)
+            self.assertEqual(self.end_record()["status"], "cancelled")
+            self.assertEqual(self.provider.requests, [])
+        finally:
+            release.set()
+            if not task.done():
+                task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
 
     async def test_each_turn_retrieves_and_provider_receives_context_without_session_pollution(self):
         scope = MemoryScope("user", "project")

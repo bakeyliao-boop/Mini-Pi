@@ -7,7 +7,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from mini_pi.models import ConversationItem, Message, ToolCall, ToolResult
-from mini_pi.session_records import LoadedSession, read_session_records
+from mini_pi.session_records import LoadedSession, find_session_id, read_session_records
+from mini_pi.session_recovery import find_pending_calls
 
 
 class SessionStore:
@@ -23,7 +24,7 @@ class SessionStore:
 
     def _make_entry(self, event_type: str, data: dict[str, object]) -> dict[str, object]:
         """助手准备：为实际消息或结果添加记录类型、运行 ID 和时间。"""
-        if event_type not in {"run_start", "message", "tool_result", "run_end"}:
+        if event_type not in {"run_start", "message", "tool_result", "run_end", "session_identity","compaction"}:
             raise ValueError("不支持的会话记录类型")
         if not isinstance(data, dict):
             raise TypeError("data 必须是字典")
@@ -76,4 +77,19 @@ class SessionStore:
         for record in records:
             if record["type"] in {"message","tool_result"}:
                 history.append(self._restore_item(record["type"],record["data"]))
-        return LoadedSession(history=history,records=records)
+        return LoadedSession(history=history,records=records,session_id=find_session_id(records),)
+
+    def ensure_session_id(self):
+        """仅为有效且无待处理工具调用的已有会话追加固定编号。"""
+        if not self.path.is_file():
+            raise FileNotFoundError("会话文件不存在")
+
+        loaded = self.load()
+        if loaded.session_id is not None:
+            return loaded.session_id
+        if find_pending_calls(loaded):
+            raise ValueError("会话有未完成的工具调用，不能创建编号")
+
+        session_id = uuid4().hex
+        self.append_entry("session_identity", {"session_id": session_id})
+        return session_id

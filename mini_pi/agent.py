@@ -1,11 +1,14 @@
 """D13-B：管理一次活动运行；核心生命周期逻辑由学习者分段敲入。"""
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 
+from mini_pi.auto_compaction import AutoCompactionSettings
+from mini_pi.context_budget import ContextWindowBudget
+from mini_pi.context_size import InputSizeEstimate
 from mini_pi.executor import ToolExecutor
-from mini_pi.loop import PrepareMessages, run_loop
+from mini_pi.loop import PrepareMessages, PrepareModelHistory, PrepareReferences, run_loop
 from mini_pi.message_queue import PendingMessageQueue
 from mini_pi.models import ConversationItem, RunResult, ToolDefinition
 from mini_pi.provider import ModelProvider
@@ -71,6 +74,14 @@ class Agent:
         max_model_turns: int | None = None,
         total_timeout_seconds: float | None = None,
         prepare_messages: PrepareMessages | None = None,
+        prepare_references: PrepareReferences | None = None,  # 只准备参考资料的入口
+        prepare_model_history: PrepareModelHistory | None = None,  # 模型历史整理入口
+        max_context_chars: int | None = None,  # 完整请求的字符上限
+        auto_compaction: AutoCompactionSettings | None = None,  # 可选自动摘要配置
+        summary_provider: ModelProvider | None = None,  # 生成摘要的模型
+        summary_window: ContextWindowBudget | None = None,  # 摘要模型的窗口预算
+        summary_estimator: Callable[[Sequence[ConversationItem], Sequence[ToolDefinition]], InputSizeEstimate] | None = None,
+        item_estimator: Callable[[ConversationItem], int] | None = None,  # 单条历史大小估算
     ) -> asyncio.Future[RunResult]:
         """立即提交一次运行；占用与调度逻辑由学习者手敲。"""
         options = {
@@ -79,6 +90,14 @@ class Agent:
             "max_model_turns": max_model_turns,
             "total_timeout_seconds": total_timeout_seconds,
             "prepare_messages": prepare_messages,  # 本次显式配置，经options传给同一run_loop
+            "prepare_references": prepare_references,  # 交给 run_loop 准备资料
+            "prepare_model_history": prepare_model_history,  # 转交给 run_loop
+            "max_context_chars": max_context_chars,  # 交给 run_loop 传递字符上限
+            "auto_compaction": auto_compaction,  # 把摘要配置转给 run_loop
+            "summary_provider": summary_provider,
+            "summary_window": summary_window,
+            "summary_estimator": summary_estimator,
+            "item_estimator": item_estimator,
         }
         loop = asyncio.get_running_loop()  #取得事件循环
         messages = list(initial_messages)  #复制本次输入消息列表

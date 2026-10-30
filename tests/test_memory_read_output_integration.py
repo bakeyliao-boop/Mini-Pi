@@ -1,6 +1,7 @@
 """D16：真实本地记忆读取、读取副本缩短与发送门禁的联合验证。"""
 
 import asyncio
+from copy import deepcopy
 from functools import partial
 import json
 from pathlib import Path
@@ -75,6 +76,24 @@ class MemoryReadOutputIntegrationTests(unittest.IsolatedAsyncioTestCase):
         settings.update(options)
         return Harness(provider, self.tools, **settings)
 
+    def test_invalid_separate_configuration_is_rejected_before_run(self):
+        provider = MockProvider([])
+        cases = [
+            {"prepare_references": self.prepare, "prepare_messages": self.prepare,
+             "input_estimator": estimate_qwen_input, "window_budget": ContextWindowBudget(10000, 100),
+             "max_context_chars": 10000},
+            {"prepare_references": "invalid", "input_estimator": estimate_qwen_input,
+             "window_budget": ContextWindowBudget(10000, 100), "max_context_chars": 10000},
+            {"prepare_references": self.prepare, "max_context_chars": 10000},
+            {"prepare_references": self.prepare, "input_estimator": estimate_qwen_input,
+             "window_budget": ContextWindowBudget(10000, 100), "max_context_chars": True},
+            {"max_context_chars": 10000},
+        ]
+        for options in cases:
+            with self.subTest(options=options), self.assertRaises(ValueError):
+                Harness(provider, self.tools, **options)
+        self.assertEqual(provider.requests, [])
+
     def check_end(self, harness, session, result, status):
         self.assertEqual(result.status, status)
         self.assertIsNone(result.task_passed)
@@ -84,6 +103,56 @@ class MemoryReadOutputIntegrationTests(unittest.IsolatedAsyncioTestCase):
         ends = [r for r in loaded.records if r["run_id"] == "current" and r["type"] == "run_end"]
         self.assertEqual(len(ends), 1)
         self.assertEqual(ends[0]["data"]["status"], status)
+
+    async def test_separate_references_with_real_memory_for_new_and_resumed_sessions(self):
+        class RecordingContext(ReadOutputContext):
+            def __init__(self):
+                super().__init__(120)
+                self.inputs = []
+
+            async def build(self, history):
+                self.inputs.append(deepcopy(history))
+                return await super().build(history)
+
+        for resume in (False, True):
+            with self.subTest(resume=resume):
+                provider = MockProvider([
+                    Message("assistant", "读取", [ToolCall("read", "read_file", {"path": "sample.txt"})]),
+                    Message("assistant", "完成"),
+                ])
+                builder = RecordingContext()
+                estimator = Mock(wraps=estimate_qwen_input)
+                harness = Harness(provider, self.tools, prepare_references=partial(self.prepare, reference_only=True),
+                                  max_context_chars=50000, context_builder=builder,
+                                  input_estimator=estimator, window_budget=ContextWindowBudget(20000, 1024, 128))
+                session, before = self.session(resume)
+                result = await self.submit(harness, session, resume)
+                self.check_end(harness, session, result, "finished")
+                self.assertEqual(len(builder.inputs), 2)
+                for history in builder.inputs:
+                    self.assertFalse(any(isinstance(m, Message) and m.content.startswith('{"purpose":') for m in history))
+                for index, request in enumerate(provider.requests):
+                    material = [m for m in request if isinstance(m, Message) and m.content.startswith('{"purpose":')]
+                    self.assertEqual(len(material), 1)
+                    self.assertEqual(json.loads(material[0].content)["memories"][0]["memory_id"], self.entry.memory_id)
+                    self.assertEqual(estimator.call_args_list[index].args[0], request)
+                self.assertEqual(len(next(m for m in provider.requests[1] if isinstance(m, ToolResult)).output), 120)
+                self.assertEqual(next(m for m in session.load().history if isinstance(m, ToolResult)).output, self.full_text)
+                self.assertNotIn('"purpose"', session.path.read_text(encoding="utf-8"))
+                self.assertTrue(session.path.read_bytes().startswith(before))
+
+    async def test_separate_character_limit_blocks_new_and_resumed_model_calls(self):
+        for resume in (False, True):
+            with self.subTest(resume=resume):
+                provider = MockProvider([])
+                harness = Harness(provider, self.tools, prepare_references=partial(self.prepare, reference_only=True),
+                                  max_context_chars=1, context_builder=ReadOutputContext(120),
+                                  input_estimator=estimate_qwen_input, window_budget=ContextWindowBudget(20000, 1024))
+                session, before = self.session(resume)
+                result = await self.submit(harness, session, resume)
+                self.check_end(harness, session, result, "error")
+                self.assertEqual(provider.requests, [])
+                self.assertTrue(session.path.read_bytes().startswith(before))
 
     async def test_both_entries_keep_memory_and_full_session_but_send_short_read(self):
         for resume in (False, True):

@@ -1,0 +1,137 @@
+{
+  "mode": "real summary; mock answer",
+  "provider": "bailian/qwen3.8-flash",
+  "synthetic_history": [
+    {
+      "role": "user",
+      "content": "目标：修复登录失败。约束：只允许修改 auth.py，禁止修改验收测试。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "assistant",
+      "content": "已修改 auth.py；运行 test_login 后结果失败。待办：检查数据库连接；密码错误仍未排除。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "user",
+      "content": "继续排查。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    }
+  ],
+  "status": "finished",
+  "safe_error": null,
+  "exception_type": null,
+  "summary_request_count": 1,
+  "answer_request_count": 1,
+  "summary_call_limit": 1,
+  "provider_max_requests": 1,
+  "summary_output_limit": 512,
+  "answer_round_limit": 1,
+  "total_timeout_seconds": 45,
+  "summary_window_local_cap": {
+    "context_window_tokens": 10000,
+    "reserved_output_tokens": 512,
+    "safety_margin_tokens": 100
+  },
+  "answer_window_local_cap": {
+    "context_window_tokens": 10000,
+    "reserved_output_tokens": 256,
+    "safety_margin_tokens": 100
+  },
+  "provider_records_sanitized": [
+    {
+      "request": 1,
+      "requested_model": "qwen3.8-flash",
+      "returned_model": "qwen3.8-flash",
+      "finish_reason": "stop",
+      "status": "received",
+      "elapsed_seconds": 2.513378,
+      "usage": {
+        "completion_tokens": 97,
+        "prompt_tokens": 157,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 157
+        },
+        "total_tokens": 254
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 97,
+    "prompt_tokens": 157,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "text_tokens": 157
+    },
+    "total_tokens": 254
+  },
+  "original_history_preserved": true,
+  "compaction_records": [
+    {
+      "type": "compaction",
+      "run_id": "d17-real",
+      "timestamp": "2026-10-30T08:07:33.077237+00:00",
+      "data": {
+        "session_id": "855279cc7a9e49c39627da52f3448552",
+        "history_count": 3,
+        "cut_index": 2,
+        "history_fingerprint": "97ab12f7eca73bf758250dd4aeb55cc674931cc28353bfbc541996f6e4e71145",
+        "summary": "**目标**：修复登录失败。\n**约束**：仅允许修改 `auth.py`，禁止修改验收测试。\n\n**操作与结果**：\n*   **已执行**：修改了 `auth.py`。\n*   **验证结果**：运行 `test_login` 后测试仍失败。\n\n**待办事项**：\n*   检查数据库连接状态。\n*   进一步排查密码错误的可能性（目前尚未排除）。"
+      }
+    }
+  ],
+  "answer_request": [
+    {
+      "role": "user",
+      "content": "以下是旧会话摘要，供继续任务参考：\n**目标**：修复登录失败。\n**约束**：仅允许修改 `auth.py`，禁止修改验收测试。\n\n**操作与结果**：\n*   **已执行**：修改了 `auth.py`。\n*   **验证结果**：运行 `test_login` 后测试仍失败。\n\n**待办事项**：\n*   检查数据库连接状态。\n*   进一步排查密码错误的可能性（目前尚未排除）。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "user",
+      "content": "继续排查。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    }
+  ],
+  "session_history": [
+    {
+      "role": "user",
+      "content": "目标：修复登录失败。约束：只允许修改 auth.py，禁止修改验收测试。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "assistant",
+      "content": "已修改 auth.py；运行 test_login 后结果失败。待办：检查数据库连接；密码错误仍未排除。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "user",
+      "content": "继续排查。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "assistant",
+      "content": "模拟回答：继续排查数据库连接。",
+      "tool_calls": [],
+      "stop_reason": "stop",
+      "error_message": null
+    }
+  ],
+  "notes": "Synthetic task; answer is mocked. Local window caps are not model specifications."
+}

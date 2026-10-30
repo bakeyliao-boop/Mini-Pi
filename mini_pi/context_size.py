@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 import json
 
-from mini_pi.models import ConversationItem, ToolDefinition
+from mini_pi.models import ConversationItem, Message, ToolDefinition, ToolResult
 from mini_pi.qwen_provider import history_to_api, tool_definition_to_api
 
 
@@ -26,6 +26,15 @@ def serialize_qwen_input(
     if tools:
         payload["tools"] = [tool_definition_to_api(tool) for tool in tools]
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+
+
+def estimate_qwen_item(item: ConversationItem) -> int:
+    """估算单条记录投影的大小，仅用于寻找切点，不代表完整请求或实际 token。"""
+    if not isinstance(item, (Message, ToolResult)):
+        raise TypeError("记录必须是消息或工具结果")
+    projected = history_to_api([item])[0]
+    encoded = json.dumps(projected, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+    return (len(encoded) + 3) // 4
 
 
 def estimate_qwen_input(

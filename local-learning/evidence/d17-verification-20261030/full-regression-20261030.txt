@@ -1,0 +1,7 @@
+Local full regression before sync; Python 3.14.5; unittest discover -s tests -q.
+Only local and simulated model tests; no real model was called.
+
+----------------------------------------------------------------------
+Ran 971 tests in 43.214s
+
+OK (skipped=2)

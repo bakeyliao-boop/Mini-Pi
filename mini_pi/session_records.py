@@ -14,6 +14,40 @@ class LoadedSession:
 
     history: list[ConversationItem]
     records: list[dict[str, object]]
+    session_id: str | None = None
+
+def find_session_id(records):
+    session_id = None  # 先假设这是还没有编号的旧会话
+
+    for record in records:  # 按顺序查看会话记录
+        if not isinstance(record, dict):  # 每条记录都应是字典
+            raise ValueError("会话记录必须是字典")
+        if record.get("type") != "session_identity":  # 只处理会话编号记录
+            continue
+        if session_id is not None:  # 不允许同一会话出现两条编号记录
+            raise ValueError("会话包含重复的编号记录")
+
+        data = record.get("data")  # 读取这条记录的内容
+        if not isinstance(data, dict):  # 内容必须是字典
+            raise ValueError("会话编号记录格式不正确")
+        value = data.get("session_id")  # 取出固定的会话编号
+        if not isinstance(value, str) or not value.strip():  # 编号不能为空
+            raise ValueError("会话编号必须是非空字符串")
+        session_id = value  # 保存找到的编号
+
+    return session_id  # 没找到时返回 None
+
+def find_compaction_record(records):
+    found = None
+
+    for index,record in enumerate(records):
+        if record['type'] != 'compaction':
+            continue
+        if found is not None:
+            raise ValueError('会话包含多条摘要记录')
+        found = (index,record)
+
+    return found
 
 
 def _text(data: dict, key: str, nonempty: bool = False) -> None:
@@ -21,12 +55,34 @@ def _text(data: dict, key: str, nonempty: bool = False) -> None:
     if not isinstance(value, str) or (nonempty and not value.strip()):
         raise ValueError(f"{key} 必须是{'非空' if nonempty else ''}字符串")
 
+def check_compaction_data(data):
+    if not isinstance(data,dict):
+        raise ValueError('摘要记录内容必须是字典')
+
+    required = {'summary','session_id','history_count','cut_index','history_fingerprint'}
+    if set(data) != required:
+        raise ValueError('摘要记录字段不正确')
+
+    _text(data, "summary", nonempty=True)  # 摘要文字不能为空
+    _text(data, "session_id", nonempty=True)  # 会话编号不能为空
+    _text(data, "history_fingerprint", nonempty=True)  # 历史指纹不能为空
+
+    count = data['history_count']
+    cut = data['cut_index']
+    if type(count) is not int or count < 2:
+        raise ValueError('摘要历史条数不正确')
+    if type(cut) is not int or not 0 < cut < count:
+        raise ValueError('摘要切点不正确')
+
+    fingerprint = data['history_fingerprint']
+    if len(fingerprint) != 64 or any(char not in '0123456789abcdef' for char in fingerprint):
+        raise ValueError('历史指纹格式不正确')
 
 def _validate_record(record: object) -> None:
     if not isinstance(record, dict):
         raise ValueError("记录必须是 JSON 对象")
     event_type = record.get("type")
-    if event_type not in ("run_start", "message", "tool_result", "run_end"):
+    if event_type not in ("run_start", "message", "tool_result", "run_end", "session_identity", "compaction"):
         raise ValueError("不支持的记录类型")
     _text(record, "run_id", nonempty=True)
     _text(record, "timestamp", nonempty=True)
@@ -70,6 +126,12 @@ def _validate_record(record: object) -> None:
         _text(data, "output")
         if data.get("error") is not None and not isinstance(data["error"], str):
             raise ValueError("error 必须是字符串或 null")
+
+    elif event_type == "session_identity":
+        _text(data,"session_id",nonempty=True)
+    elif event_type == "compaction":
+        check_compaction_data(data)  # 只验证单条记录格式，历史绑定留给恢复检查
+
     else:
         _text(data, "status", nonempty=True)
         if data.get("task_passed") is not None and type(data["task_passed"]) is not bool:
@@ -89,4 +151,5 @@ def read_session_records(path: Path) -> list[dict[str, object]]:
             except (ValueError, TypeError) as error:
                 raise ValueError(f"会话第 {line_number} 行无效：{error}") from error
             records.append(record)
+    find_session_id(records)
     return records

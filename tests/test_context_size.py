@@ -6,12 +6,26 @@ import unittest
 
 from mini_pi.context import ReadOutputContext
 from mini_pi.context_budget import ContextBudgetError, check_estimated_window
-from mini_pi.context_size import estimate_qwen_input, serialize_qwen_input
+from mini_pi.context_size import estimate_qwen_input, estimate_qwen_item, serialize_qwen_input
 from mini_pi.models import Message, ToolCall, ToolDefinition, ToolResult
 from mini_pi.qwen_provider import build_request
 
 
 class InputSizeTests(unittest.TestCase):
+    def test_single_item_estimation_covers_text_tool_arguments_and_results(self):
+        short = Message("user", "短")
+        long = Message("user", "中文🙂" * 300)
+        small_call = Message("assistant", "", [ToolCall("id", "read", {"path": "a"})])
+        large_call = Message("assistant", "", [ToolCall("id", "read", {"path": "a" * 1000})])
+        small_result = ToolResult("id", "read", "短")
+        large_result = ToolResult("id", "read", "长" * 1000)
+        before = deepcopy([short, long, small_call, large_call, small_result, large_result])
+        for small, large in ((short, long), (small_call, large_call), (small_result, large_result)):
+            self.assertGreater(estimate_qwen_item(large), estimate_qwen_item(small))
+        self.assertEqual([short, long, small_call, large_call, small_result, large_result], before)
+        with self.assertRaises(TypeError):
+            estimate_qwen_item("非记录")
+
     def tool(self, description="读取文件", detail="相对路径"):
         return ToolDefinition("read_file", description, {"type": "object", "properties": {
             "path": {"type": "string", "description": detail}}, "required": ["path"]})

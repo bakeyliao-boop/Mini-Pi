@@ -1,0 +1,13 @@
+Pattern: test_memory_read_output_integration.py
+Exit code: 0
+----------------------------------------------------------------------
+Ran 10 tests in 0.956s
+
+OK
+
+Pattern: test_context*.py
+Exit code: 0
+----------------------------------------------------------------------
+Ran 46 tests in 0.577s
+
+OK

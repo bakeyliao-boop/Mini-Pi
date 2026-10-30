@@ -1,0 +1,126 @@
+{
+  "scenario": "成功：预设模拟摘要与回答，合成数据，未调用真实模型或工具",
+  "status": "finished",
+  "task_passed": null,
+  "original_history": [
+    {
+      "role": "user",
+      "content": "目标：修复登录。约束：不要修改验收测试。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "assistant",
+      "content": "已修改 auth.py；test_login 失败；待办：检查数据库。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "user",
+      "content": "继续",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    }
+  ],
+  "session_history_after_run": [
+    {
+      "role": "user",
+      "content": "目标：修复登录。约束：不要修改验收测试。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "assistant",
+      "content": "已修改 auth.py；test_login 失败；待办：检查数据库。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "user",
+      "content": "继续",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "assistant",
+      "content": "继续检查数据库。",
+      "tool_calls": [],
+      "stop_reason": "stop",
+      "error_message": null
+    }
+  ],
+  "original_history_preserved": true,
+  "compaction_record": {
+    "type": "compaction",
+    "run_id": "d17-normal",
+    "timestamp": "2026-10-30T08:03:01.969730+00:00",
+    "data": {
+      "session_id": "49aed5435a544b3095e306993ca26cbf",
+      "history_count": 3,
+      "cut_index": 2,
+      "history_fingerprint": "002af4bcc52e221e8dc0bd02c88b341155507a58c33c9606f9e455a2053a6f06",
+      "summary": "目标：修复登录；约束：不要修改验收测试；已修改 auth.py；test_login 失败；待办：检查数据库。"
+    }
+  },
+  "summary_model_request": [
+    {
+      "role": "system",
+      "content": "请根据提供的会话记录生成摘要，保留目标、约束、操作、验证结果和待办。区分用户要求、工具观察和未确认的推测；不要把建议写成已经完成的操作",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "user",
+      "content": "[{\"type\":\"message\",\"data\":{\"role\":\"user\",\"content\":\"目标：修复登录。约束：不要修改验收测试。\",\"tool_calls\":[],\"stop_reason\":null,\"error_message\":null}},{\"type\":\"message\",\"data\":{\"role\":\"assistant\",\"content\":\"已修改 auth.py；test_login 失败；待办：检查数据库。\",\"tool_calls\":[],\"stop_reason\":null,\"error_message\":null}}]",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    }
+  ],
+  "summary_model_response_preset": "目标：修复登录；约束：不要修改验收测试；已修改 auth.py；test_login 失败；待办：检查数据库。",
+  "answer_model_request": [
+    {
+      "role": "user",
+      "content": "以下是旧会话摘要，供继续任务参考：\n目标：修复登录；约束：不要修改验收测试；已修改 auth.py；test_login 失败；待办：检查数据库。",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    },
+    {
+      "role": "user",
+      "content": "继续",
+      "tool_calls": [],
+      "stop_reason": null,
+      "error_message": null
+    }
+  ],
+  "answer_model_response_preset": "继续检查数据库。",
+  "budget": {
+    "max_model_turns_answer_rounds": 1,
+    "summary_call_limit": 1,
+    "summary_calls_observed": 1,
+    "answer_calls_observed": 1,
+    "total_timeout_seconds": 30,
+    "auto_compaction_trigger_tokens": 1,
+    "keep_recent_tokens": 1,
+    "answer_window": {
+      "context_window_tokens": 10000,
+      "reserved_output_tokens": 1000,
+      "safety_margin_tokens": 100
+    },
+    "answer_request_estimate": {
+      "json_chars": 148,
+      "estimated_input_tokens": 37,
+      "method": "qwen-input-json-chars-div4-v1"
+    },
+    "provider_usage": null,
+    "provider_usage_reason": "模拟模型未返回 usage；未知，不视为零"
+  }
+}
