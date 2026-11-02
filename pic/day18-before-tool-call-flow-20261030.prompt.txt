@@ -3,3 +3,13 @@ Mode: built-in imagegen, followed by imagegen edit.
 Initial prompt: Create a clear Chinese technical learning flowchart, clean white background, spacious layout, plain large readable dark text, teal for existing behavior, orange dashed for target not implemented. Strictly show one single D18 tool-call decision flow in a horizontal landscape infographic. Title: 'D18：工具执行前检查的完整流程'. Main flow: '模型提出工具调用' → '找到工具并检查参数' → '执行前规则：允许还是拒绝？'. From decision draw two non-crossing branches: top '允许' → '执行工具' → '返回工具结果'; bottom '拒绝' → '不执行工具' → '返回拒绝原因'. Merge both paths into '记录结果，交给模型继续'. Below show a small explicit status banner: '当前 Mini-Pi：模型 → 工具执行器；执行前规则尚未接入'. Another banner: 'Pi：参数检查 → 执行前规则 → 执行工具；Mini-Pi 的参数检查当前在各工具内部，需要调整接线顺序'. Footer: '一个调用对应一个结果；默认关闭时保持原行为。' Keep precise arrow directions, no extra arrows, no circular or numbered glyphs, do not add technical details or claims, make all labels legible.
 
 Edit prompt: Preserve all original title, labels, boxes, branches and arrow relationships exactly, including orange dashed pending states. Add one light-orange banner below the blue current-status banner and above the Pi comparison banner: '待接配置：调用方提供规则 → Harness → Agent → 工具调用前检查'. Arrows in this banner indicate configuration flow, not new tool execution flow. Keep one legible flowchart.
+
+2026-11-02 status edit: Preserve the title, flow boxes, branches, arrows and Pi comparison. Replace the blue banner with '当前 Mini-Pi：运行循环已接入执行前规则；仅 read_file 已适配'. Replace the configuration banner with '待接配置：调用方 → Harness → Agent → 运行循环'. Keep one complete flowchart.
+
+2026-11-02 second status edit: Preserve the existing flow and all arrows. Update the blue banner to '当前 Mini-Pi：运行循环已接入执行前规则；read_file、edit_file 已适配'. Update the comparison banner to 'Pi：参数检查 → 执行前规则 → 执行工具；Mini-Pi 其余工具的参数检查尚未拆分'.
+
+2026-11-02 third status edit: Preserve the existing flow and all arrows. Change the configuration banner to '配置已接通：调用方 → Harness → Agent → 运行循环'. Keep the two-tool scope explicit.
+
+2026-11-02: 更新同一张图的进度：list_files 已适配，run_tests 尚未适配；保留完整流程。
+
+2026-11-02: 更新同一张图：run_tests 已适配，四个默认工具均可经过执行前规则。

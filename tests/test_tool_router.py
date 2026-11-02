@@ -4,6 +4,7 @@ import asyncio
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 from mini_pi.loop import run_loop
 from mini_pi.mock_provider import MockProvider
@@ -28,6 +29,26 @@ class ToolRouterTests(unittest.IsolatedAsyncioTestCase):
         self.reader = ReadFileExecutor(self.workspace)
         self.editor = EditFileExecutor(EditPolicy(self.workspace, ["discount.py"]))
         self.router = ToolRouter({"read_file": self.reader, "edit_file": self.editor})
+
+    def test_prepare_call_checks_without_reading_and_never_bypasses_unadapted_tools(self):
+        self.router.executors["legacy"] = object()  # 未提供分开的检查和执行入口
+        with patch("pathlib.Path.read_text") as read_text:
+            executor, arguments = self.router.prepare_call(ToolCall("r1", "read_file", {"path": "discount.py"}))
+            invalid = self.router.prepare_call(ToolCall("r2", "read_file", {"path": 123}))
+            unknown = self.router.prepare_call(ToolCall("r3", "unknown", {}))
+            unsupported = self.router.prepare_call(ToolCall("r4", "legacy", {}))
+            edit_executor, edit_arguments = self.router.prepare_call(self.edit_call("r5"))
+        read_text.assert_not_called()
+        self.assertIs(executor, self.reader)
+        self.assertEqual(arguments, {"path": "discount.py"})
+        self.assertIs(edit_executor, self.editor)
+        self.assertEqual(edit_arguments, self.edit_call("r5").arguments)
+        self.assertEqual(self.target.read_bytes(), self.original.encode("utf-8"))
+        for result, call_id in ((invalid, "r2"), (unknown, "r3"), (unsupported, "r4")):
+            self.assertIsInstance(result, ToolResult)
+            self.assertEqual(result.tool_call_id, call_id)
+            self.assertTrue(result.error)
+        self.assertIn("暂不支持", unsupported.error)
 
     def edit_call(self, call_id: str) -> ToolCall:
         return ToolCall(call_id, "edit_file", {

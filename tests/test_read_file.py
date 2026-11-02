@@ -20,6 +20,15 @@ class ReadFileTests(unittest.IsolatedAsyncioTestCase):
         self.workdir.mkdir()
         self.executor = ReadFileExecutor(self.workdir)
 
+    async def test_validate_call_checks_arguments_without_reading_file(self):
+        valid = ToolCall("call_valid", "read_file", {"path": "missing.txt"})
+        invalid = ToolCall("call_invalid", "read_file", {"path": 123})
+        with patch("pathlib.Path.read_text") as read_text:
+            self.assertEqual(self.executor.validate_call(valid), {"path": "missing.txt"})
+            with self.assertRaisesRegex(ValueError, "path 必须是非空字符串"):
+                self.executor.validate_call(invalid)
+        read_text.assert_not_called()
+
     async def test_reads_buggy_code_without_marking_read_as_failure(self):
         source = "def final_price(price, discount_rate):\n    return price * discount_rate\n"
         (self.workdir / "discount.py").write_text(source, encoding="utf-8")

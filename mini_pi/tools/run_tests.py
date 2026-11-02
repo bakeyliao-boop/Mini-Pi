@@ -49,12 +49,23 @@ class RunTestsExecutor:
             parameters={"type": "object", "properties": {}, "additionalProperties": False},
         )
 
+    def validate_call(self, call: ToolCall) -> dict:
+        if call.name != self.definition.name:  # 检查请求的工具名称
+            raise ValueError(f"不支持的工具：{call.name}")
+        if not isinstance(call.arguments, dict) or call.arguments:  # 只接受空字典
+            raise ValueError("参数错误：run_tests 不接受参数")
+        return {}  # 不需要向执行部分传递参数
+
     async def execute(self, call: ToolCall) -> ToolResult:
-        """校验空参数，执行固定命令，并反馈退出码、耗时与测试输出。"""
-        if call.name != self.definition.name:
-            return self._error(call, f"不支持的工具：{call.name}")
-        if not isinstance(call.arguments, dict) or call.arguments:
-            return self._error(call, "参数错误：run_tests 不接受参数")
+        """保留原来的入口：先检查参数，再运行固定命令。"""
+        try:
+            arguments = self.validate_call(call)
+        except ValueError as error:
+            return self._error(call, str(error))
+        return await self._execute_validated(call, **arguments)
+
+    async def _execute_validated(self, call: ToolCall) -> ToolResult:
+        """运行固定命令，并反馈退出码、耗时与测试输出。"""
 
         # 命令由构造函数固定，模型只能请求运行，不能选择运行什么。
         started = time.monotonic()

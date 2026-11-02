@@ -26,19 +26,29 @@ class ReadFileExecutor:
             },
         )
 
-    async def execute(self, call: ToolCall) -> ToolResult:
+    def validate_call(self, call: ToolCall) -> dict[str, str]:  # 单独检查工具名和参数
         if call.name != self.definition.name:
-            return self._error(call, f"不支持的工具：{call.name}")
+            raise ValueError(f"不支持的工具：{call.name}")
         if not isinstance(call.arguments, dict):
-            return self._error(call, "arguments 必须是参数字典")
+            raise ValueError("arguments 必须是参数字典")
         if set(call.arguments) != {"path"}:
-            return self._error(call, "read_file 必须且只能提供 path 参数")
+            raise ValueError("read_file 必须且只能提供 path 参数")
 
         path = call.arguments["path"]
         if not isinstance(path, str) or not path.strip():
-            return self._error(call, "path 必须是非空字符串")
+            raise ValueError("path 必须是非空字符串")
+        return {"path": path}  # 返回检查通过的参数
 
-        relative_path = Path(path)
+    async def execute(self, call: ToolCall) -> ToolResult:  # 保留原来的工具入口
+        try:
+            path = self.validate_call(call)["path"]
+        except ValueError as error:
+            return self._error(call, str(error))
+
+        return await self._execute_validated(call, path)  # 参数通过后，进入读取部分
+
+    async def _execute_validated(self, call: ToolCall, path: str) -> ToolResult:  # 使用已检查的路径
+        relative_path = Path(path)  # 后续继续原有的路径安全检查与读取
         if relative_path.is_absolute() or relative_path.drive:
             return self._error(call, "path 必须是工作目录内的相对路径")
 

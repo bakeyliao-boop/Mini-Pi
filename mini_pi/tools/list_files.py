@@ -34,25 +34,36 @@ class ListFilesExecutor:
             names.append(entry.name + suffix)
         return names
 
-    async def execute(self, call: ToolCall) -> ToolResult:
-        """检查参数、解析目录，然后返回列表或可解释的错误。"""
+    def validate_call(self, call: ToolCall) -> dict[str, object]:  # 检查工具名和参数
         if call.name != self.definition.name:
-            return self._error(call, f"不支持的工具：{call.name}")
+            raise ValueError(f"不支持的工具：{call.name}")
 
         arguments = call.arguments
         if not isinstance(arguments, dict):
-            return self._error(call, "参数错误：arguments 必须是字典")
+            raise ValueError("参数错误：arguments 必须是字典")
         if set(arguments) - {"path", "limit"}:
-            return self._error(call, "参数错误：只接受 path 和 limit")
+            raise ValueError("参数错误：只接受 path 和 limit")
 
-        path = arguments.get("path", ".")
-        limit = arguments.get("limit", 500)
+        path = arguments.get("path", ".")  # 未指定路径时使用当前目录
+        limit = arguments.get("limit", 500)  # 未指定数量时最多显示 500 项
         if not isinstance(path, str) or not path.strip():
-            return self._error(call, "参数错误：path 必须是非空字符串")
+            raise ValueError("参数错误：path 必须是非空字符串")
         if type(limit) is not int or not 1 <= limit <= 500:
-            return self._error(call, "参数错误：limit 必须是 1 到 500 的整数")
+            raise ValueError("参数错误：limit 必须是 1 到 500 的整数")
 
-        relative_path = Path(path)
+        return {"path": path, "limit": limit}  # 将检查后的参数交给后续流程
+
+    async def execute(self, call: ToolCall) -> ToolResult:  # 保留原来的工具入口
+        try:
+            arguments = self.validate_call(call)
+        except ValueError as error:
+            return self._error(call, str(error))
+        return await self._execute_validated(call, **arguments)  # 参数通过后继续执行
+
+    async def _execute_validated(
+        self, call: ToolCall, path: str, limit: int
+    ) -> ToolResult:  # 使用已检查的参数列目录
+        relative_path = Path(path)  # 保留原有的路径检查和读取
         if relative_path.is_absolute() or relative_path.drive:
             return self._error(call, "参数错误：path 必须是相对路径")
 

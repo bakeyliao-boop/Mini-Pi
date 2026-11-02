@@ -13,6 +13,7 @@ from mini_pi.message_queue import PendingMessageQueue
 from mini_pi.models import ConversationItem, RunResult, ToolDefinition
 from mini_pi.provider import ModelProvider
 from mini_pi.session_store import SessionStore
+from mini_pi.tool_hooks import BeforeToolCall  # 执行前规则的类型
 
 
 RunEndHook = Callable[[RunResult | None, BaseException | None], Awaitable[None]]
@@ -82,6 +83,7 @@ class Agent:
         summary_window: ContextWindowBudget | None = None,  # 摘要模型的窗口预算
         summary_estimator: Callable[[Sequence[ConversationItem], Sequence[ToolDefinition]], InputSizeEstimate] | None = None,
         item_estimator: Callable[[ConversationItem], int] | None = None,  # 单条历史大小估算
+        before_tool_call: BeforeToolCall | None = None,  # 本次运行可选的执行前规则
     ) -> asyncio.Future[RunResult]:
         """立即提交一次运行；占用与调度逻辑由学习者手敲。"""
         options = {
@@ -98,6 +100,7 @@ class Agent:
             "summary_window": summary_window,
             "summary_estimator": summary_estimator,
             "item_estimator": item_estimator,
+            "before_tool_call": before_tool_call,  # 把规则继续交给运行循环
         }
         loop = asyncio.get_running_loop()  #取得事件循环
         messages = list(initial_messages)  #复制本次输入消息列表

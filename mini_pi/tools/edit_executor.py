@@ -105,28 +105,39 @@ class EditFileExecutor:
             raise ValueError("path 和 old_text 不能为空")
 
         return values
-    async def execute(self,call:ToolCall)->ToolResult:
-        """执行编辑调用，成功和预期失败都返回关联原调用的结果"""
-        try:
-            args = self.validate_edit_call(call)
 
+    def validate_call(self, call: ToolCall) -> dict[str, str]:  # 统一的参数检查入口
+        return self.validate_edit_call(call)  # 复用已有检查
+
+    async def execute(self, call: ToolCall) -> ToolResult:  # 保留原来的工具入口
+        try:
+            args = self.validate_call(call)  # 先检查编辑参数
+        except (ValueError, OSError) as error:
+            return ToolResult(call.id, call.name, output="", error=str(error))
+
+        return await self._execute_validated(call, **args)  # 参数通过后进入编辑部分
+
+    async def _execute_validated(
+        self, call: ToolCall, path: str, old_text: str, new_text: str
+    ) -> ToolResult:  # 使用已检查的参数执行编辑
+        try:
             cancellation = FileCancellation()
-            _,before,after = await run_sync_with_cleanup(
+            _, before, after = await run_sync_with_cleanup(
                 self.apply_edit,
-                args["path"],args["old_text"],args["new_text"],
+                path, old_text, new_text,
                 cancellation=cancellation,
-                on_cancel=cancellation.request_cancel,  #告知等待函数，收到取消时调用通知动作。不加括号表明通知会在取消发生时才执行
+                on_cancel=cancellation.request_cancel,  # 取消时通知编辑操作
             )
 
             # _,before,after = await asyncio.to_thread(
             # self.apply_edit,
-            # args["path"],args["old_text"],args["new_text"],
+            # path, old_text, new_text,
             # )
-            diff = render_edit_diff(args["path"],before,after)
-        except (ValueError,OSError) as error:
-            return ToolResult(call.id,call.name,output="",error=str(error))
+            diff = render_edit_diff(path, before, after)
+        except (ValueError, OSError) as error:
+            return ToolResult(call.id, call.name, output="", error=str(error))
 
-        return ToolResult(call.id,call.name,output=diff)
+        return ToolResult(call.id, call.name, output=diff)
 
 
 

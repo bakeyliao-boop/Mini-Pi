@@ -23,6 +23,7 @@ from mini_pi.run_deadline import RunDeadlineExceeded, await_before_deadline
 from mini_pi.run_finish import finish_run
 from mini_pi.session_store import SessionStore
 from mini_pi.summary_call_budget import SummaryCallBudget
+from mini_pi.tool_hooks import BeforeToolCall, execute_tool_with_rule  # 执行前规则及工具调用入口
 
 
 PrepareMessages = Callable[[list[ConversationItem]], Awaitable[list[ConversationItem]]]
@@ -54,7 +55,10 @@ async def run_loop(
     summary_window: ContextWindowBudget | None = None,  # 摘要模型的窗口预算
     summary_estimator: Callable[[Sequence[ConversationItem], Sequence[ToolDefinition]], InputSizeEstimate] | None = None,  # 估算摘要请求
     item_estimator: Callable[[ConversationItem], int] | None = None,  # 估算单条历史，用来选择切点
+    before_tool_call: BeforeToolCall | None = None,  # 本次运行可选的执行前规则
 ) -> RunResult:
+    if before_tool_call is not None and not callable(before_tool_call):  # 配置错误先于会话写入
+        raise ValueError("before_tool_call 必须可以调用")
     history = list(initial_messages)
     if auto_compaction is not None:  # 调用方尝试启用自动压缩
         if not isinstance(session_store, SessionStore):  # 摘要需要保存到会话
@@ -388,10 +392,9 @@ async def run_loop(
 
         for call in tool_calls:
             try:
-                result = await await_before_deadline(
-                    lambda:executor.execute(call),
-                    deadline,
-                    )
+                result = await execute_tool_with_rule(
+                    executor, call, before_tool_call, deadline  # 先运行规则，再决定是否执行
+                )
             except RunDeadlineExceeded as error:
                 run_result = RunResult(
                     status="timeout",

@@ -19,6 +19,7 @@ from mini_pi.recovery_policy import plan_recovery
 from mini_pi.session_recovery import find_pending_calls
 from mini_pi.session_resume import ResumeResult
 from mini_pi.session_store import SessionStore
+from mini_pi.tool_hooks import BeforeToolCall  # 执行前规则的类型
 
 
 @dataclass(frozen=True)
@@ -48,8 +49,11 @@ class Harness:
         summary_window: ContextWindowBudget | None = None,  # 摘要模型的窗口预算
         summary_estimator: Callable[[Sequence[ConversationItem], Sequence[ToolDefinition]], InputSizeEstimate] | None = None,
         item_estimator: Callable[[ConversationItem], int] | None = None,  # 单条历史大小估算
+        before_tool_call: BeforeToolCall | None = None,  # 新任务和恢复共用的可选规则
     ):
         """只保存配置并组装一个共享Agent，不启动模型或工具。"""
+        if before_tool_call is not None and not callable(before_tool_call):  # 在任何运行前检查配置
+            raise ValueError("before_tool_call 必须可以调用")
         if prepare_messages is not None and context_builder is not None:
             if type(context_builder) is not ReadOutputContext:
                 raise ValueError("记忆准备与其他构建器不能同时配置；当前只支持ReadOutputContext")
@@ -76,6 +80,7 @@ class Harness:
         self._summary_window = summary_window
         self._summary_estimator = summary_estimator
         self._item_estimator = item_estimator
+        self._before_tool_call = before_tool_call  # 保留同一条规则，供新建和恢复使用
         self._budget = budget if budget is not None else RunBudget()
         builder = context_builder if context_builder is not None else FullHistoryContext()
         if window_budget is not None:  # 已配置窗口预算时，核对适配器暴露的实际输出上限
@@ -118,6 +123,7 @@ class Harness:
             summary_window=self._summary_window,  # 摘要模型窗口预算
             summary_estimator=self._summary_estimator,  # 摘要请求估算
             item_estimator=self._item_estimator,  # 单条历史估算
+            before_tool_call=self._before_tool_call,  # 把规则交给 Agent
             total_timeout_seconds=self._budget.total_timeout_seconds,
             )
 
@@ -157,6 +163,7 @@ class Harness:
             summary_window=self._summary_window,  # 摘要模型窗口预算
             summary_estimator=self._summary_estimator,  # 摘要请求估算
             item_estimator=self._item_estimator,  # 单条历史估算
+            before_tool_call=self._before_tool_call,  # 把规则交给 Agent
             total_timeout_seconds=self._budget.total_timeout_seconds,  # 本次循环总时限
         )
         return ResumeResult(plan=plan,run_result=run_result)  # 返回恢复判断和运行结果
