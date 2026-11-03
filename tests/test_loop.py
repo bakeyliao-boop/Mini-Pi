@@ -120,25 +120,25 @@ class LoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(run.task_passed)
 
     async def test_error_feedback_can_produce_another_tool_turn(self):
-        failed_request = self.request("call_001", "missing.txt")
+        failed_request = self.request("call_001", "missing.txt")  #1.两次请求，读不存在的missing.txt，再读存在的discount.py
         retry_request = self.request("call_002", "discount.py")
 
-        def retry(history, tools):
+        def retry(history, tools):  #2.检查模型是否收到第一次文件不存在的error，通过后返回二次请求
             self.assertEqual(len(history), 3)
             self.assertEqual(history[:2], [self.user, failed_request])
             self.assertEqual(history[-1].tool_call_id, "call_001")
             self.assertIn("文件不存在", history[-1].error or "")
             return retry_request
 
-        def answer(history, tools):
+        def answer(history, tools):  #3.检查是否收到二次读取的文件内容；通过后返回最终回答
             self.assertEqual(len(history), 5)
             self.assertEqual(history[3], retry_request)
-            self.assertEqual(history[4].tool_call_id, "call_002")
-            self.assertEqual(history[4].output, self.source)
-            self.assertIsNone(history[4].error)
+            self.assertEqual(history[4].tool_call_id, "call_002")  #第五条结果对应第二次读取
+            self.assertEqual(history[4].output, self.source)  #返回的内容等于事先写入的内容
+            self.assertIsNone(history[4].error)  #这次读取没有错误
             return Message(role="assistant", content="重新读取成功：\n" + history[4].output)
 
-        provider = MockProvider([failed_request, retry, answer])
+        provider = MockProvider([failed_request, retry, answer])  #上述三步交给模拟模型，运行实际的循环
         run = await self.run_case(provider)
         self.assertEqual([len(history) for history in provider.requests], [1, 3, 5])
         self.assertEqual([call.id for call in self.executor.calls], ["call_001", "call_002"])

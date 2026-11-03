@@ -22,10 +22,10 @@ class SessionResumeTests(unittest.IsolatedAsyncioTestCase):
         self.reader = ReadFileExecutor(self.root)
 
     async def test_normal_resume_sees_previous_history_without_replay_or_duplicate_records(self):
-        source = "def final_price(price, rate):\n    return price * rate\n"
+        source = "def final_price(price, rate):\n    return price * rate\n"  #1.第一次运行，读取文件保存会话
         (self.root / "discount.py").write_text(source, encoding="utf-8")
         first_provider = MockProvider([
-            Message("assistant", "先读取文件。", [
+            Message("assistant", "先读取文件。", [  # 第一次运行的模型提出读取请求
                 ToolCall("call_001", "read_file", {"path": "discount.py"}),
             ]),
             Message("assistant", "读取完成，尚未修改代码。"),
@@ -36,9 +36,9 @@ class SessionResumeTests(unittest.IsolatedAsyncioTestCase):
         )
         original_bytes = self.path.read_bytes()
         resumed_store = SessionStore(self.path, "run_B")
-        loaded = resumed_store.load()
+        loaded = resumed_store.load()  # 2.加载已保存的旧历史
         self.assertEqual(loaded.history, first.messages)
-        new_user = Message("user", "继续解释之前读到的公式。")
+        new_user = Message("user", "继续解释之前读到的公式。")  # 准备本次新消息
 
         def answer(history, tools):
             self.assertEqual(history, loaded.history + [new_user])
@@ -46,13 +46,13 @@ class SessionResumeTests(unittest.IsolatedAsyncioTestCase):
             return Message("assistant", "该公式返回优惠金额，本次仅依据保存内容解释。")
 
         second_provider = MockProvider([answer])
-        with patch.object(self.reader, "execute") as execute:
+        with patch.object(self.reader, "execute") as execute:  #第二次运行，检查读取工具没有再次执行
             second = await run_loop(
                 second_provider, self.reader, loaded.history + [new_user],
                 [self.reader.definition], resumed_store, already_saved=len(loaded.history),
             )
         execute.assert_not_awaited()
-        self.assertTrue(self.path.read_bytes().startswith(original_bytes))
+        self.assertTrue(self.path.read_bytes().startswith(original_bytes))  #检查旧记录，追加新内容，读取不变
         final = resumed_store.load()
         self.assertEqual(final.history, second.messages)
         self.assertEqual(len(final.records), 10)

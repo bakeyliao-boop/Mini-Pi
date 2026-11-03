@@ -57,11 +57,11 @@ class ReadFileTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_numeric_path_is_not_coerced_or_read(self):
         (self.workdir / "123").write_text("不应读取这个文件", encoding="utf-8")
-        call = ToolCall("call_invalid", "read_file", {"path": 123})
-        with patch("pathlib.Path.read_text") as read_text:
-            result = await self.executor.execute(call)
-        read_text.assert_not_called()
-        self.assertIn("path 必须是非空字符串", result.error or "")
+        call = ToolCall("call_invalid", "read_file", {"path": 123})  #1.准备一个参数错误的请求
+        with patch("pathlib.Path.read_text") as read_text:  #在with范围内，用能记录调用的替身替换读取函数
+            result = await self.executor.execute(call)    #调用工具，让他检查参数并返回结果
+        read_text.assert_not_called()  #读取函数一次没有被调用
+        self.assertIn("path 必须是非空字符串", result.error or "") #确认返回了正确的错误说明
         self.assertEqual(result.output, "")
         self.assertEqual(result.tool_call_id, call.id)
         self.assertEqual(result.tool_name, call.name)

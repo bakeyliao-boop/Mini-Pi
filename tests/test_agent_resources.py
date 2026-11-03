@@ -103,12 +103,12 @@ class AgentResourceTests(unittest.IsolatedAsyncioTestCase):
                     if pending.done():
                         self.fail(f"进程未就绪，运行已结束：{pending.result()}")
                     await asyncio.sleep(0.01)
-        self.assertTrue(all(process_is_running(pid) for pid in pids))
-        agent.abort()
-        async with asyncio.timeout(10):
-            await agent.wait_for_idle()
+        self.assertTrue(all(process_is_running(pid) for pid in pids)) #取消之前，测试进程确实在运行
+        agent.abort()  #发出取消要求
+        async with asyncio.timeout(10):  #
+            await agent.wait_for_idle()  #等待运行及收尾结束
             result = await pending
-        self.assert_cancelled_record(agent, result, store)
+        self.assert_cancelled_record(agent, result, store) #返回状态和会话记录都是取消
         traces = [p for p in evidence.glob("run-tests-process-*.json")
                   if not p.name.endswith(".worker.json")]
         self.assertEqual(len(traces), 1)
@@ -117,7 +117,7 @@ class AgentResourceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(trace["outcome"], "cancelled")
         if sys.platform == "win32":
             self.assertTrue(trace["tree_empty"])
-        self.assertFalse(any(process_is_running(pid) for pid in pids + [trace["supervisor_pid"]]))
+        self.assertFalse(any(process_is_running(pid) for pid in pids + [trace["supervisor_pid"]]))  #进程都停止
         self.assertEqual(len(provider.requests), 1)
         self.observation = {"resource": "real_process_tree", "status": result.status,
                             "parent_and_descendant_stopped": True, "process_waiter_done": True,
@@ -179,9 +179,9 @@ class AgentResourceTests(unittest.IsolatedAsyncioTestCase):
                     agent.abort()
                     await notified.wait()
                 agent.abort()
-                self.assertTrue(agent.is_running)
-                self.assertFalse(worker_finished.is_set())
-                self.assertFalse(waiter.done())
+                self.assertTrue(agent.is_running)  #agent仍然被当前运行占用
+                self.assertFalse(worker_finished.is_set())  #编辑工作尚未结束
+                self.assertFalse(waiter.done())  #等待空闲的任务也不能提前完成
                 self.assertFalse(pending.done())
                 with self.assertRaises(RuntimeError):
                     agent.prompt([Message("user", "B")])
