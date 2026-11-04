@@ -1,0 +1,24 @@
+{
+  "id": "pi-smoke-capital",
+  "source": {
+    "repository": "https://github.com/earendil-works/pi",
+    "commit": "7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333",
+    "path": "packages/evals/evals/smoke.eval.ts",
+    "suite": "Answer a basic prompt",
+    "test": "returns the expected answer"
+  },
+  "prompt": "What's the capital of France? Respond with only the city name.",
+  "tools": [],
+  "expected_output": "Paris",
+  "original_checks": [
+    "output.trim() equals Paris",
+    "errors equals []",
+    "usage.provider matches configured provider",
+    "usage.model matches configured model",
+    "usage.totalTokens > 0"
+  ],
+  "mini_pi_budget": {
+    "max_model_turns": 1,
+    "total_timeout_seconds": 10
+  }
+}

@@ -10,8 +10,13 @@ def find_unique_match(content: str, old_text: str) -> int:
     if index == -1:
         raise ValueError("未找到代替换的旧文本")
 
-    if content.find(old_text,index+1) != -1:
-        raise ValueError("旧文本匹配多处，请提供更多上下文")
+    next_index = content.find(old_text,index+1)
+    if next_index != -1:
+        count = 1
+        while next_index != -1:
+            count += 1
+            next_index = content.find(old_text,next_index+1)
+        raise ValueError(f'旧文本匹配多处，共{count}处，请提供更多上下文')
 
     return index
 

@@ -1,0 +1,28 @@
+{
+  "id": "pi-edit-multiple-matches",
+  "kind": "tool_unit_port",
+  "expectation": "multiple_matches",
+  "source": {
+    "repository": "https://github.com/earendil-works/pi",
+    "commit": "7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333",
+    "path": "packages/coding-agent/test/tools.test.ts",
+    "test": "should fail if text appears multiple times",
+    "lines": [329, 340]
+  },
+  "filename": "edit-test.txt",
+  "initial_content": "foo foo foo",
+  "old_text": "foo",
+  "new_text": "bar",
+  "expected_content": "foo foo foo",
+  "expected_error_reason": "旧文本匹配多处",
+  "expected_occurrences": 3,
+  "error_count_pattern": "共\\s*(\\d+)\\s*处",
+  "tool_call_id": "test-call-7",
+  "adaptation": {
+    "inputs": "Original foo foo foo and foo-to-bar request retained; absolute path/edits array map to workspace-relative path and old_text/new_text",
+    "expected_failure": "Pi rejects.toThrow(/Found 3 occurrences/) maps to ToolResult.error reporting ambiguous old text and an explicit count of 3, parsed from the localized phrase 共3处",
+    "matching_scope": "This source example has three separate exact matches. Mini-Pi retains its existing additional rejection of overlapping exact matches; Pi normalizes fuzzy text and counts non-overlapping matches. No full fuzzy-matching equivalence is claimed.",
+    "native_pi_assertions_executed": false
+  },
+  "additional_mini_pi_checks": ["Read disk file back and confirm it is unchanged", "No success patch is returned"]
+}

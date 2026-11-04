@@ -1,0 +1,25 @@
+{
+  "id": "pi-edit-missing-file",
+  "kind": "tool_unit_port",
+  "expectation": "missing_file",
+  "source": {
+    "repository": "https://github.com/earendil-works/pi",
+    "commit": "7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333",
+    "path": "packages/coding-agent/test/tools.test.ts",
+    "test": "should include ENOENT when the edit target does not exist",
+    "lines": [318, 327]
+  },
+  "filename": "missing.txt",
+  "initial_content": null,
+  "old_text": "hello",
+  "new_text": "world",
+  "expected_error_reason": "目标文件不存在",
+  "expected_error_code": "ENOENT",
+  "tool_call_id": "test-call-6b",
+  "adaptation": {
+    "inputs": "Original absent target and hello-to-world request retained; absolute path/edits array map to workspace-relative path and old_text/new_text",
+    "expected_failure": "Pi rejects.toThrow(full message with actual path and ENOENT) maps to ToolResult.error reporting file absence, the resolved target path and literal ENOENT; English wording and punctuation are not checked verbatim",
+    "native_pi_assertions_executed": false
+  },
+  "additional_mini_pi_checks": ["Target remains absent after the rejected edit", "No success patch is returned"]
+}

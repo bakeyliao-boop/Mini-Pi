@@ -1,0 +1,26 @@
+{
+  "id": "pi-edit-replace",
+  "kind": "tool_unit_port",
+  "expectation": "edit_success",
+  "source": {
+    "repository": "https://github.com/earendil-works/pi",
+    "commit": "7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333",
+    "path": "packages/coding-agent/test/tools.test.ts",
+    "test": "should replace text in file",
+    "lines": [282, 303]
+  },
+  "filename": "edit-test.txt",
+  "initial_content": "Hello, world!",
+  "old_text": "world",
+  "new_text": "testing",
+  "expected_content": "Hello, testing!",
+  "tool_call_id": "test-call-5",
+  "adaptation": {
+    "inputs": "Pi absolute path and edits[{oldText,newText}] map to a workspace-relative path and old_text/new_text",
+    "success": "Pi success text maps to ToolResult.error being None; the original English success text is not emitted by Mini-Pi",
+    "diff_and_patch": "Pi details.diff/details.patch map to the actual unified diff string in ToolResult.output",
+    "patch_application": "Pi applyPatch maps to independent git apply in a separate directory",
+    "native_pi_assertions_executed": false
+  },
+  "additional_mini_pi_checks": ["Read the edited disk file back and compare it with the expected content"]
+}

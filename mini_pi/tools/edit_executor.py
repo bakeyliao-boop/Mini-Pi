@@ -39,7 +39,7 @@ class EditFileExecutor:
     def check_file_access(self,target:Path)->None:
         """检查文件的读写条件,不读取内容或修改文件"""
         if not target.exists():
-            raise FileNotFoundError("目标文件不存在")
+            raise FileNotFoundError(f'目标文件不存在:{target}.错误码：ENOENT.')
         if not target.is_file():
             raise ValueError("目标必须是普通文件")
         if not os.access(target,os.R_OK | os.W_OK):

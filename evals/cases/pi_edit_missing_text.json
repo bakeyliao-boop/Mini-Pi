@@ -1,0 +1,25 @@
+{
+  "id": "pi-edit-missing-text",
+  "kind": "tool_unit_port",
+  "expectation": "missing_old_text",
+  "source": {
+    "repository": "https://github.com/earendil-works/pi",
+    "commit": "7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333",
+    "path": "packages/coding-agent/test/tools.test.ts",
+    "test": "should fail if text not found",
+    "lines": [305, 316]
+  },
+  "filename": "edit-test.txt",
+  "initial_content": "Hello, world!",
+  "old_text": "nonexistent",
+  "new_text": "testing",
+  "expected_content": "Hello, world!",
+  "expected_error": "未找到代替换的旧文本",
+  "tool_call_id": "test-call-6",
+  "adaptation": {
+    "inputs": "Original file and missing old text retained; absolute path/edits array map to workspace-relative path and old_text/new_text",
+    "expected_failure": "Pi rejects.toThrow(/Could not find the exact text/) maps to ToolResult.error containing the current Mini-Pi text-not-found message",
+    "native_pi_assertions_executed": false
+  },
+  "additional_mini_pi_checks": ["Read disk file back and confirm it is unchanged", "No success patch is returned"]
+}
