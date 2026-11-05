@@ -4,7 +4,9 @@
 
 学习路线和当前进度见 [Pi 阅读与 Python 实现路线](local-learning/pi-learning-roadmap.md)。其中包含 30 个步骤、每步的动作与验收标准，以及学习记录和第一版交付清单。
 
-当前主线已完成 D01–D20（20/30）。D19 的统一行为测试与截断保护反例见[D19 测试清单](local-learning/d19-test-checklist.md)。D20 已建立5个Pi来源适配样例（模型1个、工具4个）及统一核验入口，5例通过、3个判定对照符合预期，52项辅助检查通过；本次为4个工具重跑与1份历史真实smoke记录复核，没有新增真实模型请求，见[D20学习记录](local-learning/d20-handoff.md)与[运行说明](evals/README.md)。下一步D21另行选择可比较上下文策略的固定任务；本章短题和直接工具样例不证明压缩收益，reviewer及v0.1完整交付仍待推进。
+当前主线已完成 D01–D21（21/30）。D19 的统一行为测试和 D20 的五个适配样例分别见 [D19 测试清单](local-learning/d19-test-checklist.md)与 [D20 学习记录](local-learning/d20-handoff.md)。
+
+D21 与 M2 按双任务小样本范围验收。第一题裁掉背景尾部后三组仍改对文件。第二题的批准值在读取结果末尾，B 裁掉后未完成修改，C 用重试生成的完整摘要续做通过。每题每组只有一次首轮观测，C 补充验证单列。下一章为 D22 子 agent 委派流程。[统一结果表](local-learning/d21-handoff.md#2026-11-05-d21-阶段验收) · [运行说明](evals/README.md)
 
 D14 阶段的 M1 单 Agent 验收：真实 qwen3.8-flash 在隔离副本完成折扣修复，固定测试及独立复验 5 项通过；当时 Python3.14.5 全量 400 项中 398 通过、2 项 Windows 符号链接权限跳过。详情见[D14验收摘要](local-learning/d14-acceptance-summary.md)。这些结果不代表任意项目可自动修复。
 

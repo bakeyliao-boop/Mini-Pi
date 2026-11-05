@@ -1,0 +1,46 @@
+{
+  "id": "d21-edit-history-1",
+  "kind": "mini_pi_derived_context_experiment",
+  "status": "scripted_task_validated_real_model_not_run",
+  "source": {
+    "repository": "https://github.com/earendil-works/pi",
+    "commit": "7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333",
+    "path": "packages/coding-agent/test/tools.test.ts",
+    "test": "should replace text in file",
+    "lines": [282, 303],
+    "retained": ["Initial content Hello, world!", "Goal Hello, testing! without an added newline", "Validate actual returned edit patches by independent reconstruction"],
+    "added_by_mini_pi": ["Constructed earlier conversation and long read result", "A final continuation prompt that does not repeat the edit goal", "Model chooses its own valid tool calls", "Three context policies and total-consumption comparison"]
+  },
+  "initial_directory": "evals/fixtures/d21_edit_history/initial",
+  "target_file": "edit-test.txt",
+  "initial_content": "Hello, world!",
+  "expected_content": "Hello, testing!",
+  "earlier_user_message": "请把 edit-test.txt 中的 world 替换为 testing，保留其他字符和标点。只修改这个文件，不新增或删除文件。",
+  "continuation_prompt": "请按之前约定继续完成修改，并简短说明实际结果。",
+  "constructed_history": {
+    "kind": "fixture_not_a_recorded_model_session",
+    "sequence": ["earlier_user_message", "assistant calls read_file for process-notes.txt", "matching successful tool result containing the complete notes file", "assistant acknowledges the notes were read and target is not yet changed"],
+    "historical_read_call_id": "seed-read-notes-001",
+    "background_file": "process-notes.txt",
+    "background_data_rows": 256,
+    "background_contains_new_task_requirements": false,
+    "do_not_replay_historical_calls": true
+  },
+  "tools": {
+    "available": ["read_file", "edit_file"],
+    "editable_files": ["edit-test.txt"],
+    "logs_and_acceptance_outside_workdir": true
+  },
+  "acceptance": {
+    "disk_target_exactly_equals_expected": true,
+    "successful_edit_patches_recreate_final_content": true,
+    "other_initial_files_unchanged": true,
+    "no_added_or_removed_files": true,
+    "accept_equivalent_correct_edit_arguments": true,
+    "do_not_require_a_fixed_tool_call_order": true,
+    "assistant_success_claim_is_not_evidence": true
+  },
+  "experiment_integrity": ["Same initial files, history and final prompt for A/B/C", "Original history entries remain complete; a valid summary record may be appended", "Record whether C actually summarizes and whether the earlier goal is inside its summarized range", "First task aims to fit A/B/C and the summary request in the common configured window"],
+  "budget_status": "Offline three-turn protocol validated; real-model trial protocol and authorization pending",
+  "limits": ["This is a Mini-Pi derived experiment, not native Pi evaluation", "One small text edit cannot establish general coding or context-policy effectiveness", "Edit whitelist protects other files; unchanged files alone do not prove that the model remembered the scope constraint"]
+}

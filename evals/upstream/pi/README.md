@@ -10,6 +10,7 @@
 - `edit-missing-text.excerpt.ts` 来源：同文件第 305–316 行，名称 `should fail if text not found`。原输入仍为 `Hello, world!`，请求替换不存在的 `nonexistent`，原判定为调用拒绝并抛出匹配 `Could not find the exact text` 的错误。已完成 Mini-Pi 返回错误字段的显式映射与实际工具验收，未原生执行 TypeScript 断言。
 - `edit-missing-file.excerpt.ts` 来源：同文件第 318–327 行，名称 `should include ENOENT when the edit target does not exist`。目标 `missing.txt` 不存在，原判定要求报错信息包含目标路径及 `ENOENT`。2026-11-04 首次实测暴露诊断缺项，学习者补齐错误文字后适配验收通过；修复前失败与修复后通过分别记录，未原生执行 TypeScript 断言。
 - `edit-multiple-matches.excerpt.ts` 来源：同文件第 329–340 行，名称 `should fail if text appears multiple times`。原文件为 `foo foo foo`，请求将 `foo` 换成 `bar`，原断言是调用拒绝且错误匹配 `Found 3 occurrences`。2026-11-04 首次实测暴露次数缺项；学习者补齐统计后适配验收通过，报告3处且文件不变，修复前失败单独保留。未原生执行TypeScript断言。
+- `edit-lf-preserve.excerpt.ts` 来源：同文件第1373–1383行，名称 `should preserve LF line endings for LF files`。原文件为`first\nsecond\nthird\n`，将`second\n`替换为`REPLACED\n`，实际读回要求其余行、LF及末尾换行不变。D21第二任务保留这个字节约束，但改用配置文件、历史长读取尾部的批准值及三策略对比，明确属于Mini-Pi派生诊断；未原生执行TypeScript断言。
 - 获取方式：`git show <固定提交>:<来源路径>`，保留原始 Git 文件内容。
 
 原始参考样例保持不变。当前已创建 [Python 判定与日志适配](../../README.md)，通过现有 Mini-Pi Harness 执行离线排演和显式百炼真实调用；2026-11-03 一次真实调用已满足原样例五项判定。尚未运行 Pi 原生 TypeScript 评测器；该参考文件依赖 Pi 与 vitest-evals，不能直接作为 Python 测试执行。

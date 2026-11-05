@@ -165,3 +165,69 @@ python -X utf8 -m examples.d20_checks --smoke-evidence local-learning/evidence/d
 2026-11-04实际统一结果为5例passed、3个对照符合预期，suite_verdict=passed、退出0，本轮真实模型新增0次。见 [机器结果](../local-learning/evidence/d20-checks/20261104T024426Z-2e244ff7ee/result.json)和[核验汇总](../local-learning/evidence/d20-checks/20261104T024426Z-2e244ff7ee/verification.json)。smoke的40 tokens来自2026-11-03已保存的真实观测，本轮4个工具实际重跑；3个对照为Paris模拟unverified、London模拟failed、调用异常failed。它们不是3个新增Pi来源样例，错误判定符合预期才算对照检查生效。
 
 统一执行52项D20辅助测试全部通过，命令为 `python -X utf8 -m unittest discover -s tests -p 'test_d20_*.py' -v`。合成记录仅验证聚合和判定接口，HTTP为模拟，不冒充真实模型请求。取消先沿用单例已有清理并保存结果，然后停止后续样例。D20首版适配案例库完成；原生Pi评测、LLM自主修复成功率和D21上下文策略效果均不据此宣称通过。
+
+## D21：三组输入的离线预览
+
+```sh
+python -X utf8 -m examples.d21_preview
+```
+
+从d21_edit_history固定夹具构造历史，分别经现有Harness.resume运行A全文、B读取结果裁剪、C读取裁剪及脚本摘要；捕获首个回答请求后结束，不执行修改任务、不读取凭证、不调用真实模型。每次新建d21-preview日志目录，保存协议、原始输入、实际回答请求、摘要请求及材料、Session、机器检查和input-review.md。预设摘要仅供接线检查，不代表真实摘要质量。配置仅为输入预览，非真实实验冻结预算。
+
+2026-11-04实际预览11项检查通过、3项辅助测试通过。见 [输入表](../local-learning/evidence/d21-preview/20261104T064721Z-cfcd8758/input-review.md)和[机器结果](../local-learning/evidence/d21-preview/20261104T064721Z-cfcd8758/result.json)。长读取从A的6169字符变为B的1024字符；C切点覆盖旧要求，脚本摘要1次，原始历史及文件保留，工具执行0次。回答输入估算分别1954、560、209；C还需单列1901的摘要输入估算，真实usage均未获得。独立任务验收与真实效果比较尚未完成，主线仍20/30。
+
+## D21：完整离线演练与独立文件验收
+
+```sh
+python -X utf8 -m examples.d21_dry_run
+```
+
+每组三步预设回答经现有Harness.resume驱动真实读取、编辑和结果反馈，C使用一次脚本摘要；随后独立检查目标字节、文件范围及完整成功编辑补丁链。每次使用新的d21-dry-run目录，日志和验收均在Agent工作目录外。读取等价path写法时，复核用原补丁配合Git原生剥离参数，不改补丁、不使用unsafe-paths。验收接收等价有效编辑及多次编辑，不要求模型按脚本的固定顺序行动。
+
+2026-11-04实际A/B/C均为finished、文件Hello, testing!、独立判定passed；只说完成的对照finished但文件仍Hello, world!，判定failed符合预期。见 [结果表](../local-learning/evidence/d21-dry-run/20261104T084614Z-d72319ab/review.md)和[完整记录](../local-learning/evidence/d21-dry-run/20261104T084614Z-d72319ab/result.json)。18项D21辅助检查通过，本轮无真实模型请求、真实usage未知。预设答案并未证明模型理解了旧要求，不把离线成功率或耗时当模型效果；主线仍20/30。
+
+## D21：2026-11-04首轮真实试跑准备记录
+
+以下为准备阶段记录；2026-11-05已获授权并执行，实际结果见下一节。
+
+默认只准备协议，不发送请求：
+
+```sh
+python -X utf8 -m examples.d21_live --auth-file "path/to/auth.json"
+```
+
+本机已准备目录为local-learning/evidence/d21-live/20261104T095815Z-aa77bed1，含protocol.json、state.json、plan-review.md和冻结初始文件。取得本轮明确授权后，使用--execute-live及--prepared-dir执行该协议；开始过的目录禁止自动重跑。模型固定百炼qwen3.8-flash，一个任务三组各一次，总请求上限10（含C摘要），输出各256、每组30秒，不重试、不收费重跑离线对照。
+
+新真实协议read4096/trigger1300，沿用窗口8192/预留512/余量256。所有参数在真实调用前固定，旧离线协议保留。请求与usage按回答/摘要记录，包括失败和未采用的摘要；缺项不补零，未执行组标未验证，文件验收缺失同样阻止宣称观测完整。准备及测试只读取现有凭证配置、HTTP为模拟，未进行真实请求。详见 [首轮方案](../local-learning/d21-handoff.md)与准备目录的核对记录。
+
+## D21：2026-11-05首轮真实结果
+
+用户明确授权后执行上述冻结目录，共10次百炼qwen3.8-flash请求，无重试。见[实际结果与解读](../local-learning/evidence/d21-live/20261104T095815Z-aa77bed1/review.md)和[原始结果](../local-learning/evidence/d21-live/20261104T095815Z-aa77bed1/result.json)。目录名为准备时间，真实请求的Session时间为2026-11-05。
+
+| 组别 | 实际文件及补丁验收 | 运行终态 | 请求数（含摘要） | 服务total_tokens | 完整运行秒数 |
+| --- | --- | --- | --- | --- | --- |
+| A全文 | passed | budget_exhausted，未给最终答复 | 3 | 9801 | 4.977203 |
+| B裁剪 | passed | budget_exhausted，未给最终答复 | 3 | 7253 | 5.316539 |
+| C摘要 | passed | finished，已给最终答复 | 4 | 5480 | 9.626769 |
+
+C包含摘要3043 tokens与回答2437 tokens，摘要时间5.024318秒已包含在9.626769秒中，不再叠加。总服务用量22534 tokens，完整且与10条实际请求一致。A/B最后一次复核读取成功，结果保留在Session，但没有剩余回答请求接收该结果，故其actual_feedback_reached_answer_model为false；编辑结果已送入第三次回答请求。不能把all_tasks_passed（文件判定）解释成三组正常收尾。
+
+本轮C总tokens更少但耗时更长；缓存命中情况不同，total_tokens不能直接当实际金额。一次小任务、每组一次且A/B未给最终答复，不能证明一般效果或稳定性。保留原预算与失败终态，不补跑。D21第二任务、重复试验及M2验收仍待完成；未修改核心、未提交推送。
+
+## D21：第二任务离线准备
+
+```sh
+python -X utf8 -m examples.d21_task2
+```
+
+任务定义为[cases/d21_config_tail.json](cases/d21_config_tail.json)：按历史长读取末尾唯一的approved_channel=qa-east-7，将app.conf的channel=preview替换，保留其他字节、LF和末尾换行。固定Pi来源是tools.test.ts第1373–1383行的LF保留原例；配置内容、长历史和三策略是Mini-Pi派生诊断。
+
+2026-11-05[离线记录](../local-learning/evidence/d21-task2/20261105T040210Z-adcc2403/review.md)8项准备检查通过，D21全量32项辅助测试通过。A原文能见值、B裁掉值后重读仍缺而不猜、C预设摘要留值后可实际编辑；A/C文件passed、B文件failed，三组finished。B暴露当前固定前段裁剪且无按行读取/历史回查工具的限制，不能推广成摘要普遍更好。错误摘要的缺值与错值反例都不能通过独立文件验收。
+
+本次全部回答/摘要均为脚本，输出依据实际可见输入，工具与补丁重建实际执行；没有读取凭证或调用模型。独立Git复核已局部禁用autocrlf，防止本机配置改变LF字节；未改用户全局配置。真实协议和新增用量尚未安排，第一任务授权不延用。详见[D21学习记录](../local-learning/d21-handoff.md)最新一节。
+
+## D21 第二任务真实试跑
+
+第二任务使用 `examples.d21_live --task config-tail` 准备协议，执行时选定已准备目录。2026-11-05 授权试跑发送了 9 次请求，A 文件和补丁验收通过，B 缺批准值后耗尽回答轮次，C 的摘要以 `length` 结束。C 关键信息保留待验证。[本轮证据](../local-learning/evidence/d21-live/20261105T062537Z-f87f2867/review.md)
+
+随后单独提高摘要输出上限至 512 tokens，实际摘要正常完成并保留批准值。用该摘要续做时，首个回答请求包含摘要与当前问题，4 次真实回答请求完成读取、编辑、复核和最终答复。目标文件和独立补丁重建验收通过。[续做证据](../local-learning/evidence/d21-live/20261105T062537Z-f87f2867/C-answer-from-retry-summary/result.json)

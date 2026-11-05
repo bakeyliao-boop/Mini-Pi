@@ -1,0 +1,59 @@
+{
+  "id": "d21-config-tail-2",
+  "kind": "mini_pi_derived_context_loss_diagnostic",
+  "status": "offline_diagnostic_validated_real_model_not_run",
+  "source": {
+    "repository": "https://github.com/earendil-works/pi",
+    "commit": "7f9e1198f2f7a8cf5ea18d5010ba081d4d60c333",
+    "path": "packages/coding-agent/test/tools.test.ts",
+    "test": "should preserve LF line endings for LF files",
+    "lines": [1373, 1383],
+    "excerpt": "evals/upstream/pi/edit-lf-preserve.excerpt.ts",
+    "retained": ["Replace one line while preserving every other byte and LF line endings", "Check actual final file contents"],
+    "changed_by_mini_pi": ["Use a short configuration file instead of first/second/third", "Approved replacement value appears only at the end of a long historical read", "Add continuation, A/B/C context policies and independent patch reconstruction"]
+  },
+  "initial_directory": "evals/fixtures/d21_config_tail/initial",
+  "target_file": "app.conf",
+  "initial_content": "name=mini-pi\nchannel=preview\nretries=2\n",
+  "expected_content": "name=mini-pi\nchannel=qa-east-7\nretries=2\n",
+  "earlier_user_message": "请按 release-notes.txt 中唯一的 approved_channel 批准值，修改 app.conf 的 channel=preview。只改这一项，保留其他字符、LF换行及末尾换行；只修改 app.conf，不新增或删除文件。",
+  "continuation_prompt": "请按之前约定继续完成修改，并简短说明实际结果。",
+  "constructed_history": {
+    "kind": "fixture_not_a_recorded_model_session",
+    "sequence": ["earlier_user_message", "assistant calls read_file for release-notes.txt", "matching successful tool result with complete release notes", "assistant acknowledges reading notes without repeating the approved value"],
+    "historical_read_call_id": "seed-read-release-002",
+    "background_file": "release-notes.txt",
+    "background_data_rows": 256,
+    "background_contains_new_task_requirements": false,
+    "background_contains_task_data": true,
+    "do_not_replay_historical_calls": true
+  },
+  "task_data": {
+    "field": "approved_channel",
+    "approved_value": "qa-east-7",
+    "occurrences_in_long_read": 1,
+    "placement": "After the first 4096 characters, outside the retained prefix",
+    "not_in_earlier_user_message_or_continuation": true
+  },
+  "tools": {
+    "available": ["read_file", "edit_file"],
+    "editable_files": ["app.conf"],
+    "logs_and_acceptance_outside_workdir": true
+  },
+  "acceptance": {
+    "disk_target_exactly_equals_expected": true,
+    "successful_edit_patches_recreate_final_content": true,
+    "other_initial_files_unchanged": true,
+    "no_added_or_removed_files": true,
+    "preserve_LF_and_final_newline": true,
+    "assistant_success_claim_is_not_evidence": true
+  },
+  "limits": [
+    "Derived diagnostic, not a native Pi context benchmark or general coding task sample",
+    "B cannot recover the tail with current tools: read_file accepts only path and every answer request shortens the read prefix again",
+    "The omission marker names a historical call ID, but this tool set has no history lookup tool",
+    "C receives the complete original read as summary material, but a real summary may still omit or distort the approved value",
+    "Offline scripted summary and input-sensitive scripted answers are not evidence of real-model effectiveness",
+    "The prior ten-call authorization has been spent; this case does not authorize further API requests"
+  ]
+}
